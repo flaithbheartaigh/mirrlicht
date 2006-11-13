@@ -426,9 +426,10 @@ public:
 
 			glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 			glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-
+#ifndef _IRR_USE_OPENGL_ES_
 			glEnable(GL_TEXTURE_GEN_S);
 			glEnable(GL_TEXTURE_GEN_T);
+#endif
 		}
 	}
 
@@ -436,8 +437,10 @@ public:
 	{
 		if (Driver->queryFeature(EVDF_MULTITEXTURE))
 			Driver->extGlActiveTextureARB(GL_TEXTURE0_ARB);
+#ifndef _IRR_USE_OPENGL_ES_
 		glDisable(GL_TEXTURE_GEN_S);
 		glDisable(GL_TEXTURE_GEN_T);
+#endif
 	}
 };
 
