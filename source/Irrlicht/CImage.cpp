@@ -4,7 +4,11 @@
 
 #include "CImage.h"
 #include "os.h"
+#ifdef __SYMBIAN32__
+#include <string.h>
+#else
 #include <memory.h>
+#endif
 #include <stdio.h>
 #include "SoftwareDriver2_helper.h"
 
