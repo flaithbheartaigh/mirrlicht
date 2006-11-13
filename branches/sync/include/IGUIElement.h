@@ -133,7 +133,7 @@ public:
 				--it;
 			}
 
-		if (AbsoluteRect.isPointInside(point) && IsVisible)
+		if (AbsoluteClippingRect.isPointInside(point) && IsVisible)
 			target = this;
 		
 		return target;
@@ -255,7 +255,7 @@ public:
 
 
 	//! Called if an event happened.
-	virtual bool OnEvent(const SEvent &event)
+	virtual bool OnEvent(SEvent event)
 	{
 		if (Parent)
 			Parent->OnEvent(event);
