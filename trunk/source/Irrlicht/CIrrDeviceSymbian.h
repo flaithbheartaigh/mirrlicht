@@ -1,9 +1,9 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2006 Nikolaus Gebhardt. 2006 Ming Li.
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#ifndef __C_IRR_DEVICE_LINUX_H_INCLUDED__
-#define __C_IRR_DEVICE_LINUX_H_INCLUDED__
+#ifndef __C_IRR_DEVICE_SYMBIAN_H_INCLUDED__
+#define __C_IRR_DEVICE_SYMBIAN_H_INCLUDED__
 
 #include "IrrCompileConfig.h"
 
@@ -101,6 +101,6 @@ namespace irr
 
 } // end namespace irr
 
-#endif // LINUX
-#endif // __C_IRR_DEVICE_LINUX_H_INCLUDED__
+#endif // __SYMBIAN32__
+#endif // __C_IRR_DEVICE_SYMBIAN_H_INCLUDED__
 
