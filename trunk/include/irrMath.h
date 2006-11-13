@@ -7,7 +7,7 @@
 
 #include "irrTypes.h"
 #include <math.h>
-#ifdef __sun__
+#if defined(__sun__) || defined(__SYMBIAN32__)
 #define sqrtf(X) sqrt(X)
 #define sinf(X) sin(X)
 #define cosf(X) cos(X)
