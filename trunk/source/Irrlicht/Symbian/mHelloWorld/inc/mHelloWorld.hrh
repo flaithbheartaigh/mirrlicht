@@ -1,0 +1,21 @@
+/*
+============================================================================
+ Name        : mHelloWorld.rss
+ Author      : 
+ Version     :
+ Copyright   : Your copyright notice
+ Description : Main application class
+============================================================================
+*/
+
+#ifndef __MHELLOWORLD_HRH__
+#define __MHELLOWORLD_HRH__
+
+// mHelloWorld enumerate command codes
+enum TmHelloWorldIds
+    {
+    EmHelloWorldCommand1 = 1, // start value must not be 0
+    EmHelloWorldCommand2
+    };
+
+#endif // __MHELLOWORLD_HRH__
