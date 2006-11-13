@@ -11,7 +11,11 @@
 #include "IrrCompileConfig.h"
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
+#ifdef __SYMBIAN32__
+#include <string.h>
+#else
 #include <cstring>
+#endif
 
 namespace irr
 {
@@ -100,6 +104,7 @@ COpenGLTexture::COpenGLTexture(const core::dimension2d<s32>& size,
   InternalFormat(GL_RGBA), PixelFormat(GL_BGRA_EXT), PixelType(GL_UNSIGNED_BYTE),
   ColorFrameBuffer(0), DepthRenderBuffer(0)
 {
+#ifndef _IRR_USE_OPENGL_ES_
 	#ifdef _DEBUG
 	setDebugName("COpenGLTexture_FBO");
 	#endif
@@ -193,6 +198,7 @@ COpenGLTexture::COpenGLTexture(const core::dimension2d<s32>& size,
     }
     Driver->extGlBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 #endif
+#endif
 }
 
 //! destructor
@@ -264,6 +270,20 @@ void COpenGLTexture::getImageData(IImage* image)
 		void* source = image->lock();
 		if (image->getColorFormat()==ECF_R8G8B8)
 			CColorConverter::convert_R8G8B8toA8R8G8B8(source,ImageSize.Width*ImageSize.Height,ImageData);
+#ifdef _IRR_USE_OPENGL_ES_ //ogl es don't support A1R5G5B5, therefore we should change the format to R5G5B5A1
+		else if(image->getColorFormat() == ECF_A1R5G5B5)
+		{
+			u16* dest = (u16*)ImageData;
+			for (s32 i=0; i<2*ImageSize.Width*ImageSize.Height; i+=2)
+			{		
+				u16 color = *(u16*)((c8*)source+i);
+				*dest++=(( color & 0x8000 ) >> 15|
+					( color & 0x7C00 ) << 1 |
+					( color & 0x03E0 ) << 1 |
+					( color & 0x001F ) << 1);
+			}
+		}
+#endif
 		else
 			memcpy(ImageData,source,Pitch*nImageSize.Height);
 	}
@@ -289,6 +309,18 @@ void COpenGLTexture::getImageData(IImage* image)
 					i*=3;
 					((s32*)ImageData)[y*nImageSize.Width + x]=SColor(255,source[i],source[i+1],source[i+2]).color;
 				}
+#ifdef _IRR_USE_OPENGL_ES_ //ogl es don't support A1R5G5B5, therefore we should change the format to R5G5B5A1
+				else if(image->getColorFormat() == ECF_A1R5G5B5)
+				{
+					i*=2;
+					u16 color = *(u16*)(source+i);
+					color=(( color & 0x8000 ) >> 15|
+						( color & 0x7C00 ) << 1 |
+						( color & 0x03E0 ) << 1 |
+						( color & 0x001F ) << 1);
+					memcpy(&ImageData[(y*nImageSize.Width + x)*bpp],&color,bpp);					
+				}
+#endif
 				else
 					memcpy(&ImageData[(y*nImageSize.Width + x)*bpp],&source[i*bpp],bpp);
 				sx+=sourceXStep;
@@ -312,9 +344,15 @@ void COpenGLTexture::copyTexture(bool newTexture)
 	switch (ColorFormat)
 	{
 		case ECF_A1R5G5B5:
+#ifdef _IRR_USE_OPENGL_ES_
+			InternalFormat=GL_RGBA;
+			PixelFormat=GL_RGBA;
+			PixelType=GL_UNSIGNED_SHORT_5_5_5_1;
+#else
 			InternalFormat=GL_RGBA;
 			PixelFormat=GL_BGRA_EXT;
 			PixelType=GL_UNSIGNED_SHORT_1_5_5_5_REV;
+#endif
 			break;
 		case ECF_R5G6B5:
 			InternalFormat=GL_RGB;
@@ -322,7 +360,11 @@ void COpenGLTexture::copyTexture(bool newTexture)
 			PixelType=GL_UNSIGNED_SHORT_5_6_5;
 			break;
 		case ECF_R8G8B8:
+#ifdef _IRR_USE_OPENGL_ES_
+			InternalFormat=GL_RGB;
+#else
 			InternalFormat=GL_RGB8;
+#endif
 			PixelFormat=GL_RGB;
 			PixelType=GL_UNSIGNED_BYTE;
 			break;
@@ -470,6 +512,7 @@ void COpenGLTexture::regenerateMipMapLevels()
 		return;
 		HasMipMaps=false;
 	return;
+#ifndef _IRR_USE_OPENGL_ES_
 	if (gluBuild2DMipmaps(GL_TEXTURE_2D, InternalFormat,
 			ImageSize.Width, ImageSize.Height,
 			PixelFormat, PixelType, ImageData))
@@ -477,6 +520,7 @@ void COpenGLTexture::regenerateMipMapLevels()
 	else
 		HasMipMaps=false;
 	return;
+#endif
 
 	// This code is wrong as it does not take into account the image scaling
 	// Therefore it is currently disabled
