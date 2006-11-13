@@ -12,7 +12,9 @@
 #include "ISceneUserDataSerializer.h"
 
 #include "os.h"
+#ifndef __SYMBIAN32__
 #include <wchar.h>
+#endif
 #include <string.h>
 
 #include "CGeometryCreator.h"
