@@ -3,7 +3,9 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CXMLWriter.h"
+#ifndef __SYMBIAN32__
 #include <wchar.h>
+#endif
 #include "irrString.h"
 #include "IrrCompileConfig.h"
 
