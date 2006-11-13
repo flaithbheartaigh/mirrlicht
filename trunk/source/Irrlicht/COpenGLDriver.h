@@ -26,6 +26,9 @@
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
 	#include <OpenGL/glext.h>
+#elif defined(__SYMBIAN32__)
+	#include <GLES/egl.h>   	
+	#include "glext.h"    
 #else
 	#if defined(_IRR_OPENGL_USE_EXTPOINTER_)
 		#define GL_GLEXT_LEGACY 1
@@ -71,6 +74,11 @@ namespace video
 		#ifdef MACOSX
 		COpenGLDriver(const core::dimension2d<s32>& screenSize, bool fullscreen,
 			bool stencilBuffer, CIrrDeviceMacOSX *device,io::IFileSystem* io, bool vsync, bool antiAlias);
+		#endif
+
+		#ifdef __SYMBIAN32__
+		COpenGLDriver(const core::dimension2d<s32>& screenSize, bool fullscreen, 
+			bool stencilBuffer, EGLSurface window, EGLDisplay display, io::IFileSystem* io, bool vsync, bool antiAlias);
 		#endif
 
 		//! destructor
@@ -364,7 +372,7 @@ namespace video
 
 		core::dimension2d<s32> CurrentRendertargetSize;
 
-		#if defined(_IRR_OPENGL_USE_EXTPOINTER_)
+        #if defined(_IRR_OPENGL_USE_EXTPOINTER_)
 			PFNGLACTIVETEXTUREARBPROC pGlActiveTextureARB;
 			PFNGLCLIENTACTIVETEXTUREARBPROC	pGlClientActiveTextureARB;
 			PFNGLGENPROGRAMSARBPROC pGlGenProgramsARB;
@@ -427,6 +435,12 @@ namespace video
 		#elif defined(MACOSX)
 			CIrrDeviceMacOSX *_device;
 		#endif
+
+		#if defined(__SYMBIAN32__)
+			EGLSurface	eglWindowSurface;
+			EGLDisplay	eglDisplay;			
+		#endif
+
 	};
 
 } // end namespace video

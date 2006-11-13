@@ -24,6 +24,8 @@
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
 	#include <OpenGL/glext.h>
+#elif defined(__SYMBIAN32__)
+	#include <GLES/egl.h>
 #else
 	#if defined(_IRR_OPENGL_USE_EXTPOINTER_)
 		#define GL_GLEXT_LEGACY 1
