@@ -23,6 +23,9 @@
 #elif defined(MACOSX)
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
+#elif defined(__SYMBIAN32__)
+#include <GLES/gl.h>
+#include "glext.h"
 #endif
 
 #include "IMaterialRenderer.h"
