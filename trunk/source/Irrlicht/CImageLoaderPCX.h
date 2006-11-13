@@ -20,6 +20,13 @@ namespace video
 #	define PACK_STRUCT
 #elif defined( __GNUC__ )
 #	define PACK_STRUCT	__attribute__((packed))
+#elif defined(__SYMBIAN32__)    
+#   if defined(__WINS__)
+#     define PACK_STRUCT 
+#     pragma pack(1)
+#   else 
+#	  define PACK_STRUCT	__attribute__((packed,aligned(1)))
+#   endif
 #else
 #	error compiler not supported
 #endif
@@ -50,6 +57,8 @@ namespace video
 // Default alignment
 #ifdef _MSC_VER
 #	pragma pack( pop, packing )
+#elif defined(__SYMBIAN32__) && defined(__WINS__)
+#   pragma pack(4) //default alignment in Project settings 
 #endif
 
 #undef PACK_STRUCT
