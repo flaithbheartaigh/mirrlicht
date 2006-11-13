@@ -62,7 +62,9 @@ typedef double				f64;
 
 } // end namespace
 
-
+#ifdef __SYMBIAN32__
+#   include <stddef.h> //for size_t
+#else
 // define the wchar_t type if not already built in.
 #ifdef _MSC_VER 
 #ifndef _WCHAR_T_DEFINED
@@ -78,7 +80,7 @@ typedef unsigned short wchar_t;
 #define _WCHAR_T_DEFINED
 #endif // wchar is not defined
 #endif // microsoft compiler
-
+#endif
 //! define a break macro for debugging only in Win32 mode.
 #if defined(_DEBUG)
 #if defined(WIN32) && defined(_MSC_VER)
