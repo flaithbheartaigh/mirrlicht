@@ -21,7 +21,7 @@
 #define _IRR_WINDOWS_
 #endif
 
-#if !defined(_IRR_WINDOWS_) && !defined(_XBOX) && !defined(OS2) && !defined(MACOSX)
+#if !defined(_IRR_WINDOWS_) && !defined(_XBOX) && !defined(OS2) && !defined(MACOSX) && !defined(__SYMBIAN32__)
 #define LINUX
 #endif
 
@@ -55,6 +55,11 @@ define out. */
 
 #endif // ! _XBOX
 
+#if defined(__SYMBIAN32__)
+
+#define _IRR_USE_OPENGL_ES_
+
+#endif
 
 //! Define _IRR_COMPILE_WITH_X11_ to compile the Irrlicht engine with X11 support.
 /** If you do not wish the engine to be compiled with X11, comment this
@@ -127,8 +132,10 @@ watch registers, variables etc. This works with ASM, HLSL, and both with pixel a
 Note that the engine will run in D3D REF for this, which is a lot slower than HAL. */
 #define _IRR_D3D_NO_SHADER_DEBUGGING 
 
-
+#if !defined(__SYMBIAN32__)
 #include <wchar.h>
+#endif
+
 #ifdef _IRR_WINDOWS_
 //! Define for swprintf because this method does not match the ISO C standard
 //! on Windows platforms, but it does on all other ones.

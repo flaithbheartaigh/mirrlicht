@@ -34,9 +34,15 @@ extern "C" {
 ** version 1.2.1 Specification.
 */
 
-#if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__)
+#if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__) && !defined(__SYMBIAN32__)
 #define WIN32_LEAN_AND_MEAN 1
 #include <windows.h>
+#endif
+
+#if defined(GL_OES_VERSION_1_1)
+#ifndef GLdouble
+#define GLdouble GLfloat
+#endif
 #endif
 
 #ifndef APIENTRY
@@ -319,7 +325,7 @@ extern "C" {
 #define GL_COMPARE_R_TO_TEXTURE           0x884E
 #endif
 
-#ifndef GL_VERSION_1_5
+#if !defined(GL_VERSION_1_5) && !defined(GL_OES_VERSION_1_1)
 #define GL_BUFFER_SIZE                    0x8764
 #define GL_BUFFER_USAGE                   0x8765
 #define GL_QUERY_COUNTER_BITS             0x8864
@@ -3138,7 +3144,7 @@ extern "C" {
 typedef char GLchar;			/* native character */
 #endif
 
-#ifndef GL_VERSION_1_5
+#if !defined(GL_VERSION_1_5) && !defined(GL_OES_VERSION_1_1)
 /* GL types for handling large vertex buffer objects */
 typedef ptrdiff_t GLintptr;
 typedef ptrdiff_t GLsizeiptr;
@@ -3164,6 +3170,8 @@ typedef unsigned short GLhalfARB;
 #ifndef GL_NV_half_float
 typedef unsigned short GLhalfNV;
 #endif
+
+#if !defined(__SYMBIAN32__) //symbian32 currently don't have 64-bit support
 
 #ifndef GLEXT_64_TYPES_DEFINED
 /* This code block is duplicated in glext.h, so must be protected */
@@ -3205,6 +3213,8 @@ typedef unsigned __int64 uint64_t;
 #ifndef GL_EXT_timer_query
 typedef int64_t GLint64EXT;
 typedef uint64_t GLuint64EXT;
+#endif
+
 #endif
 
 #ifndef GL_VERSION_1_2
@@ -6542,12 +6552,16 @@ typedef void (APIENTRYP PFNGLGETVERTEXATTRIBARRAYOBJECTIVATIPROC) (GLuint index,
 #define GL_OES_read_format 1
 #endif
 
+#if !defined(_IRR_USE_OPENGL_ES_) //no GLclampd
+
 #ifndef GL_EXT_depth_bounds_test
 #define GL_EXT_depth_bounds_test 1
 #ifdef GL_GLEXT_PROTOTYPES
 GLAPI void APIENTRY glDepthBoundsEXT (GLclampd, GLclampd);
 #endif /* GL_GLEXT_PROTOTYPES */
 typedef void (APIENTRYP PFNGLDEPTHBOUNDSEXTPROC) (GLclampd zmin, GLclampd zmax);
+#endif
+
 #endif
 
 #ifndef GL_EXT_texture_mirror_clamp
@@ -6674,6 +6688,7 @@ typedef void (APIENTRYP PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC) (GLenum targ
 #define GL_MESAX_texture_stack 1
 #endif
 
+#if !defined(_IRR_USE_OPENGL_ES_)
 #ifndef GL_EXT_timer_query
 #define GL_EXT_timer_query 1
 #ifdef GL_GLEXT_PROTOTYPES
@@ -6682,6 +6697,7 @@ GLAPI void APIENTRY glGetQueryObjectui64vEXT (GLuint, GLenum, GLuint64EXT *);
 #endif /* GL_GLEXT_PROTOTYPES */
 typedef void (APIENTRYP PFNGLGETQUERYOBJECTI64VEXTPROC) (GLuint id, GLenum pname, GLint64EXT *params);
 typedef void (APIENTRYP PFNGLGETQUERYOBJECTUI64VEXTPROC) (GLuint id, GLenum pname, GLuint64EXT *params);
+#endif
 #endif
 
 #ifndef GL_EXT_gpu_program_parameters

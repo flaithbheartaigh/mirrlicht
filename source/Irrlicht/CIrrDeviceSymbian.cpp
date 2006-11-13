@@ -688,13 +688,8 @@ void CIrrDeviceSymbian::createKeyMap()
 */
 }
 
-#define IRRLICHT_API
-
-#if defined(_STDCALL_SUPPORTED)
-#define IRRCALLCONV __stdcall  // Declare the calling convention.
-#else
+#define IRRLICHT_API 
 #define IRRCALLCONV
-#endif // STDCALL_SUPPORTED
 
 IRRLICHT_API IrrlichtDevice* IRRCALLCONV createDeviceEx(const SIrrlichtCreationParameters& param)
 {
