@@ -128,9 +128,11 @@
 #include "SMeshBuffer.h"
 #include "SMeshBufferLightMap.h"
 #include "SMeshBufferTangents.h"
+#include "SViewFrustrum.h"
 #include "irrTypes.h"
 
-/*! \mainpage Irrlicht Engine 1.1 API documentation
+
+/*! \mainpage Irrlicht Engine 1.2 API documentation
  *
  * <div align="center"><img src="logobig.png" ></div>
  *
