@@ -30,6 +30,11 @@
 #include <OpenGL/glext.h>
 #endif
 
+#ifdef __SYMBIAN32__
+#include <GLES/gl.h>
+#include "glext.h"
+#endif
+
 #include "IMaterialRenderer.h"
 #include "IMaterialRendererServices.h"
 #include "IGPUProgrammingServices.h"
