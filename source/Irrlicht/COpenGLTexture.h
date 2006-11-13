@@ -123,9 +123,9 @@ private:
 	bool HasMipMaps;
 	bool AutomaticMipmapUpdate;
 
-    GLuint ColorFrameBuffer; // for FBO path
-    GLuint DepthRenderBuffer; // for FBO path
-    GLuint StencilRenderBuffer; // for FBO path
+	GLuint ColorFrameBuffer; // for FBO path
+	GLuint DepthRenderBuffer; // for FBO path
+	GLuint StencilRenderBuffer; // for FBO path
 };
 
 
@@ -134,3 +134,4 @@ private:
 
 #endif
 #endif // _IRR_COMPILE_WITH_OPENGL_
+

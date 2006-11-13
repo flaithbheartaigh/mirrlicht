@@ -11,6 +11,7 @@
 #include "CLogger.h"
 #include "irrString.h"
 #include <string.h>
+#include "irrlicht.h"
 
 namespace irr
 {
@@ -157,7 +158,7 @@ bool CIrrDeviceStub::checkVersion(const char* version)
 
 
 //! send the event to the right receiver
-void CIrrDeviceStub::postEventFromUser(const SEvent &event)
+void CIrrDeviceStub::postEventFromUser(SEvent event)
 {
 	bool absorbed = false;
 

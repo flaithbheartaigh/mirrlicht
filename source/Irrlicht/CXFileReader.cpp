@@ -8,10 +8,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
-#ifdef __SYMBIAN32__
 #include <string.h>
-#else
-#include <cstring>
 #endif
 
 

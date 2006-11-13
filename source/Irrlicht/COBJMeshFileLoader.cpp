@@ -2,12 +2,8 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#ifdef __SYMBIAN32__
 #include <string.h>
 #include <ctype.h>
-#else
-#include <cstring>
-#include <cctype>
 #endif
 
 #include "COBJMeshFileLoader.h"

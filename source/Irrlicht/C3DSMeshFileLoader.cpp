@@ -3,10 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "C3DSMeshFileLoader.h"
-#ifdef __SYMBIAN32__
 #include <string.h>
-#else
-#include <cstring>
 #endif
 #include "os.h"
 #include "SMeshBuffer.h"
@@ -180,7 +177,17 @@ IAnimatedMesh* C3DSMeshFileLoader::createMesh(io::IReadFile* file)
 		am->Type = EAMT_3DS;
 
 		for (s32 i=0; i<Mesh->getMeshBufferCount(); ++i)
-			((SMeshBuffer*)Mesh->getMeshBuffer(i))->recalculateBoundingBox();
+		{
+			SMeshBuffer* mb = ((SMeshBuffer*)Mesh->getMeshBuffer(i));
+			// drop empty buffers
+			if (mb->getIndexCount() == 0 || mb->getVertexCount() == 0)
+			{
+				Mesh->MeshBuffers.erase(i--);
+				mb->drop();
+			}
+			else
+				mb->recalculateBoundingBox();
+		}
 
 		Mesh->recalculateBoundingBox();
 
