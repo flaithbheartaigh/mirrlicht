@@ -6,7 +6,12 @@
 #define __IRR_ALLOCATOR_H_INCLUDED__
 
 #include "irrTypes.h"
+//for placement new
+#ifdef __SYMBIAN32__
+#include <e32cmn.h>
+#else
 #include <new>
+#endif
 
 namespace irr
 {
