@@ -1,0 +1,17 @@
+/*
+============================================================================
+ Name        : mHelloWorld.rss
+ Author      : 
+ Version     :
+ Copyright   : Your copyright notice
+ Description : Main application class
+============================================================================
+*/
+
+PRJ_PLATFORMS
+WINSCW ARMV5 GCCE
+
+PRJ_MMPFILES
+..\..\mirrlicht\group\mirrlicht.mmp
+mHelloWorld.mmp
+
