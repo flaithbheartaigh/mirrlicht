@@ -427,6 +427,7 @@ void COpenGLDriver::loadExtensions()
 	ARBFragmentProgramExtension = false;
 	ARBShadingLanguage100Extension = false;
 	AnisotropyExtension = false;
+	TextureNPOTExtension = false;
 #endif
 #else
 
