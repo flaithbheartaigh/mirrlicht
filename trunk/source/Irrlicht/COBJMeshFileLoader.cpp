@@ -4,7 +4,6 @@
 
 #include <string.h>
 #include <ctype.h>
-#endif
 
 #include "COBJMeshFileLoader.h"
 #include "SMeshBuffer.h"

@@ -12,7 +12,6 @@
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
 #include <string.h>
-#endif
 
 namespace irr
 {
