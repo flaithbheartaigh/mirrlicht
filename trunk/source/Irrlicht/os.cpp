@@ -117,7 +117,24 @@ namespace os
 	//! prints a debuginfo string
 	void Printer::print(const c8* message)
 	{
+#if defined(__SYMBIAN32__)
+	#ifdef _DEBUG
+		///Small inner class for logging.
+		struct LogFile{		
+			LogFile(){	fLog = fopen("C:\\Irrlicht.log","w"); }
+			~LogFile() { if(fLog) fclose(fLog); }						
+			FILE *fLog;		
+		};
+
+		static LogFile logFile;		
+		if(logFile.fLog){		
+			fprintf(logFile.fLog,"%s\n",message);			
+			fflush(logFile.fLog);
+		}
+	#endif
+#else
 		printf("%s\n", message);
+#endif
 	}
 
 	void Timer::initTimer()
