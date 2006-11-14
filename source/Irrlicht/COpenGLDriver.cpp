@@ -1018,7 +1018,63 @@ void COpenGLDriver::drawVertexPrimitiveList(const void* vertices, s32 vertexCoun
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
+#ifdef _IRR_USE_OPENGL_ES_
+void drawQuads(	core::rect<float>& npos, core::rect<f32>& tcoords, video::SColor* useColor=NULL)
+{
+	GLfloat points[3*4];
+	GLfloat texcoords[2*4];
+	GLubyte colors[4*4];
 
+	//lower left
+	points[0] = npos.UpperLeftCorner.X;
+	points[1] = npos.LowerRightCorner.Y;
+	points[2] = 0;	
+	texcoords[0] = tcoords.UpperLeftCorner.X;
+	texcoords[1] = tcoords.LowerRightCorner.Y;
+	
+	//upper left
+	points[3] = npos.UpperLeftCorner.X;
+	points[4] = npos.UpperLeftCorner.Y;
+	points[5] = 0;
+	texcoords[2] = tcoords.UpperLeftCorner.X;
+	texcoords[3] = tcoords.UpperLeftCorner.Y;
+
+	//lower right
+	points[6] = npos.LowerRightCorner.X;
+	points[7] = npos.LowerRightCorner.Y;
+	points[8] = 0;
+	texcoords[4] = tcoords.LowerRightCorner.X;
+	texcoords[5] = tcoords.LowerRightCorner.Y;
+
+	//upper right
+	points[9] = npos.LowerRightCorner.X;
+	points[10] = npos.UpperLeftCorner.Y;
+	points[11] = 0;
+	texcoords[6] = tcoords.LowerRightCorner.X;
+	texcoords[7] = tcoords.UpperLeftCorner.Y;	
+
+	if(useColor){
+		for (u32 i = 0; i < 4; i++){
+			useColor[i].toOpenGLColor(&colors[i*4]);
+		}
+	}
+
+	glVertexPointer(3, GL_FLOAT, 0, points);
+	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	if(useColor){
+		glColorPointer(4, GL_UNSIGNED_BYTE, 0, colors);
+		glEnableClientState(GL_COLOR_ARRAY);
+	}
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);	
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	if(useColor){
+		glDisableClientState(GL_COLOR_ARRAY);
+	}
+}
+#endif
 
 //! draws a 2d image, using a color and the alpha channel of the texture if
 //! desired. The image is drawn at pos, clipped against clipRect (if != 0).
@@ -1144,7 +1200,7 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture,
 
 	glColor4ub(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
 #ifdef _IRR_USE_OPENGL_ES_
-	//TODO
+	drawQuads(npos,tcoords);
 #else
 	glBegin(GL_QUADS);
 
@@ -1227,7 +1283,7 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture,
 	npos.LowerRightCorner.X = (f32)(poss.LowerRightCorner.X-xPlus+0.5f) * xFact;
 	npos.LowerRightCorner.Y = (f32)(yPlus-poss.LowerRightCorner.Y+0.5f) * yFact;
 #ifdef _IRR_USE_OPENGL_ES_
-	//TODO
+	drawQuads(npos,tcoords);
 #else
 	glBegin(GL_QUADS);
 
@@ -1300,7 +1356,7 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture, const core::rect<s32>&
 	disableTextures(1);
 	setTexture(0, texture);
 #ifdef _IRR_USE_OPENGL_ES_
-	//TODO
+	drawQuads(npos, tcoords, useColor);
 #else
 	glBegin(GL_QUADS);
 
