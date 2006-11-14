@@ -4,7 +4,6 @@
 
 #include "C3DSMeshFileLoader.h"
 #include <string.h>
-#endif
 #include "os.h"
 #include "SMeshBuffer.h"
 #include "SAnimatedMesh.h"
