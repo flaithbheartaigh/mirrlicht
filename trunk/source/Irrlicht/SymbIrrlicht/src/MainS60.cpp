@@ -408,7 +408,8 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 	device = createDeviceEx(parameters);
 	IVideoDriver* driver = device->getVideoDriver();
 	ISceneManager* smgr = device->getSceneManager();
-	//IAnimatedMesh* mesh = smgr->getMesh("C:\\Temp\\VS2003Temp\\Symbian1\\data\\sydney.md2");
+	IGUIEnvironment* guienv = device->getGUIEnvironment();
+
 	IAnimatedMesh* mesh = smgr->getMesh("C:\\irrlicht_media\\sydney.md2");
 	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode( mesh );
 	if (node)
@@ -418,6 +419,9 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 		node->setMaterialTexture( 0, driver->getTexture("C:\\irrlicht_media\\sydney.bmp") );
 	}
 	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
+
+	guienv->addStaticText(L"Hello World! This is the Irrlicht OpenGL renderer!",
+		                  rect<int>(10,10,240,22), true);
 #else
     //
     // EGL creation
@@ -512,7 +516,7 @@ TInt CMainS60AppView::Update( TAny* aInstance )
 			driver->beginScene(true, true, SColor(255,100,101,140));
 
 			smgr->drawAll();
-			//guienv->drawAll();
+			guienv->drawAll();
 
 			driver->endScene();
 		}
