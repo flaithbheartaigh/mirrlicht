@@ -90,12 +90,12 @@ define out. */
 /** This enables the engine to read from compressed .zip archives. If you
 disable this feature, the engine can still read archives, but only uncompressed
 ones. */
-//#define _IRR_COMPILE_WITH_ZLIB_
+#define _IRR_COMPILE_WITH_ZLIB_
 
 //! Define _IRR_USE_NON_SYSTEM_ZLIB_ to let irrlicht use the zlib which comes with irrlicht.
 /** If this is commented out, Irrlicht will try to compile using the zlib installed in the system.
  This is only used when _IRR_COMPILE_WITH_ZLIB_ is defined. */
-//#define _IRR_USE_NON_SYSTEM_ZLIB_
+#define _IRR_USE_NON_SYSTEM_ZLIB_
 
 
 //! Define _IRR_COMPILE_WITH_JPEGLIB_ to enable compiling the engine using libjpeg.
