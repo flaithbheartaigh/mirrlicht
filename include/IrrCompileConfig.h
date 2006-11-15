@@ -156,6 +156,9 @@ Note that the engine will run in D3D REF for this, which is a lot slower than HA
 #define IRRCALLCONV	__cdecl
 #endif // STDCALL_SUPPORTED
 
+#elif defined(__SYMBIAN32__) && defined(__DLL__)
+#define IRRLICHT_API IMPORT_C
+#define IRRCALLCONV
 #else
 #define IRRLICHT_API 
 #define IRRCALLCONV
