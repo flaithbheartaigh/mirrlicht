@@ -8,8 +8,8 @@
 #include <akndoc.h>
 #include <coecntrl.h>
 #include <eikstart.h>
-#include <pathinfo.h>
 
+#include <unistd.h> //for chdir
 #include <GLES/egl.h>
 
 class CMainS60Application;
@@ -387,6 +387,12 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
     // Activate the window, which makes it ready to be drawn
     ActivateL();
 	
+	//NOTE! on symbian platform, the emulator interprets "C:\" as "%SDK_ROOT%\epoc32\winscw\c"
+	//I placed the media files under "C:\\irrlicht\\media". The code in irrlicht\examples uses
+	//relative directory ../../media. Therefore, we create the follow dummy directory beforehand
+	//and change the working directory at run time.
+	chdir("C:\\irrlicht\\dummy\\dummy");	
+
 	SIrrlichtCreationParameters parameters;
 	parameters.WindowSize = core::dimension2d<s32>(240, 320);
 	parameters.DriverType = EDT_OPENGL;
@@ -395,19 +401,27 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 	IVideoDriver* driver = device->getVideoDriver();
 	ISceneManager* smgr = device->getSceneManager();
 	IGUIEnvironment* guienv = device->getGUIEnvironment();
-
-	IAnimatedMesh* mesh = smgr->getMesh("C:\\irrlicht_media\\sydney.md2");
+	
+	IAnimatedMesh* mesh = smgr->getMesh("../../media/sydney.md2");	
 	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode( mesh );
 	if (node)
 	{
 		node->setMaterialFlag(EMF_LIGHTING, false);
-		node->setMD2Animation ( scene::EMAT_STAND );
-		node->setMaterialTexture( 0, driver->getTexture("C:\\irrlicht_media\\sydney.bmp") );
+		node->setMD2Animation ( scene::EMAT_STAND );				
+		node->setMaterialTexture( 0, driver->getTexture("../../media/sydney.bmp"));
 	}
 	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
 
 	guienv->addStaticText(L"Hello World! This is the Irrlicht OpenGL renderer!",
 		                  rect<int>(10,10,240,22), true);
+	
+	smgr->addSkyBoxSceneNode(
+		driver->getTexture("../../media/irrlicht2_up_small.jpg"),
+		driver->getTexture("../../media/irrlicht2_dn_small.jpg"),
+		driver->getTexture("../../media/irrlicht2_lf_small.jpg"),
+		driver->getTexture("../../media/irrlicht2_rt_small.jpg"),
+		driver->getTexture("../../media/irrlicht2_ft_small.jpg"),
+		driver->getTexture("../../media/irrlicht2_bk_small.jpg"));
 	
     update = CPeriodic::NewL( CActive::EPriorityIdle );
     

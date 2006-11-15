@@ -249,12 +249,14 @@ void COpenGLTexture::getImageData(IImage* image)
 	SurfaceHasSameSize=ImageSize==nImageSize;
 
 	s32 bpp=0;
+#ifndef _IRR_USE_OPENGL_ES_ //for opengl es, we'll keep ECF_R8G8B8 unchanged since A8R8G8B8 is not supported
 	if (image->getColorFormat()==ECF_R8G8B8)
 	{
 		bpp=4;
 		ColorFormat = ECF_A8R8G8B8;
 	}
 	else
+#endif
 	{
 		bpp=image->getBytesPerPixel();
 		ColorFormat = image->getColorFormat();
@@ -265,11 +267,9 @@ void COpenGLTexture::getImageData(IImage* image)
 
 	if (nImageSize == ImageSize)
 	{
-		void* source = image->lock();
-		if (image->getColorFormat()==ECF_R8G8B8)
-			CColorConverter::convert_R8G8B8toA8R8G8B8(source,ImageSize.Width*ImageSize.Height,ImageData);
+		void* source = image->lock();		
 #ifdef _IRR_USE_OPENGL_ES_ //ogl es don't support A1R5G5B5, therefore we should change the format to R5G5B5A1
-		else if(image->getColorFormat() == ECF_A1R5G5B5)
+		if(image->getColorFormat() == ECF_A1R5G5B5)
 		{
 			u16* dest = (u16*)ImageData;
 			for (s32 i=0; i<2*ImageSize.Width*ImageSize.Height; i+=2)
@@ -281,6 +281,9 @@ void COpenGLTexture::getImageData(IImage* image)
 					( color & 0x001F ) << 1);
 			}
 		}
+#else
+		if (image->getColorFormat()==ECF_R8G8B8)
+			CColorConverter::convert_R8G8B8toA8R8G8B8(source,ImageSize.Width*ImageSize.Height,ImageData);
 #endif
 		else
 			memcpy(ImageData,source,Pitch*nImageSize.Height);
@@ -301,14 +304,9 @@ void COpenGLTexture::getImageData(IImage* image)
 			sx = 0.0f;
 			for (s32 x=0; x<nImageSize.Width; ++x)
 			{
-				s32 i=((s32)(((s32)sy)*ImageSize.Width + sx));
-				if (image->getColorFormat()==ECF_R8G8B8)
-				{
-					i*=3;
-					((s32*)ImageData)[y*nImageSize.Width + x]=SColor(255,source[i],source[i+1],source[i+2]).color;
-				}
+				s32 i=((s32)(((s32)sy)*ImageSize.Width + sx));				
 #ifdef _IRR_USE_OPENGL_ES_ //ogl es don't support A1R5G5B5, therefore we should change the format to R5G5B5A1
-				else if(image->getColorFormat() == ECF_A1R5G5B5)
+				if(image->getColorFormat() == ECF_A1R5G5B5)
 				{
 					i*=2;
 					u16 color = *(u16*)(source+i);
@@ -317,6 +315,12 @@ void COpenGLTexture::getImageData(IImage* image)
 						( color & 0x03E0 ) << 1 |
 						( color & 0x001F ) << 1);
 					memcpy(&ImageData[(y*nImageSize.Width + x)*bpp],&color,bpp);					
+				}
+#else
+				if (image->getColorFormat()==ECF_R8G8B8)
+				{
+					i*=3;
+					((s32*)ImageData)[y*nImageSize.Width + x]=SColor(255,source[i],source[i+1],source[i+2]).color;
 				}
 #endif
 				else
