@@ -688,8 +688,14 @@ void CIrrDeviceSymbian::createKeyMap()
 */
 }
 
-#define IRRLICHT_API 
-#define IRRCALLCONV
+
+
+#if defined(__SYMBIAN32__) && defined(__DLL__)
+#ifdef IRRLICHT_API
+#undef IRRLICHT_API
+#endif
+#define IRRLICHT_API EXPORT_C
+#endif 
 
 IRRLICHT_API IrrlichtDevice* IRRCALLCONV createDeviceEx(const SIrrlichtCreationParameters& param)
 {
