@@ -1,3 +1,4 @@
+/* This file is copied from the ES 3D project(Norbert Nopper) on sourceforge.net*/
 //
 // Include
 //
@@ -11,33 +12,22 @@
 
 #include <GLES/egl.h>
 
-#define USE_IRRLICHT
-
 class CMainS60Application;
 class CMainS60AppUi;
 class CMainS60AppView;
 class CMainS60Document;
 
-#ifdef USE_IRRLICHT
-	#include "irrlicht.h"
-	using namespace irr;
-	using namespace core;
-	using namespace scene;
-	using namespace video;
-	using namespace io;
-	using namespace gui;
 
-	static IrrlichtDevice *device;	
-#else
-	#include "Game.h"
-	static EGLDisplay	eglDisplay;
-	static EGLConfig	eglConfig;
-	static EGLContext	eglContext;
-	static EGLSurface	eglWindowSurface;
+#include "irrlicht.h"
+using namespace irr;
+using namespace core;
+using namespace scene;
+using namespace video;
+using namespace io;
+using namespace gui;
 
-	static Game game;
+static IrrlichtDevice *device;	
 
-#endif
 /**
 * CMainS60Application application class.
 * Provides factory to create concrete document object.
@@ -387,9 +377,6 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 */
 	// Set the search path to the Others directory on the memory card
 	//Loader::setSearchPath(buffer);
-#ifndef USE_IRRLICHT
-	Loader::setSearchPath("C:\\Temp\\VS2003Temp\\Symbian1\\data\\");
-#endif
 
     // Create a window for this application view
     CreateWindowL();
@@ -400,7 +387,6 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
     // Activate the window, which makes it ready to be drawn
     ActivateL();
 	
-#ifdef USE_IRRLICHT
 	SIrrlichtCreationParameters parameters;
 	parameters.WindowSize = core::dimension2d<s32>(240, 320);
 	parameters.DriverType = EDT_OPENGL;
@@ -422,37 +408,6 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 
 	guienv->addStaticText(L"Hello World! This is the Irrlicht OpenGL renderer!",
 		                  rect<int>(10,10,240,22), true);
-#else
-    //
-    // EGL creation
-    //
-	static const EGLint s_configAttribs[] =
-	{
-		EGL_RED_SIZE,		8,
-		EGL_GREEN_SIZE, 	8,
-		EGL_BLUE_SIZE,		8,
-		EGL_ALPHA_SIZE, 	8,
-		EGL_DEPTH_SIZE, 	16,
-		EGL_NONE
-	};
-
-	EGLint numConfigs;
-	EGLint majorVersion;
-	EGLint minorVersion;
-
-	eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	eglInitialize(eglDisplay, &majorVersion, &minorVersion);
-	eglGetConfigs(eglDisplay, NULL, 0, &numConfigs);
-	eglChooseConfig(eglDisplay, s_configAttribs, &eglConfig, 1, &numConfigs);
-	eglContext = eglCreateContext(eglDisplay, eglConfig, NULL, NULL);
-
-	eglWindowSurface = eglCreateWindowSurface(eglDisplay, eglConfig, &Window(), NULL);
-	eglMakeCurrent(eglDisplay, eglWindowSurface, eglWindowSurface, eglContext);
-	game.init();
-
-	game.reshape(aRect.Width(), aRect.Height());
-
-#endif	
 	
     update = CPeriodic::NewL( CActive::EPriorityIdle );
     
@@ -470,19 +425,7 @@ CMainS60AppView::CMainS60AppView()
 CMainS60AppView::~CMainS60AppView()
 {
 	delete update;
-#if defined(USE_IRRLICHT)	
 	device->drop();
-#else
-	game.destroy();
-	
-	//
-	// EGL destruction
-	//
-	eglMakeCurrent(eglDisplay, NULL, NULL, NULL);
-	eglDestroyContext(eglDisplay, eglContext);
-	eglDestroySurface(eglDisplay, eglWindowSurface);
-	eglTerminate(eglDisplay);	
-#endif
 }
 
 
@@ -496,19 +439,14 @@ void CMainS60AppView::SizeChanged()
 {  
 	TSize size;
     size = this->Size();
-#ifdef USE_IRRLICHT
 	//IVideoDriver* driver = device->getVideoDriver();
 	//driver->OnResize(core::dimension2d<s32>(size.iWidth,size.iHeight)); 
-#else
-    game.reshape(size.iWidth, size.iHeight);
-#endif
 }
 
 TInt CMainS60AppView::Update( TAny* aInstance )
 {
 	if (aInstance)
 	{
-#ifdef USE_IRRLICHT
 		IVideoDriver* driver = device->getVideoDriver();
 		ISceneManager* smgr = device->getSceneManager();
 		IGUIEnvironment* guienv = device->getGUIEnvironment();
@@ -520,11 +458,6 @@ TInt CMainS60AppView::Update( TAny* aInstance )
 
 			driver->endScene();
 		}
-#else
-		game.update();
-	
-	    eglSwapBuffers( eglDisplay, eglWindowSurface );
-#endif
 	}
         
     return 0; 
