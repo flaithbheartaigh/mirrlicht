@@ -11,8 +11,6 @@
 #include "ILightSceneNode.h"
 #include "fast_atof.h"
 
-#include <stdio.h>
-
 namespace irr
 {
 namespace scene
@@ -807,6 +805,7 @@ void CQ3LevelMesh::loadTextures()
 					for (s32 x=0; x<128; ++x)
 						for (s32 y=0; y<128; ++y)
 						{
+							//TODO: for OpenGL ES, we should use R5G5B5A1 instead of A1R5G5B5
 							p[x*128 + y] = video::RGB16(
 								lm->imageBits[x][y][0],
 								lm->imageBits[x][y][1],
@@ -824,17 +823,25 @@ void CQ3LevelMesh::loadTextures()
 					for (s32 x=0; x<128; ++x)
 						for (s32 y=0; y<128; ++y)
 						{
+#ifdef _IRR_USE_OPENGL_ES_  //USE RGBA for OpenGL ES
+							video::SColor(255,
+								          lm->imageBits[x][y][0],
+										  lm->imageBits[x][y][1],
+								          lm->imageBits[x][y][2]).toOpenGLColor((u8*)&(p[x*128+y]));							
+#else
 							p[x*128 + y] = video::SColor(255,
 								lm->imageBits[x][y][0],
 								lm->imageBits[x][y][1],
 								lm->imageBits[x][y][2]).color;
-						}
+#endif
+						}					
 				}
 				else
 					os::Printer::log("Could not create lightmap, unsupported texture format.", ELL_ERROR);
 			}
-
+			
 			lig[t]->unlock();
+			
 		}
 		else
 			os::Printer::log("Could not create lightmap, driver created no texture.", ELL_ERROR);
