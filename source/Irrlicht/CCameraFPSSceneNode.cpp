@@ -133,9 +133,10 @@ void CCameraFPSSceneNode::animate()
 
 	if (firstUpdate)
 	{
-		if (CursorControl)
+		if (CursorControl){
 			CursorControl->setPosition(0.5f, 0.5f);
-		CenterCursor = CursorControl->getRelativePosition();
+			CenterCursor = CursorControl->getRelativePosition();
+		}else CenterCursor = core::position2d<f32>(0.5f, 0.5f);
 
 		LastAnimationTime = os::Timer::getTime();
 
@@ -153,13 +154,13 @@ void CCameraFPSSceneNode::animate()
 
 	Target.set(0,0,1);
 
-	if (!CursorControl)
-		return;
+	//if (!CursorControl)
+	//	return;
 
 	RelativeRotation.X *= -1.0f;
 	RelativeRotation.Y *= -1.0f;
 
-	if (InputReceiverEnabled)
+	if (InputReceiverEnabled && CursorControl)
 	{
 		core::position2d<f32> cursorpos = CursorControl->getRelativePosition();
 
