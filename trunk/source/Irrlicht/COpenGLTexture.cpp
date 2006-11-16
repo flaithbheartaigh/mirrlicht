@@ -268,7 +268,9 @@ void COpenGLTexture::getImageData(IImage* image)
 	if (nImageSize == ImageSize)
 	{
 		void* source = image->lock();		
-#ifdef _IRR_USE_OPENGL_ES_ //ogl es don't support A1R5G5B5, therefore we should change the format to R5G5B5A1
+#ifdef _IRR_USE_OPENGL_ES_ 
+		//ogl es don't support A1R5G5B5 and A8R8G8B8, therefore we should change the format to 
+		//R5G5B5A1 and R8G8B8A8, respectively.
 		if(image->getColorFormat() == ECF_A1R5G5B5)
 		{
 			u16* dest = (u16*)ImageData;
@@ -279,6 +281,19 @@ void COpenGLTexture::getImageData(IImage* image)
 					( color & 0x7C00 ) << 1 |
 					( color & 0x03E0 ) << 1 |
 					( color & 0x001F ) << 1);
+			}
+		}else if(image->getColorFormat() == ECF_A8R8G8B8){
+			u8* dest = ImageData;
+			u8* src = (u8*)source;
+			for (s32 i = 0; i < ImageSize.Width*ImageSize.Height; ++i)
+			{				
+				dest[0] = src[1];
+				dest[1] = src[2];
+				dest[2] = src[3];
+				dest[3] = src[0];
+
+				dest += 4;
+				src += 4;
 			}
 		}
 #else
@@ -305,7 +320,9 @@ void COpenGLTexture::getImageData(IImage* image)
 			for (s32 x=0; x<nImageSize.Width; ++x)
 			{
 				s32 i=((s32)(((s32)sy)*ImageSize.Width + sx));				
-#ifdef _IRR_USE_OPENGL_ES_ //ogl es don't support A1R5G5B5, therefore we should change the format to R5G5B5A1
+#ifdef _IRR_USE_OPENGL_ES_ 
+				//ogl es don't support A1R5G5B5 and A8R8G8B8, therefore we should change the format to 
+				//R5G5B5A1 and R8G8B8A8, respectively.
 				if(image->getColorFormat() == ECF_A1R5G5B5)
 				{
 					i*=2;
@@ -315,6 +332,10 @@ void COpenGLTexture::getImageData(IImage* image)
 						( color & 0x03E0 ) << 1 |
 						( color & 0x001F ) << 1);
 					memcpy(&ImageData[(y*nImageSize.Width + x)*bpp],&color,bpp);					
+				}else if(image->getColorFormat() == ECF_A8R8G8B8){
+					//A8R8G8B8 to R8B8G8A8
+					((s32*)ImageData)[y*nImageSize.Width + x]=
+						SColor(source[i+1],source[i+2],source[i+3],source[i]).color;
 				}
 #else
 				if (image->getColorFormat()==ECF_R8G8B8)
@@ -372,8 +393,13 @@ void COpenGLTexture::copyTexture(bool newTexture)
 			break;
 		case ECF_A8R8G8B8:
 			InternalFormat=GL_RGBA;
+#ifdef _IRR_USE_OPENGL_ES_
+			PixelFormat=GL_RGBA;
+			PixelType=GL_UNSIGNED_BYTE;
+#else
 			PixelFormat=GL_BGRA_EXT;
 			PixelType=GL_UNSIGNED_INT_8_8_8_8_REV;
+#endif
 			break;
 		default:
 			os::Printer::log("Unsupported texture format", ELL_ERROR);
