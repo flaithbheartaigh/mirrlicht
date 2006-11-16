@@ -19,6 +19,11 @@ class CMainS60Document;
 
 
 #include "irrlicht.h"
+#include "os.h" //for logging
+
+//if SHOW_HELLO_WORLD_EXAMPLE is not defined, we'll show the Quake3Map example
+//#define SHOW_HELLO_WORLD_EXAMPLE 
+
 using namespace irr;
 using namespace core;
 using namespace scene;
@@ -154,6 +159,11 @@ class CMainS60AppView : public CCoeControl
         */
         virtual void SizeChanged();
 
+		/** 
+		* Handle key inputs
+		*/
+		virtual TKeyResponse OfferKeyEventL(const TKeyEvent& aKeyEvent,TEventCode aType);
+
     private: // Constructors
 
         /**
@@ -288,15 +298,21 @@ void CMainS60AppUi::ConstructL()
 {
     // Initialise app UI with standard value.
     BaseConstructL();
-
+	// Disable key blocking
+	SetKeyBlockMode(ENoKeyBlock);
 	// Create view object
 	iAppView = CMainS60AppView::NewL( ClientRect() );
+	AddToStackL( iAppView );
 }
 
-// C++ default constructor can NOT contain any code, that might leave.
 CMainS60AppUi::CMainS60AppUi()
 {
-    // No implementation required
+	if ( iAppView )
+	{
+		RemoveFromStack( iAppView );
+		delete iAppView;
+	}
+
 }
 
 // Destructor.
@@ -353,31 +369,6 @@ CMainS60AppView* CMainS60AppView::NewLC( const TRect& aRect )
 // Symbian 2nd phase constructor can leave.
 void CMainS60AppView::ConstructL( const TRect& aRect )
 {
-/*
-	// Set the default path
-	RFs fileServer;
-	TFileName path;
-	char buffer[128] = {0};
-	char* temp = 0;
-
-	fileServer.Connect();
-	path = PathInfo::MemoryCardRootPath();
-	path.Append(PathInfo::OthersPath());
-	fileServer.Close();
-
-	if (path.Length() + 1 <= 128)
-	{
-		temp = (char*)path.Ptr();	
-		for (int i = 0; i < path.Length()*2; i+=2)
-		{
-			buffer[i/2] = temp[i];
-		}
-		buffer[path.Length()] = 0;
-	}
-*/
-	// Set the search path to the Others directory on the memory card
-	//Loader::setSearchPath(buffer);
-
     // Create a window for this application view
     CreateWindowL();
 
@@ -401,7 +392,9 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 	IVideoDriver* driver = device->getVideoDriver();
 	ISceneManager* smgr = device->getSceneManager();
 	IGUIEnvironment* guienv = device->getGUIEnvironment();
-	
+
+#if defined(SHOW_HELLO_WORLD_EXAMPLE)	
+
 	IAnimatedMesh* mesh = smgr->getMesh("../../media/sydney.md2");	
 	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode( mesh );
 	if (node)
@@ -414,7 +407,7 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 
 	guienv->addStaticText(L"Hello World! This is the Irrlicht OpenGL renderer!",
 		                  rect<int>(10,10,240,22), true);
-	
+
 	smgr->addSkyBoxSceneNode(
 		driver->getTexture("../../media/irrlicht2_up_small.jpg"),
 		driver->getTexture("../../media/irrlicht2_dn_small.jpg"),
@@ -422,7 +415,20 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 		driver->getTexture("../../media/irrlicht2_rt_small.jpg"),
 		driver->getTexture("../../media/irrlicht2_ft_small.jpg"),
 		driver->getTexture("../../media/irrlicht2_bk_small.jpg"));
+
+#else
+
+	device->getFileSystem()->addZipFileArchive("../../media/map-20kdm2.pk3");
+	scene::IAnimatedMesh* mesh = smgr->getMesh("20kdm2.bsp");
+	scene::ISceneNode* node = 0;
+
+	if (mesh)
+		node = smgr->addOctTreeSceneNode(mesh->getMesh(0));
+	if (node)
+		node->setPosition(core::vector3df(-1300,-144,-1249));
+	smgr->addCameraSceneNodeFPS();
 	
+#endif	
     update = CPeriodic::NewL( CActive::EPriorityIdle );
     
     update->Start( 1000, 1000, TCallBack( CMainS60AppView::Update, this ) );
@@ -455,6 +461,57 @@ void CMainS60AppView::SizeChanged()
     size = this->Size();
 	//IVideoDriver* driver = device->getVideoDriver();
 	//driver->OnResize(core::dimension2d<s32>(size.iWidth,size.iHeight)); 
+}
+
+TKeyResponse CMainS60AppView::OfferKeyEventL(const TKeyEvent& aKeyEvent, TEventCode aType)
+{
+	irr::SEvent event;
+	if(aType == EEventKeyDown || aType == EEventKeyUp ){
+		event.EventType = irr::EET_KEY_INPUT_EVENT;
+		if(aType == EEventKeyDown){
+			event.KeyInput.PressedDown = true;
+			//os::Printer::print("Key Down");
+		}else{
+			event.KeyInput.PressedDown = false;
+			//os::Printer::print("Key Up");
+		}
+		switch(aKeyEvent.iScanCode)
+		{
+		case EStdKeyNkp2:
+		case EStdKeyUpArrow:			
+			event.KeyInput.Key = irr::KEY_UP;
+			device->postEventFromUser(event);
+			return EKeyWasConsumed;
+		case EStdKeyNkp8:
+		case EStdKeyDownArrow:
+			event.KeyInput.Key = irr::KEY_DOWN;			
+			device->postEventFromUser(event);
+			return EKeyWasConsumed;	
+		case EStdKeyNkp4:
+		case EStdKeyLeftArrow:
+			event.KeyInput.Key = irr::KEY_LEFT;			
+			device->postEventFromUser(event);
+			return EKeyWasConsumed;
+		case EStdKeyNkp6:
+		case EStdKeyRightArrow:
+			event.KeyInput.Key = irr::KEY_RIGHT;			
+			device->postEventFromUser(event);
+			return EKeyWasConsumed;
+		}
+	}
+/*
+	switch(aType)
+	{
+
+	case EEventKey:		
+		if(aKeyEvent.iScanCode == EStdKeyNkp5 || aKeyEvent.iScanCode == EStdKeyDevice3)	
+		{			
+			return EKeyWasConsumed;
+		}		
+		break;
+	}
+*/
+	return EKeyWasNotConsumed;
 }
 
 TInt CMainS60AppView::Update( TAny* aInstance )
