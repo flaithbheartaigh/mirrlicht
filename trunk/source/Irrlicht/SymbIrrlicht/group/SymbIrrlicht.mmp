@@ -233,8 +233,9 @@ END
 SOURCEPATH                              ..\src 
 SOURCE                                  MainS60.cpp 
 
-/* [+] */ USERINCLUDE                   ..\..\zlib 
+/* [+] */ USERINCLUDE                   ..\.. 
 // [-]    USERINCLUDE                   ..\.. 
+USERINCLUDE                             ..\..\zlib 
 USERINCLUDE                             ..\..\jpeglib 
 USERINCLUDE                             ..\..\..\..\include 
 SYSTEMINCLUDE                           \epoc32\include\libc 
