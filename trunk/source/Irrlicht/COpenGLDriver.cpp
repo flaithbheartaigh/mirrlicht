@@ -288,7 +288,7 @@ COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool full
 							 : CNullDriver(io, screenSize),
 							 CurrentRenderMode(ERM_NONE), ResetRenderStates(true), StencilBuffer(stencilBuffer), AntiAlias(antiAlias),
 							 Transformation3DChanged(true), LastSetLight(-1), MultiTextureExtension(false),
-							 MaxTextureUnits(1), eglWindowSurface(window), eglDisplay(display),
+							 MultiSamplingExtension(false), MaxTextureUnits(1), eglWindowSurface(window), eglDisplay(display),
 							 ARBVertexProgramExtension(false), ARBFragmentProgramExtension(false),
 							 ARBShadingLanguage100Extension(false),
 							 RenderTargetTexture(0), MaxAnisotropy(1), AnisotropyExtension(false),
@@ -423,6 +423,7 @@ void COpenGLDriver::loadExtensions()
 #ifdef _IRR_USE_OPENGL_ES_
 #ifdef GL_OES_VERSION_1_1
 	MultiTextureExtension = true;
+	MultiSamplingExtension = true;
 	ARBVertexProgramExtension = false;
 	ARBFragmentProgramExtension = false;
 	ARBShadingLanguage100Extension = false;
@@ -741,7 +742,9 @@ void COpenGLDriver::loadExtensions()
 
 		glGetIntegerv(GL_MAX_TEXTURE_UNITS, &MaxTextureUnits);
 		glGetIntegerv(GL_MAX_LIGHTS, &MaxLights);
+#ifndef _IRR_USE_OPENGL_ES_
 		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &MaxAnisotropy);
+#endif
 	}
 
 #ifdef _IRR_OPENGL_USE_EXTPOINTER_
@@ -2247,8 +2250,7 @@ void COpenGLDriver::setFog(SColor c, bool linearFog, f32 start,
 {
 	CNullDriver::setFog(c, linearFog, start, end, density, pixelFog, rangeFog);
 #ifdef _IRR_USE_OPENGL_ES_
-	glFogf(GL_FOG_MODE, linearFog ? GL_LINEAR : GL_EXP);
-	glFogf(GL_FOG_COORDINATE_SOURCE, GL_FRAGMENT_DEPTH);
+	glFogf(GL_FOG_MODE, linearFog ? GL_LINEAR : GL_EXP);	
 #else
 	glFogi(GL_FOG_MODE, linearFog ? GL_LINEAR : GL_EXP);
 #   ifdef GL_VERSION_1_4
