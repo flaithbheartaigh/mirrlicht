@@ -1024,35 +1024,31 @@ void COpenGLDriver::drawVertexPrimitiveList(const void* vertices, s32 vertexCoun
 #ifdef _IRR_USE_OPENGL_ES_
 void drawQuads(	core::rect<float>& npos, core::rect<f32>& tcoords, video::SColor* useColor=NULL)
 {
-	GLfloat points[3*4];
+	GLfloat points[2*4];
 	GLfloat texcoords[2*4];
 	GLubyte colors[4*4];
 
 	//lower left
 	points[0] = npos.UpperLeftCorner.X;
-	points[1] = npos.LowerRightCorner.Y;
-	points[2] = 0;	
+	points[1] = npos.LowerRightCorner.Y;	
 	texcoords[0] = tcoords.UpperLeftCorner.X;
 	texcoords[1] = tcoords.LowerRightCorner.Y;
 	
 	//upper left
-	points[3] = npos.UpperLeftCorner.X;
-	points[4] = npos.UpperLeftCorner.Y;
-	points[5] = 0;
+	points[2] = npos.UpperLeftCorner.X;
+	points[3] = npos.UpperLeftCorner.Y;	
 	texcoords[2] = tcoords.UpperLeftCorner.X;
 	texcoords[3] = tcoords.UpperLeftCorner.Y;
 
 	//lower right
-	points[6] = npos.LowerRightCorner.X;
-	points[7] = npos.LowerRightCorner.Y;
-	points[8] = 0;
+	points[4] = npos.LowerRightCorner.X;
+	points[5] = npos.LowerRightCorner.Y;	
 	texcoords[4] = tcoords.LowerRightCorner.X;
 	texcoords[5] = tcoords.LowerRightCorner.Y;
 
 	//upper right
-	points[9] = npos.LowerRightCorner.X;
-	points[10] = npos.UpperLeftCorner.Y;
-	points[11] = 0;
+	points[6] = npos.LowerRightCorner.X;
+	points[7] = npos.UpperLeftCorner.Y;	
 	texcoords[6] = tcoords.LowerRightCorner.X;
 	texcoords[7] = tcoords.UpperLeftCorner.Y;	
 
@@ -1062,7 +1058,7 @@ void drawQuads(	core::rect<float>& npos, core::rect<f32>& tcoords, video::SColor
 		}
 	}
 
-	glVertexPointer(3, GL_FLOAT, 0, points);
+	glVertexPointer(2, GL_FLOAT, 0, points);
 	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -1407,10 +1403,35 @@ void COpenGLDriver::draw2DRectangle(SColor color, const core::rect<s32>& positio
 	s32 yPlus = renderTargetSize.Height-(renderTargetSize.Height>>1);
 	f32 yFact = 1.0f / (renderTargetSize.Height>>1);
 
-#ifdef _IRR_USE_OPENGL_ES_
-	//TODO
-#else
 	glColor4ub(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+#ifdef _IRR_USE_OPENGL_ES_
+	GLfloat points[2*4];
+	GLfloat x1 = (pos.UpperLeftCorner.X-xPlus) * xFact;
+	GLfloat y1 = (yPlus-pos.UpperLeftCorner.Y) * yFact;
+	GLfloat x2 = (pos.LowerRightCorner.X-xPlus) * xFact;
+	GLfloat y2 = (yPlus-pos.LowerRightCorner.Y) * yFact;
+	//lower left
+	points[0] = x1;
+	points[1] = y2;	
+	
+	//upper left
+	points[2] = x1;
+	points[3] = y1;	
+	
+	//lower right
+	points[4] = x2;
+	points[5] = y2;	
+	
+	//upper right
+	points[6] = x2;
+	points[7] = y1;			
+
+	glVertexPointer(2, GL_FLOAT, 0, points);	
+	glEnableClientState(GL_VERTEX_ARRAY);	
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);		
+	glDisableClientState(GL_VERTEX_ARRAY);
+#else
+	
 	glRectf((pos.UpperLeftCorner.X-xPlus) * xFact,
 		(yPlus-pos.UpperLeftCorner.Y) * yFact,
 		(pos.LowerRightCorner.X-xPlus) * xFact,
@@ -1453,7 +1474,38 @@ void COpenGLDriver::draw2DRectangle(const core::rect<s32>& position,
 
 	disableTextures();
 #ifdef _IRR_USE_OPENGL_ES_
-	//TODO
+	GLfloat points[2*4];
+	GLubyte colors[4*4];
+
+	//lower left
+	points[0] = npos.UpperLeftCorner.X;
+	points[1] = npos.LowerRightCorner.Y;	
+	colorLeftDown.toOpenGLColor(&colors[0]);
+
+	//upper left
+	points[2] = npos.UpperLeftCorner.X;
+	points[3] = npos.UpperLeftCorner.Y;	
+	colorLeftUp.toOpenGLColor(&colors[4]);
+
+	//lower right
+	points[4] = npos.LowerRightCorner.X;
+	points[5] = npos.LowerRightCorner.Y;	
+	colorRightDown.toOpenGLColor(&colors[8]);
+
+	//upper right
+	points[6] = npos.LowerRightCorner.X;
+	points[7] = npos.UpperLeftCorner.Y;	
+	colorRightUp.toOpenGLColor(&colors[12]);	
+
+	glVertexPointer(2, GL_FLOAT, 0, points);	
+	glEnableClientState(GL_VERTEX_ARRAY);	
+	glColorPointer(4, GL_UNSIGNED_BYTE, 0, colors);
+	glEnableClientState(GL_COLOR_ARRAY);
+	
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);	
+	
+	glDisableClientState(GL_VERTEX_ARRAY);	
+	glDisableClientState(GL_COLOR_ARRAY);	
 #else
 	glBegin(GL_QUADS);
 	glColor4ub(colorLeftUp.getRed(), colorLeftUp.getGreen(),
