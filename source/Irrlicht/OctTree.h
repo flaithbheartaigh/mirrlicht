@@ -9,11 +9,7 @@
 #include "S3DVertex.h"
 #include "aabbox3d.h"
 #include "irrArray.h"
-#ifdef __SYMBIAN32__
 #include <string.h>
-#else
-#include <memory.h>
-#endif
 
 namespace irr
 {

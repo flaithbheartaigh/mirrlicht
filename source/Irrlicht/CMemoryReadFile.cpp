@@ -3,11 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CMemoryReadFile.h"
-#ifdef __SYMBIAN32__
 #include <string.h>
-#else
-#include <memory.h>
-#endif
 
 namespace irr
 {
