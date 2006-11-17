@@ -63,6 +63,13 @@ typedef double				f64;
 } // end namespace
 
 
+#include <wchar.h>
+#ifdef _IRR_WINDOWS_
+//! Define for swprintf because this method does not match the ISO C standard
+//! on Windows platforms, but it does on all other ones.
+#define   swprintf   _snwprintf
+#endif // _IRR_WINDOWS_
+
 // define the wchar_t type if not already built in.
 #ifdef _MSC_VER 
 #ifndef _WCHAR_T_DEFINED
