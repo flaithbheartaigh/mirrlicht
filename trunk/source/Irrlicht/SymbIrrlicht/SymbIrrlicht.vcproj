@@ -936,7 +936,7 @@
 				RelativePath="..\CZipReader.cpp">
 			</File>
 			<File
-				RelativePath="..\..\GLES_ARB_redefine.h">
+				RelativePath="..\gles_ARB_redefine.h">
 			</File>
 			<File
 				RelativePath="..\Irrlicht.cpp">
