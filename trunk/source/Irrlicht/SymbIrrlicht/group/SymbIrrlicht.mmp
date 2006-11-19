@@ -233,13 +233,15 @@ END
 SOURCEPATH                              ..\src 
 SOURCE                                  MainS60.cpp 
 
+/* [+] */ USERINCLUDE                   ..\..\..\..\include 
 /* [+] */ USERINCLUDE                   ..\.. 
+USERINCLUDE                             ..\..\..\include\libc 
 // [-]    USERINCLUDE                   ..\.. 
-USERINCLUDE                             ..\..\zlib 
+USERINCLUDE                             ..\..\..\include 
 USERINCLUDE                             ..\..\jpeglib 
-USERINCLUDE                             ..\..\..\..\include 
-SYSTEMINCLUDE                           \epoc32\include\libc 
+USERINCLUDE                             ..\..\zlib 
 USERINCLUDE                             ..\inc 
+SYSTEMINCLUDE                           \epoc32\include\libc 
 SYSTEMINCLUDE                           \epoc32\include 
 LIBRARY                                 $(NOINHERIT) 
 LIBRARY                                 libgles_cm.lib 
