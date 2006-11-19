@@ -233,11 +233,13 @@ END
 SOURCEPATH                              ..\src 
 SOURCE                                  MainS60.cpp 
 
-/* [+] */ USERINCLUDE                   ..\..\..\..\include 
+/* [+] */ USERINCLUDE                   C:\Programme\Microsoft Visual Studio .NET 2003\include\libc 
+/* [+] */ USERINCLUDE                   C:\Programme\Microsoft Visual Studio .NET 2003\include 
 /* [+] */ USERINCLUDE                   ..\.. 
-USERINCLUDE                             ..\..\..\include\libc 
+USERINCLUDE                             ..\..\..\..\include 
 // [-]    USERINCLUDE                   ..\.. 
-USERINCLUDE                             ..\..\..\include 
+// [-]    USERINCLUDE                   ..\..\..\include\libc 
+// [-]    USERINCLUDE                   ..\..\..\include 
 USERINCLUDE                             ..\..\jpeglib 
 USERINCLUDE                             ..\..\zlib 
 USERINCLUDE                             ..\inc 
