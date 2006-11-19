@@ -253,7 +253,7 @@ class CMainS60Document : public CAknDocument
 //
 
 // UID for the application - this should correspond to the uid defined in the mmp file
-const TUid KUidMainS60App = { 0xed8ee21e };
+const TUid KUidMainS60App = { 0xebf1104c };
 
 
 //
