@@ -233,18 +233,12 @@ END
 SOURCEPATH                              ..\src 
 SOURCE                                  MainS60.cpp 
 
-/* [+] */ USERINCLUDE                   C:\Programme\Microsoft Visual Studio .NET 2003\include\libc 
-/* [+] */ USERINCLUDE                   C:\Programme\Microsoft Visual Studio .NET 2003\include 
-/* [+] */ USERINCLUDE                   ..\.. 
 USERINCLUDE                             ..\..\..\..\include 
-// [-]    USERINCLUDE                   ..\.. 
-// [-]    USERINCLUDE                   ..\..\..\include\libc 
-// [-]    USERINCLUDE                   ..\..\..\include 
 USERINCLUDE                             ..\..\jpeglib 
 USERINCLUDE                             ..\..\zlib 
 USERINCLUDE                             ..\inc 
-SYSTEMINCLUDE                           \epoc32\include\libc 
-SYSTEMINCLUDE                           \epoc32\include 
+SYSTEMINCLUDE                           \Epoc32\include 
+SYSTEMINCLUDE                           \Epoc32\include\libc 
 LIBRARY                                 $(NOINHERIT) 
 LIBRARY                                 libgles_cm.lib 
 LIBRARY                                 estlib.lib 
