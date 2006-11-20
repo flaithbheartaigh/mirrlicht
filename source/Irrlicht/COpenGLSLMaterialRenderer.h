@@ -32,7 +32,7 @@
 
 #ifdef __SYMBIAN32__
 #include <GLES/gl.h>
-#include "glext.h"
+#include "gles_ARB_redefine.h"
 #endif
 
 #include "IMaterialRenderer.h"
