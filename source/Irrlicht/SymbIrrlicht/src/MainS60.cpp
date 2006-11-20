@@ -417,15 +417,64 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 
 #else
 
-	device->getFileSystem()->addZipFileArchive("../../media/map-20kdm2.pk3");
+	device->getFileSystem()->addZipFileArchive("../../media/map-20kdm2-small.pk3");
 	scene::IAnimatedMesh* mesh = smgr->getMesh("20kdm2.bsp");
-	scene::ISceneNode* node = 0;
+	scene::ISceneNode* q3node = 0;
+	scene::ITriangleSelector* selector = 0;
 
 	if (mesh)
-		node = smgr->addOctTreeSceneNode(mesh->getMesh(0));
-	if (node)
-		node->setPosition(core::vector3df(-1300,-144,-1249));
-	smgr->addCameraSceneNodeFPS();
+		q3node = smgr->addOctTreeSceneNode(mesh->getMesh(0));
+	if (q3node){
+		q3node->setPosition(core::vector3df(-1370,-130,-1400));
+		selector = smgr->createOctTreeTriangleSelector(mesh->getMesh(0), q3node, 128);
+		q3node->setTriangleSelector(selector);
+		selector->drop();
+	}
+	scene::ICameraSceneNode* camera = smgr->addCameraSceneNodeFPS();
+	camera->setPosition(core::vector3df(0,10,-150));
+
+	scene::ISceneNodeAnimator* anim = smgr->createCollisionResponseAnimator(
+											selector, camera, core::vector3df(30,50,30),
+											core::vector3df(0,-3,0), 
+											core::vector3df(0,50,0));
+	camera->addAnimator(anim);
+	anim->drop();
+
+	//don't use the faerie model because of the memory constraints
+	video::SMaterial material;
+	//material.Texture1 = driver->getTexture("../../media/faerie2.bmp");
+	material.Texture1 = driver->getTexture("../../media/laalaa8.bmp");
+	material.Lighting = true;
+
+	scene::IAnimatedMeshSceneNode* node = 0;
+	//scene::IAnimatedMesh* faerie = smgr->getMesh("../../media/faerie.md2");
+	scene::IAnimatedMesh* faerie = smgr->getMesh("../../media/laalaa.md2");
+
+	if (faerie)
+	{
+		node = smgr->addAnimatedMeshSceneNode(faerie);
+		node->setRotation(core::vector3df(0,90,0));
+		node->setPosition(core::vector3df(10,-20,-30));
+		node->setMD2Animation(scene::EMAT_RUN);
+		node->getMaterial(0) = material;
+
+		node = smgr->addAnimatedMeshSceneNode(faerie);
+		node->setPosition(core::vector3df(40,-20,-30));
+		node->setMD2Animation(scene::EMAT_SALUTE);
+		node->getMaterial(0) = material;
+	}
+
+	material.Texture1 = 0;
+	material.Lighting = false;
+
+	// Add a light
+	smgr->addLightSceneNode(0, core::vector3df(-20,30,-60),
+							video::SColorf(1.0f,1.0f,1.0f,1.0f),
+							200.0f);
+
+	smgr->addLightSceneNode(0, core::vector3df(-60,100,400),
+							video::SColorf(1.0f,1.0f,1.0f,1.0f),
+							600.0f);
 	
 #endif	
     update = CPeriodic::NewL( CActive::EPriorityIdle );
