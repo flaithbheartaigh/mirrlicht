@@ -76,7 +76,13 @@ const bool checkFBOStatus(COpenGLDriver* Driver)
 COpenGLTexture::COpenGLTexture(IImage* image, bool generateMipLevels, const char* name, COpenGLDriver* driver)
  : ITexture(name), Pitch(0), ImageSize(0,0), HasMipMaps(generateMipLevels),
   Driver(driver), ImageData(0), ColorFormat(ECF_A8R8G8B8), TextureName(0),
-  InternalFormat(GL_RGBA), PixelFormat(GL_BGRA_EXT), PixelType(GL_UNSIGNED_BYTE),
+  InternalFormat(GL_RGBA),
+#ifdef _IRR_USE_OPENGL_ES_
+  PixelFormat(GL_RGBA),
+#else
+  PixelFormat(GL_BGRA_EXT), 
+#endif
+  PixelType(GL_UNSIGNED_BYTE),
   ColorFrameBuffer(0), DepthRenderBuffer(0)
 {
 	#ifdef _DEBUG
@@ -99,7 +105,13 @@ COpenGLTexture::COpenGLTexture(const core::dimension2d<s32>& size,
                                 COpenGLDriver* driver)
  : ITexture(name), Pitch(0), ImageSize(size), HasMipMaps(false),
   Driver(driver), ImageData(0), ColorFormat(ECF_A8R8G8B8), TextureName(0),
-  InternalFormat(GL_RGBA), PixelFormat(GL_BGRA_EXT), PixelType(GL_UNSIGNED_BYTE),
+  InternalFormat(GL_RGBA), 
+#ifdef _IRR_USE_OPENGL_ES_
+  PixelFormat(GL_RGBA),
+#else
+  PixelFormat(GL_BGRA_EXT), 
+#endif
+  PixelType(GL_UNSIGNED_BYTE),
   ColorFrameBuffer(0), DepthRenderBuffer(0)
 {
 #ifndef _IRR_USE_OPENGL_ES_

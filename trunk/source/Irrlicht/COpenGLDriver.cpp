@@ -733,9 +733,6 @@ void COpenGLDriver::loadExtensions()
                 IRR_OGL_LOAD_EXTENSION(reinterpret_cast<const GLubyte*>("glFramebufferRenderbufferEXT"));
 
 			#endif // _IRR_OPENGL_USE_EXTPOINTER_
-		#elif defined(_IRR_USE_OPENGL_ES_)			
-			pGlActiveTextureARB = (PFNGLACTIVETEXTUREARBPROC)glActiveTexture;
-			pGlClientActiveTextureARB = (PFNGLCLIENTACTIVETEXTUREARBPROC)glClientActiveTexture;
 		#endif // _IRR_WINDOWS_
 
 		// load common extensions
@@ -1705,8 +1702,10 @@ bool COpenGLDriver::testGLError()
 		os::Printer::log("GL_STACK_UNDERFLOW", ELL_ERROR); break;
 	case GL_OUT_OF_MEMORY:
 		os::Printer::log("GL_OUT_OF_MEMORY", ELL_ERROR); break;
+#ifdef GL_ARB_imaging
 	case GL_TABLE_TOO_LARGE:
 		os::Printer::log("GL_TABLE_TOO_LARGE", ELL_ERROR); break;
+#endif
 	};
 	return true;
 #endif
@@ -1839,10 +1838,11 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 		else
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 				(material.BilinearFilter || material.TrilinearFilter) ? GL_LINEAR : GL_NEAREST);
-
+#ifdef GL_EXT_texture_filter_anisotropic
 		if (AnisotropyExtension)
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
 				material.AnisotropicFilter ? MaxAnisotropy : 1.0f );
+#endif
 	}
 
 	// fillmode

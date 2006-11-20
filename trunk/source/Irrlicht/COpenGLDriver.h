@@ -28,7 +28,8 @@
 	#include <OpenGL/glext.h>
 #elif defined(__SYMBIAN32__)
 	#include <GLES/egl.h>   	
-	#include "glext.h"    
+	//#include "glext.h"
+    #include "gles_ARB_redefine.h"
 #else
 	#if defined(_IRR_OPENGL_USE_EXTPOINTER_)
 		#define GL_GLEXT_LEGACY 1
