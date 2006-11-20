@@ -19,7 +19,6 @@ class CMainS60Document;
 
 
 #include "irrlicht.h"
-#include "os.h" //for logging
 
 //if SHOW_HELLO_WORLD_EXAMPLE is not defined, we'll show the Quake3Map example
 //#define SHOW_HELLO_WORLD_EXAMPLE 
@@ -470,10 +469,10 @@ TKeyResponse CMainS60AppView::OfferKeyEventL(const TKeyEvent& aKeyEvent, TEventC
 		event.EventType = irr::EET_KEY_INPUT_EVENT;
 		if(aType == EEventKeyDown){
 			event.KeyInput.PressedDown = true;
-			//os::Printer::print("Key Down");
+			//device->getLogger()->log("KeyDown");
 		}else{
 			event.KeyInput.PressedDown = false;
-			//os::Printer::print("Key Up");
+			//device->getLogger()->log("KeyDown");
 		}
 		switch(aKeyEvent.iScanCode)
 		{
