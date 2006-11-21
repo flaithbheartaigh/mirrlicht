@@ -341,7 +341,7 @@ bool COpenGLDriver::genericDriverInit(const core::dimension2d<s32>& screenSize)
 	glViewport(0, 0, screenSize.Width, screenSize.Height); // Reset The Current Viewport
 	setAmbientLight(SColorf(0.0f,0.0f,0.0f,0.0f));
 #ifdef _IRR_USE_OPENGL_ES_
-	glClearDepthf(1.0);
+	glClearDepthf(1.0f);
 #else
 	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, 1);
@@ -421,7 +421,9 @@ void COpenGLDriver::createMaterialRenderers()
 void COpenGLDriver::loadExtensions()
 {
 #ifdef _IRR_USE_OPENGL_ES_
-#ifdef GL_OES_VERSION_1_1
+	//const GLubyte* t = glGetString(GL_EXTENSIONS);
+	//os::Printer::log((const c8*)t, ELL_INFORMATION);
+#if defined(GL_OES_VERSION_1_0) || defined(GL_OES_VERSION_1_1)
 	MultiTextureExtension = true;
 	MultiSamplingExtension = true;
 	ARBVertexProgramExtension = false;
@@ -739,7 +741,7 @@ void COpenGLDriver::loadExtensions()
 
 		glGetIntegerv(GL_MAX_TEXTURE_UNITS, &MaxTextureUnits);
 		glGetIntegerv(GL_MAX_LIGHTS, &MaxLights);
-#ifndef _IRR_USE_OPENGL_ES_
+#ifdef GL_EXT_texture_filter_anisotropic
 		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &MaxAnisotropy);
 #endif
 	}
@@ -1553,7 +1555,17 @@ void COpenGLDriver::draw2DLine(const core::position2d<s32>& start,
 	setRenderStates2DMode(color.getAlpha() < 255, false, false);
 	disableTextures();
 #ifdef _IRR_USE_OPENGL_ES_
-	//TODO
+	GLfloat points[2*2];	
+	points[0] = npos_start.X;
+	points[1] = npos_start.Y;		
+	points[2] = npos_end.X;
+	points[3] = npos_end.Y;			
+
+	glColor4ub(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+	glVertexPointer(2, GL_FLOAT, 0, points);	
+	glEnableClientState(GL_VERTEX_ARRAY);		
+	glDrawArrays(GL_LINES, 0, 2);	
+	glDisableClientState(GL_VERTEX_ARRAY);	
 #else
 	glBegin(GL_LINES);
 	glColor4ub(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
@@ -2265,7 +2277,28 @@ void COpenGLDriver::drawStencilShadow(bool clearStencilBuffer, video::SColor lef
 
 	// draw a shadow rectangle covering the entire screen using stencil buffer
 #ifdef _IRR_USE_OPENGL_ES_
-	//TODO
+	GLfloat points[3*4] = {
+		-10.1f, 10.1f, 0.90f,
+		-10.1f,-10.1f,0.90f,
+		10.1f, 10.1f,0.90f,
+		10.1f,-10.1f,0.90f,
+	};
+	GLubyte colors[4*4];
+
+	leftUpEdge.toOpenGLColor(&colors[0]);
+	leftDownEdge.toOpenGLColor(&colors[4]);
+	rightUpEdge.toOpenGLColor(&colors[8]);
+	rightDownEdge.toOpenGLColor(&colors[12]);	
+
+	glVertexPointer(3, GL_FLOAT, 0, points);	
+	glEnableClientState(GL_VERTEX_ARRAY);	
+	glColorPointer(4, GL_UNSIGNED_BYTE, 0, colors);
+	glEnableClientState(GL_COLOR_ARRAY);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);	
+
+	glDisableClientState(GL_VERTEX_ARRAY);	
+	glDisableClientState(GL_COLOR_ARRAY);
 #else
 	glBegin(GL_TRIANGLE_STRIP);
 
