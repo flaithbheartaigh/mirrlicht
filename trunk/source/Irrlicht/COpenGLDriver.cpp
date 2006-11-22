@@ -2189,8 +2189,27 @@ void COpenGLDriver::drawStencilShadowVolume(const core::vector3df* triangles, s3
 	}
 
 	// store current OpenGL state
-#ifdef _IRR_USE_OPENGL_ES_
-	//TODO
+#ifdef _IRR_USE_OPENGL_ES_	
+	GLboolean bLighting = glIsEnabled(GL_LIGHTING);
+	GLboolean bFog      = glIsEnabled(GL_FOG);
+	GLboolean bStencil  = glIsEnabled(GL_STENCIL_TEST);
+	GLboolean bCull     = glIsEnabled(GL_CULL_FACE);
+	GLboolean bDepthMask;
+	glGetBooleanv(GL_DEPTH_WRITEMASK, &bDepthMask);
+	GLboolean bColorMask[4];
+	glGetBooleanv(GL_COLOR_WRITEMASK, bColorMask);
+	GLint depthFunc;
+	glGetIntegerv(GL_DEPTH_FUNC, &depthFunc);
+	GLint stencilFunc, stencilRef, stencilMask;
+	glGetIntegerv(GL_STENCIL_FUNC, &stencilFunc);
+	glGetIntegerv(GL_STENCIL_REF, &stencilRef);
+	glGetIntegerv(GL_STENCIL_VALUE_MASK, &stencilMask);
+	GLint stencilFail, stencilZFail, stencilZPass;
+	glGetIntegerv(GL_STENCIL_FAIL, &stencilFail);
+	glGetIntegerv(GL_STENCIL_PASS_DEPTH_FAIL,&stencilZFail);
+	glGetIntegerv(GL_STENCIL_PASS_DEPTH_PASS,&stencilZPass);
+	GLint cullFaceMode;
+	glGetIntegerv(GL_CULL_FACE_MODE, &cullFaceMode);
 #else
 	glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT |
 		GL_POLYGON_BIT | GL_STENCIL_BUFFER_BIT);
@@ -2205,9 +2224,8 @@ void COpenGLDriver::drawStencilShadowVolume(const core::vector3df* triangles, s3
 	glStencilFunc(GL_ALWAYS, 0, 0);
 	glEnable(GL_CULL_FACE);
 
-	glEnable(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3,GL_FLOAT,sizeof(core::vector3df),&triangles[0]);
-
 	if (!zfail)
 	{
 		// ZPASS Method
@@ -2232,9 +2250,28 @@ void COpenGLDriver::drawStencilShadowVolume(const core::vector3df* triangles, s3
 		glCullFace(GL_BACK);
 		glDrawArrays(GL_TRIANGLES,0,count);
 	}
+	glDisableClientState(GL_VERTEX_ARRAY); //not stored on stack
 
-	glDisable(GL_VERTEX_ARRAY); //not stored on stack
-#ifndef _IRR_USE_OPENGL_ES_
+#ifdef _IRR_USE_OPENGL_ES_	
+	if(bLighting) glEnable(GL_LIGHTING);
+	else glDisable(GL_LIGHTING);
+
+	if(bFog) glEnable(GL_FOG);
+	else glDisable(GL_FOG);
+
+	if(bStencil) glEnable(GL_STENCIL_TEST);
+	else glDisable(GL_STENCIL_TEST);
+
+	if(bCull) glEnable(GL_CULL_FACE);
+	else glDisable(GL_CULL_FACE);
+
+	glDepthMask(bDepthMask);
+	glDepthFunc(depthFunc);
+	glColorMask(bColorMask[0],bColorMask[1],bColorMask[2],bColorMask[3]);
+	glStencilOp(stencilFail, stencilZFail, stencilZPass);
+	glStencilFunc(stencilFunc,stencilRef,stencilMask);
+	glCullFace(cullFaceMode);
+#else
 	glPopAttrib();
 #endif
 }
@@ -2251,12 +2288,35 @@ void COpenGLDriver::drawStencilShadow(bool clearStencilBuffer, video::SColor lef
 
 	// store attributes
 #ifdef _IRR_USE_OPENGL_ES_
-	//TODO
+	GLboolean bLighting = glIsEnabled(GL_LIGHTING);
+	GLboolean bFog      = glIsEnabled(GL_FOG);
+	GLboolean bStencil  = glIsEnabled(GL_STENCIL_TEST);
+	GLboolean bBlend    = glIsEnabled(GL_BLEND);
+	GLboolean bDepthMask;
+	glGetBooleanv(GL_DEPTH_WRITEMASK, &bDepthMask);
+	GLboolean bColorMask[4];
+	glGetBooleanv(GL_COLOR_WRITEMASK, bColorMask);
+	GLint depthFunc;
+	glGetIntegerv(GL_DEPTH_FUNC, &depthFunc);
+	GLint stencilFunc, stencilRef, stencilMask;
+	glGetIntegerv(GL_STENCIL_FUNC, &stencilFunc);
+	glGetIntegerv(GL_STENCIL_REF, &stencilRef);
+	glGetIntegerv(GL_STENCIL_VALUE_MASK, &stencilMask);
+	GLint stencilFail, stencilZFail, stencilZPass;
+	glGetIntegerv(GL_STENCIL_FAIL, &stencilFail);
+	glGetIntegerv(GL_STENCIL_PASS_DEPTH_FAIL,&stencilZFail);
+	glGetIntegerv(GL_STENCIL_PASS_DEPTH_PASS,&stencilZPass);
+	GLint shadeModel;
+	glGetIntegerv(GL_SHADE_MODEL, &shadeModel);
+	GLint frontFace;
+	glGetIntegerv(GL_FRONT_FACE, &frontFace);
+	GLint blendSrc, blendDst;
+	glGetIntegerv(GL_BLEND_SRC, &blendSrc);
+	glGetIntegerv(GL_BLEND_DST, &blendDst);
 #else
 	glPushAttrib( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT | GL_POLYGON_BIT | GL_STENCIL_BUFFER_BIT );
-#endif
-	glPushMatrix();
-
+#endif	
+	
 	glDisable( GL_LIGHTING );
 	glDisable(GL_FOG);
 	glDepthMask(GL_FALSE);
@@ -2270,9 +2330,16 @@ void COpenGLDriver::drawStencilShadow(bool clearStencilBuffer, video::SColor lef
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glEnable( GL_STENCIL_TEST );
-	glStencilFunc(GL_LESS, 0, 0xFFFFFFFFL);
+
+#ifdef _IRR_USE_OPENGL_ES_
+	glStencilFunc(GL_LESS, 0, 1);	//strange, why does it work only when mask is 1?
+#else
+	glStencilFunc(GL_LESS, 0, 0xFFFFFFFFL);	
+#endif
+
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
+	glPushMatrix();
 	glLoadIdentity();
 
 	// draw a shadow rectangle covering the entire screen using stencil buffer
@@ -2322,7 +2389,26 @@ void COpenGLDriver::drawStencilShadow(bool clearStencilBuffer, video::SColor lef
 	// restore settings
 	glPopMatrix();
 #ifdef _IRR_USE_OPENGL_ES_
-	//TODO
+	if(bLighting) glEnable(GL_LIGHTING);
+	else glDisable(GL_LIGHTING);
+
+	if(bFog) glEnable(GL_FOG);
+	else glDisable(GL_FOG);
+
+	if(bStencil) glEnable(GL_STENCIL_TEST);
+	else glDisable(GL_STENCIL_TEST);
+
+	if(bBlend) glEnable(GL_BLEND);
+	else glDisable(GL_BLEND);
+
+	glDepthMask(bDepthMask);
+	glDepthFunc(depthFunc);
+	glShadeModel(shadeModel);
+	glFrontFace(frontFace);
+	glBlendFunc(blendSrc, blendDst);
+	glColorMask(bColorMask[0],bColorMask[1],bColorMask[2],bColorMask[3]);
+	glStencilOp(stencilFail, stencilZFail, stencilZPass);
+	glStencilFunc(stencilFunc,stencilRef,stencilMask);
 #else
 	glPopAttrib();
 #endif

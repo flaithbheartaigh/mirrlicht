@@ -128,16 +128,20 @@ bool CIrrDeviceSymbian::createWindow(const core::dimension2d<s32>& windowSize,
 	os::Printer::log("Creating EGL window...", ELL_INFORMATION);	
 #endif
 
-	static const EGLint s_configAttribs[] =
+	static EGLint s_configAttribs[] =
 	{
 		EGL_RED_SIZE,		8,
-			EGL_GREEN_SIZE, 	8,
-			EGL_BLUE_SIZE,		8,
-			EGL_ALPHA_SIZE, 	8,
-			EGL_DEPTH_SIZE, 	16,
-			EGL_NONE
+		EGL_GREEN_SIZE, 	8,
+		EGL_BLUE_SIZE,		8,
+		EGL_ALPHA_SIZE, 	8,
+		EGL_DEPTH_SIZE, 	16,
+		EGL_STENCIL_SIZE,   0,
+		EGL_NONE
 	};	
 
+	if(StencilBuffer){		
+		s_configAttribs[11] = 8;
+	}
 	EGLint numConfigs;
 	EGLint majorVersion;
 	EGLint minorVersion;
@@ -146,7 +150,23 @@ bool CIrrDeviceSymbian::createWindow(const core::dimension2d<s32>& windowSize,
 	display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	eglInitialize(display, &majorVersion, &minorVersion);
 	eglGetConfigs(display, NULL, 0, &numConfigs);
+	
 	eglChooseConfig(display, s_configAttribs, &eglConfig, 1, &numConfigs);
+
+#ifdef _DEBUG
+	GLint r,g,b,a,depth,stencil;
+	eglGetConfigAttrib(display,eglConfig,EGL_RED_SIZE,&r);
+	eglGetConfigAttrib(display,eglConfig,EGL_GREEN_SIZE,&g);
+	eglGetConfigAttrib(display,eglConfig,EGL_BLUE_SIZE,&b);
+	eglGetConfigAttrib(display,eglConfig,EGL_ALPHA_SIZE,&a);
+	eglGetConfigAttrib(display,eglConfig,EGL_DEPTH_SIZE,&depth);
+	eglGetConfigAttrib(display,eglConfig,EGL_STENCIL_SIZE,&stencil);
+	
+	char buf[256];
+	sprintf(buf,"Number of configs: %d\nR: %d, G: %d, B: %d, A: %d, Depth: %d, Stencil: %d", 
+		        numConfigs, r, g, b, a, depth, stencil);
+	os::Printer::log(buf, ELL_INFORMATION);	
+#endif
 	Context = eglCreateContext(display, eglConfig, NULL, NULL);
 
 	eglWindowSurface = eglCreateWindowSurface(display, eglConfig, pWindow, NULL);
