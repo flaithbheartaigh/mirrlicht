@@ -2332,7 +2332,8 @@ void COpenGLDriver::drawStencilShadow(bool clearStencilBuffer, video::SColor lef
 	glEnable( GL_STENCIL_TEST );
 
 #ifdef _IRR_USE_OPENGL_ES_
-	glStencilFunc(GL_LESS, 0, 1);	//strange, why does it work only when mask is 1?
+	//glStencilFunc(GL_LESS, 0, 1);	//this works with the dwarf model. If we use the ~0 mask, the whole screen is shadowed. Don't know why.
+	glStencilFunc(GL_LESS, 0, ~0);	
 #else
 	glStencilFunc(GL_LESS, 0, 0xFFFFFFFFL);	
 #endif
