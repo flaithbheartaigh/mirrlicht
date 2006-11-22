@@ -557,7 +557,7 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 	ps->setMaterialType(video::EMT_TRANSPARENT_VERTEX_ALPHA);
 
 	// add animated character 
-//#define USER_DWARF
+#define USE_DWARF
 #ifdef USE_DWARF
 	mesh = smgr->getMesh("../../media/dwarf.x");
 #else
