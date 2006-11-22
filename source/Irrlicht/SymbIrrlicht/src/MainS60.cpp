@@ -20,8 +20,10 @@ class CMainS60Document;
 
 #include "irrlicht.h"
 
-//if SHOW_HELLO_WORLD_EXAMPLE is not defined, we'll show the Quake3Map example
-//#define SHOW_HELLO_WORLD_EXAMPLE 
+//if SHOW_HELLO_WORLD is not defined, we'll show the Quake3Map example
+//#define SHOW_HELLO_WORLD
+//#define SHOW_QUAKE3_MAP
+#define SHOW_SPECIAL_FX
 
 using namespace irr;
 using namespace core;
@@ -387,12 +389,15 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 	parameters.WindowSize = core::dimension2d<s32>(240, 320);
 	parameters.DriverType = EDT_OPENGL;
 	parameters.WindowId = (s32)(&Window());
+#ifdef SHOW_SPECIAL_FX
+	parameters.Stencilbuffer = true;
+#endif
 	device = createDeviceEx(parameters);
 	IVideoDriver* driver = device->getVideoDriver();
 	ISceneManager* smgr = device->getSceneManager();
 	IGUIEnvironment* guienv = device->getGUIEnvironment();
 
-#if defined(SHOW_HELLO_WORLD_EXAMPLE)	
+#if defined(SHOW_HELLO_WORLD)	
 
 	IAnimatedMesh* mesh = smgr->getMesh("../../media/sydney.md2");	
 	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode( mesh );
@@ -415,7 +420,7 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 		driver->getTexture("../../media/irrlicht2_ft_small.jpg"),
 		driver->getTexture("../../media/irrlicht2_bk_small.jpg"));
 
-#else
+#elif defined(SHOW_QUAKE3_MAP)
 
 	device->getFileSystem()->addZipFileArchive("../../media/map-20kdm2-small.pk3");
 	scene::IAnimatedMesh* mesh = smgr->getMesh("20kdm2.bsp");
@@ -475,7 +480,101 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 	smgr->addLightSceneNode(0, core::vector3df(-60,100,400),
 							video::SColorf(1.0f,1.0f,1.0f,1.0f),
 							600.0f);
-	
+#elif defined(SHOW_SPECIAL_FX)
+	//create room
+	scene::IAnimatedMesh* mesh = smgr->getMesh(
+		"../../media/room.3ds");
+
+	smgr->getMeshManipulator()->makePlanarTextureMapping(
+		mesh->getMesh(0), 0.004f);
+
+	scene::ISceneNode* node = 0;
+
+	node = smgr->addAnimatedMeshSceneNode(mesh);
+	node->setMaterialTexture(0,	driver->getTexture("../../media/wall.jpg"));
+	node->getMaterial(0).SpecularColor.set(0,0,0,0); 
+
+#if 0 //animated water needs texgen, which isn't supported by OpenGL ES
+	// add animated water
+
+	mesh = smgr->addHillPlaneMesh("myHill",
+		core::dimension2d<f32>(20,20),
+		core::dimension2d<s32>(40,40), 0, 0,
+		core::dimension2d<f32>(0,0),
+		core::dimension2d<f32>(10,10));
+
+	node = smgr->addWaterSurfaceSceneNode(mesh->getMesh(0), 3.0f, 300.0f, 30.0f);
+	node->setPosition(core::vector3df(0,7,0));
+
+	node->setMaterialTexture(0,	driver->getTexture("../../media/stones.jpg"));
+	node->setMaterialTexture(1,	driver->getTexture("../../media/water.jpg"));
+
+	node->setMaterialType(video::EMT_REFLECTION_2_LAYER);
+#endif
+	// create light
+
+	node = smgr->addLightSceneNode(0, core::vector3df(0,0,0),
+		video::SColorf(1.0f, 0.6f, 0.7f, 1.0f), 600.0f);
+	scene::ISceneNodeAnimator* anim = 0;
+	anim = smgr->createFlyCircleAnimator (core::vector3df(0,150,0),250.0f);
+	node->addAnimator(anim);
+	anim->drop();
+
+	// attach billboard to light
+
+	node = smgr->addBillboardSceneNode(node, core::dimension2d<f32>(50, 50));
+	node->setMaterialFlag(video::EMF_LIGHTING, false);
+	node->setMaterialType(video::EMT_TRANSPARENT_ADD_COLOR);
+	node->setMaterialTexture(0,	driver->getTexture("../../media/particlewhite.bmp"));
+
+	// create a particle system
+
+	scene::IParticleSystemSceneNode* ps = 0;
+	ps = smgr->addParticleSystemSceneNode(false);
+	ps->setPosition(core::vector3df(-70,60,40));
+	ps->setScale(core::vector3df(2,2,2));
+
+	ps->setParticleSize(core::dimension2d<f32>(20.0f, 20.0f));
+
+	scene::IParticleEmitter* em = ps->createBoxEmitter(
+		core::aabbox3d<f32>(-7,0,-7,7,1,7),
+		core::vector3df(0.0f,0.06f,0.0f),
+		80,100,
+		video::SColor(0,255,255,255), video::SColor(0,255,255,255),
+		800,2000);
+
+	ps->setEmitter(em);
+	em->drop();
+
+	scene::IParticleAffector* paf =
+		ps->createFadeOutParticleAffector();
+
+	ps->addAffector(paf);
+	paf->drop();
+
+	ps->setMaterialFlag(video::EMF_LIGHTING, false);
+	ps->setMaterialTexture(0, driver->getTexture("../../media/fire.bmp"));
+	ps->setMaterialType(video::EMT_TRANSPARENT_VERTEX_ALPHA);
+
+	// add animated character 
+	mesh = smgr->getMesh("../../media/dwarf.x");
+	scene::IAnimatedMeshSceneNode* anode = 0;
+
+	anode = smgr->addAnimatedMeshSceneNode(mesh);
+	anode->setPosition(core::vector3df(-50,20,-60));
+	anode->setAnimationSpeed(15);
+
+	// add shadow
+	anode->addShadowVolumeSceneNode();
+	smgr->setShadowColor(video::SColor(150,0,0,0));
+
+	// make the model a little bit bigger and normalize its normals
+	// because of this for correct lighting
+	anode->setScale(core::vector3df(2,2,2));
+	anode->setMaterialFlag(video::EMF_NORMALIZE_NORMALS, true);
+
+	scene::ICameraSceneNode* camera = smgr->addCameraSceneNodeFPS();
+	camera->setPosition(core::vector3df(-50,50,-200)); 
 #endif	
     update = CPeriodic::NewL( CActive::EPriorityIdle );
     
