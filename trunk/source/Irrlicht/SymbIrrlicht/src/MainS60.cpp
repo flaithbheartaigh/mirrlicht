@@ -557,12 +557,21 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 	ps->setMaterialType(video::EMT_TRANSPARENT_VERTEX_ALPHA);
 
 	// add animated character 
+//#define USER_DWARF
+#ifdef USE_DWARF
 	mesh = smgr->getMesh("../../media/dwarf.x");
+#else
+	mesh = smgr->getMesh("../../media/cube.ms3d");
+#endif
 	scene::IAnimatedMeshSceneNode* anode = 0;
 
 	anode = smgr->addAnimatedMeshSceneNode(mesh);
+#ifdef USE_DWARF
 	anode->setPosition(core::vector3df(-50,20,-60));
 	anode->setAnimationSpeed(15);
+#else
+	anode->setPosition(core::vector3df(-50,50,-50));
+#endif
 
 	// add shadow
 	anode->addShadowVolumeSceneNode();
@@ -570,7 +579,11 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 
 	// make the model a little bit bigger and normalize its normals
 	// because of this for correct lighting
+#ifdef USE_DWARF
 	anode->setScale(core::vector3df(2,2,2));
+#else
+	anode->setScale(core::vector3df(0.5,0.5,0.5));
+#endif
 	anode->setMaterialFlag(video::EMF_NORMALIZE_NORMALS, true);
 
 	scene::ICameraSceneNode* camera = smgr->addCameraSceneNodeFPS();
