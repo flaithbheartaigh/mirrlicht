@@ -138,7 +138,7 @@ SOURCE                                  CXMLWriter.cpp
 SOURCE                                  CZipReader.cpp 
 SOURCE                                  Irrlicht.cpp 
 SOURCE                                  irrXML.cpp 
-SOURCE                                  ITriangleRenderer2.cpp 
+// [-]    SOURCE                        ITriangleRenderer2.cpp 
 SOURCE                                  os.cpp 
 SOURCE                                  C3DSMeshFileLoader.cpp 
 
