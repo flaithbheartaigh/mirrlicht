@@ -1,0 +1,30 @@
+/*
+============================================================================
+ Name        : SymbIrrlicht resource header file SymbIrrlicht.hrh
+ Author      : 
+ Version     :
+ Copyright   : GPL v2
+ Description : This file contains declarations for constants of SymbIrrlicht.
+               The file can be included in C++ or resource file.
+============================================================================
+*/
+
+#ifndef SYMBIRRLICHT_HRH
+#define SYMBIRRLICHT_HRH
+
+enum TSymbIrrlichtCommandIds
+    {
+    ESymbIrrlichtCmdAppTest = 1
+    };
+
+enum TSymbIrrlichtTabViewId
+    {
+    ESymbIrrlichtView1Tab= 1,
+    ESymbIrrlichtView2Tab
+    };
+ 
+
+
+
+
+#endif      // SYMBIRRLICHT_HRH
