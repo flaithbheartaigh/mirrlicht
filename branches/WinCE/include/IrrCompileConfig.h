@@ -21,7 +21,7 @@
 #define _IRR_WINDOWS_
 #endif
 
-#if !defined(_IRR_WINDOWS_) && !defined(_XBOX) && !defined(OS2) && !defined(MACOSX) && !defined(__SYMBIAN32__)
+#if !defined(_IRR_WINDOWS_) && !defined(_XBOX) && !defined(OS2) && !defined(MACOSX) && !defined(__SYMBIAN32__) &&!defined(UNDER_CE)
 #define LINUX
 #endif
 
@@ -55,7 +55,7 @@ define out. */
 
 #endif // ! _XBOX
 
-#if defined(__SYMBIAN32__)
+#if defined(__SYMBIAN32__) || defined(UNDER_CE)
 
 #define _IRR_USE_OPENGL_ES_
 
@@ -74,7 +74,7 @@ define out. */
 //! Define _IRR_OPENGL_USE_EXTPOINTER_ if the OpenGL renderer should use OpenGL extensions via function pointers.
 /** On some systems there is no support for the dynamic extension of OpenGL
  via function pointers such that this has to be undef'ed. */
-#if !defined(MACOSX) && !defined(__sun__) &&!defined(__SYMBIAN32__)
+#if !defined(MACOSX) && !defined(__sun__) &&!defined(__SYMBIAN32__) &&!defined(UNDER_CE)
 #define _IRR_OPENGL_USE_EXTPOINTER_
 #endif
 
@@ -90,23 +90,23 @@ define out. */
 /** This enables the engine to read from compressed .zip archives. If you
 disable this feature, the engine can still read archives, but only uncompressed
 ones. */
-#define _IRR_COMPILE_WITH_ZLIB_
+//#define _IRR_COMPILE_WITH_ZLIB_
 
 //! Define _IRR_USE_NON_SYSTEM_ZLIB_ to let irrlicht use the zlib which comes with irrlicht.
 /** If this is commented out, Irrlicht will try to compile using the zlib installed in the system.
  This is only used when _IRR_COMPILE_WITH_ZLIB_ is defined. */
-#define _IRR_USE_NON_SYSTEM_ZLIB_
+//#define _IRR_USE_NON_SYSTEM_ZLIB_
 
 
 //! Define _IRR_COMPILE_WITH_JPEGLIB_ to enable compiling the engine using libjpeg.
 /** This enables the engine to read jpeg images. If you comment this out,
 the engine will no longer read .jpeg images. */
-#define _IRR_COMPILE_WITH_LIBJPEG_
+//#define _IRR_COMPILE_WITH_LIBJPEG_
 
 //! Define _IRR_USE_NON_SYSTEM_JPEG_LIB_ to let irrlicht use the jpeglib which comes with irrlicht.
 /** If this is commented out, Irrlicht will try to compile using the jpeg lib installed in the system.
  This is only used when _IRR_COMPILE_WITH_LIBJPEG_ is defined. */
-#define _IRR_USE_NON_SYSTEM_JPEG_LIB_
+//#define _IRR_USE_NON_SYSTEM_JPEG_LIB_
 
 
 //! Define _IRR_COMPILE_WITH_LIBPNG_ to enable compiling the engine using libpng.
@@ -142,9 +142,9 @@ Note that the engine will run in D3D REF for this, which is a lot slower than HA
 #define   swprintf   _snwprintf
 #endif // _IRR_WINDOWS_
 
-#ifdef _IRR_WINDOWS_
+#if defined(_IRR_WINDOWS_) || defined(UNDER_CE)
 
-#ifdef IRRLICHT_EXPORTS
+#if defined(IRRLICHT_EXPORTS) || defined(WINCE_EXPORTS)
 #define IRRLICHT_API __declspec(dllexport)
 #else
 #define IRRLICHT_API __declspec(dllimport)

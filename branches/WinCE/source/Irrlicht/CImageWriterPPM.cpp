@@ -10,7 +10,7 @@
 // this should really go into the compile config header.
 // there is a similar macro in irrlicht.h, but i feel that
 // macro should be moved to compile config also.
-#ifdef _IRR_WINDOWS_
+#if defined(_IRR_WINDOWS_) || defined(UNDER_CE)
 #  define snprintf _snprintf
 #endif
 

@@ -26,7 +26,8 @@
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
 	#include <OpenGL/glext.h>
-#elif defined(__SYMBIAN32__)
+#elif defined(__SYMBIAN32__) || defined(UNDER_CE)
+	#include <GLES/gl.h>   
 	#include <GLES/egl.h>   	
 	//#include "glext.h"
     #include "gles_ARB_redefine.h"
@@ -77,7 +78,7 @@ namespace video
 			bool stencilBuffer, CIrrDeviceMacOSX *device,io::IFileSystem* io, bool vsync, bool antiAlias);
 		#endif
 
-		#ifdef __SYMBIAN32__
+		#if defined(_IRR_USE_OPENGL_ES_)
 		COpenGLDriver(const core::dimension2d<s32>& screenSize, bool fullscreen, 
 			bool stencilBuffer, EGLSurface window, EGLDisplay display, io::IFileSystem* io, bool vsync, bool antiAlias);
 		#endif
@@ -439,7 +440,7 @@ namespace video
 			CIrrDeviceMacOSX *_device;
 		#endif
 
-		#if defined(__SYMBIAN32__)
+		#if defined(_IRR_USE_OPENGL_ES_)
 			EGLSurface	eglWindowSurface;
 			EGLDisplay	eglDisplay;			
 		#endif

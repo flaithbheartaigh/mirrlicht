@@ -6,7 +6,7 @@
 #define __C_IRR_DEVICE_WIN32_H_INCLUDED__
 
 #include "IrrCompileConfig.h"
-#ifdef _IRR_WINDOWS_
+#if defined(_IRR_WINDOWS_) || defined(UNDER_CE)
 
 #include "CIrrDeviceStub.h"
 #include "IrrlichtDevice.h"
@@ -15,7 +15,9 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-
+#ifdef _IRR_USE_OPENGL_ES_
+#include <GLES/egl.h>
+#endif
 namespace irr
 {
 
@@ -189,6 +191,12 @@ namespace irr
 		bool Resized;
 		bool ExternalWindow;
 		CCursorControl* Win32CursorControl;
+
+#ifdef _IRR_USE_OPENGL_ES_
+		EGLDisplay eglDisplay;		
+		EGLSurface eglWindowSurface;
+		EGLContext Context;
+#endif
 	};
 
 
