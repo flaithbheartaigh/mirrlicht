@@ -1,8 +1,23 @@
 #include <windows.h>
+//#define USE_GLES
 
-#include "GLES/gl.h"
-#include "GLES/egl.h"
-#define USE_GLES
+#ifdef USE_GLES
+ #include "GLES/gl.h"
+ #include "GLES/egl.h"
+ #pragma comment(lib,"libEGL.lib")
+ #pragma comment(lib,"libGLES_CM_NoE.lib")
+#else
+ #include "irrlicht.h"
+ #pragma comment(lib,"irrlichtCE.lib")
+
+ using namespace irr;
+ using namespace core;
+ using namespace scene;
+ using namespace video;
+ using namespace io;
+ using namespace gui;
+#endif
+
 static LONG WINAPI	MainWndProc	(HWND, UINT, WPARAM, LPARAM);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
@@ -10,11 +25,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLin
 	MSG 			msg;
 	WNDCLASS		wndclass;
 	HWND			hWnd;
-	HDC				hDC;
+	HDC				hDC = 0;
 
 
 	TCHAR name[] = L"Hello World";
-
+#ifdef USE_GLES
 	const EGLint s_configAttribs[] =
 	{
 		EGL_RED_SIZE,		8,
@@ -32,7 +47,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLin
 	EGLint numConfigs;
 	EGLint majorVersion;
 	EGLint minorVersion;
-
+#else
+	IrrlichtDevice *device;
+#endif
 	BOOL			run;
 
 	wndclass.style		   = 0;
@@ -87,8 +104,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLin
 
 	eglWindowSurface = eglCreateWindowSurface(eglDisplay, eglConfig, hWnd, NULL);
 	eglMakeCurrent(eglDisplay, eglWindowSurface, eglWindowSurface, eglContext);
-	
+#else
+	SIrrlichtCreationParameters parameters;
+	parameters.WindowSize = core::dimension2d<s32>(240, 320);
+	parameters.DriverType = EDT_OPENGL;
+	parameters.WindowId = (s32)(hWnd);
+	device = createDeviceEx(parameters);
+	IVideoDriver* driver = device->getVideoDriver();
+	ISceneManager* smgr = device->getSceneManager();
+	IGUIEnvironment* guienv = device->getGUIEnvironment();
+
+	IAnimatedMesh* mesh = smgr->getMesh("../../media/sydney.md2");	
+	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode( mesh );
+	if (node)
+	{
+		node->setMaterialFlag(EMF_LIGHTING, false);
+		node->setMD2Animation ( scene::EMAT_STAND );				
+		node->setMaterialTexture( 0, driver->getTexture("../../media/sydney.bmp"));
+	}
+	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
+
+	guienv->addStaticText(L"Hello World! This is the Irrlicht OpenGL renderer!",
+		rect<int>(10,10,240,22), true);
 #endif
+
 	run = TRUE;
 
 	while (run)
@@ -105,7 +144,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLin
 			}
 			else
 			{
-				run = FALSE;
+				//run = FALSE;
 			}
 		}
 
@@ -121,6 +160,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLin
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		eglSwapBuffers(eglDisplay, eglWindowSurface);
+#else
+		if(device->run()){
+			driver->beginScene(true, true, SColor(255,100,101,140));
+
+			//smgr->drawAll();
+			guienv->drawAll();
+
+			driver->endScene();
+		}
 #endif
 	}
 
@@ -130,6 +178,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLin
 	eglDestroyContext(eglDisplay, eglContext);
 	eglDestroySurface(eglDisplay, eglWindowSurface);
 	eglTerminate(eglDisplay);
+#else
+	device->drop();
 #endif
 	if (hDC)
 	{

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="HelloWorld"
 	ProjectGUID="{016E58C4-9FBB-4E9C-8D5E-9C8321F80729}"
 	RootNamespace="HelloWorld"
@@ -64,7 +64,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /subsystem:windowsce,4.20 /machine:ARM /ARMPADCODE"
-				AdditionalDependencies="libEGL.lib libGLES_CM_NoE.lib"
 				OutputFile="$(OutDir)/HelloWorldD.exe"
 				LinkIncremental="2"
 				DelayLoadDLLs="$(NOINHERIT)"
@@ -122,6 +121,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="2"
+				AdditionalIncludeDirectories="../../../include"
 				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;_WINDOWS;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -144,9 +144,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /subsystem:windowsce,4.20 /machine:ARM /ARMPADCODE"
-				AdditionalDependencies="libEGL.lib libGLES_CM_NoE.lib"
 				OutputFile="$(OutDir)/HelloWorld.exe"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\..\..\lib\WinCE-ppc2003"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/HelloWorld.pdb"
