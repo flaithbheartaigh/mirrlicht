@@ -24,7 +24,7 @@
 		#include <sys/endian.h>
 		#define bswap_16(X) bswap16(X)
 		#define bswap_32(X) bswap32(X)
-	#elif defined(__SYMBIAN32__)
+	#elif defined(__SYMBIAN32__) || defined(UNDER_CE)
 		#define bswap_16(X) (((u8)(X) << 8) | (((u16)(X)) >> 8))
 		#define bswap_32(X) ( ((X)<<24) | (((u16)(X)) >> 24) | (((X) &0x0000ff00) << 8) | (((X) & 0x00ff0000) >> 8))	
 	#elif !defined(__sun__)
@@ -47,12 +47,12 @@ namespace os
 }
 }
 
-#if defined(_IRR_WINDOWS_) || defined(_XBOX)
+#if defined(_IRR_WINDOWS_) || defined(_XBOX) ||defined(UNDER_CE)
 // ----------------------------------------------------------------
 // Windows specific functions
 // ----------------------------------------------------------------
 
-#ifdef _IRR_WINDOWS_
+#if defined(_IRR_WINDOWS_) || defined(UNDER_CE)
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 #endif
@@ -69,7 +69,9 @@ namespace os
 	{
 		c8* tmp = new c8[strlen(message) + 2];
 		sprintf(tmp, "%s\n", message);
+#ifndef UNDER_CE
 		OutputDebugString(tmp);
+#endif
 		printf(tmp);
 		delete [] tmp;
 	}
