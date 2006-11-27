@@ -8,13 +8,13 @@
 #include "irrTypes.h"
 #include <math.h>
 #if defined(__sun__) || defined(__SYMBIAN32__) || defined(UNDER_CE)
-#define sqrtf(X) sqrt(X)
-#define sinf(X) sin(X)
-#define cosf(X) cos(X)
-#define ceilf(X) ceil(X)
-#define floorf(X) floor(X)
-#define powf(X,Y) pow(X,Y)
-#define fmodf(X,Y) fmod(X,Y)
+#define sqrtf(X) (f32)sqrt((f32)(X))
+#define sinf(X) (f32)sin((f32)(X))
+#define cosf(X) (f32)cos((f32)(X))
+#define ceilf(X) (f32)ceil((f32)(X))
+#define floorf(X) (f32)floor((f32)(X))
+#define powf(X,Y) (f32)pow((f32)(X),(f32)(Y))
+#define fmodf(X,Y) (f32)fmod((f32)(X),(f32)(Y))
 #endif
 
 namespace irr
