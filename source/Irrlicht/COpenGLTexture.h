@@ -24,7 +24,8 @@
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
 	#include <OpenGL/glext.h>
-#elif defined(__SYMBIAN32__)
+#elif defined(__SYMBIAN32__) ||defined(UNDER_CE)
+	#include <GLES/gl.h>
 	#include <GLES/egl.h>
 #else
 	#if defined(_IRR_OPENGL_USE_EXTPOINTER_)

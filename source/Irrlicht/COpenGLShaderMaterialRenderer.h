@@ -23,7 +23,7 @@
 #elif defined(MACOSX)
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
-#elif defined(__SYMBIAN32__)
+#elif defined(__SYMBIAN32__) ||defined(UNDER_CE)
 #include <GLES/gl.h>
 #include "gles_ARB_redefine.h"
 #endif

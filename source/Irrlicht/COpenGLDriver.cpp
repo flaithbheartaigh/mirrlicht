@@ -281,7 +281,7 @@ COpenGLDriver::~COpenGLDriver()
 
 #endif // LINUX
 
-#ifdef __SYMBIAN32__
+#ifdef _IRR_USE_OPENGL_ES_
 //! opengl es constructor and init code
 COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool fullscreen, bool stencilBuffer, 
 							 EGLSurface window, EGLDisplay display, io::IFileSystem* io, bool vsync, bool antiAlias)
@@ -3244,11 +3244,11 @@ namespace video
 // -----------------------------------
 // WINDOWS VERSION
 // -----------------------------------
-#ifdef _IRR_WINDOWS_
+#if defined(_IRR_WINDOWS_)
 IVideoDriver* createOpenGLDriver(const core::dimension2d<s32>& screenSize,
 	HWND window, u32 bits, bool fullscreen, bool stencilBuffer, io::IFileSystem* io, bool vsync, bool antiAlias)
 {
-#ifdef _IRR_COMPILE_WITH_OPENGL_
+#ifdef _IRR_COMPILE_WITH_OPENGL_  
 	COpenGLDriver* ogl =  new COpenGLDriver(screenSize, window, fullscreen, stencilBuffer, io, antiAlias);
 	if (!ogl->initDriver(screenSize, window, bits, fullscreen, vsync))
 	{
@@ -3303,7 +3303,7 @@ IVideoDriver* createOpenGLDriver(const core::dimension2d<s32>& screenSize,
 	return new COpenGLDriver(screenSize, fullscreen, stencilBuffer,
 		window, display, io, antiAlias, vsync);
 }
-#endif // SYMBIAN
+#endif // _IRR_USE_OPENGL_ES_
 
 
 } // end namespace

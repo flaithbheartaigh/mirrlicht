@@ -30,7 +30,7 @@
 #include <OpenGL/glext.h>
 #endif
 
-#ifdef __SYMBIAN32__
+#if defined(_IRR_USE_OPENGL_ES_)
 #include <GLES/gl.h>
 #include "gles_ARB_redefine.h"
 #endif

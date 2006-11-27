@@ -4,8 +4,7 @@
 
 #include "IrrCompileConfig.h"
 
-#ifdef _IRR_WINDOWS_
-
+#if defined(_IRR_WINDOWS_) || defined(UNDER_CE)
 #include "CIrrDeviceWin32.h"
 #include "IEventReceiver.h"
 #include "irrList.h"
@@ -30,10 +29,16 @@ namespace irr
 		IVideoDriver* createDirectX9Driver(const core::dimension2d<s32>& screenSize, HWND window, 
 			u32 bits, bool fullscreen, bool stencilbuffer, io::IFileSystem* io,
 			bool pureSoftware, bool highPrecisionFPU, bool vsync, bool antiAlias);
-
+#ifdef _IRR_USE_OPENGL_ES_
+		IVideoDriver* createOpenGLDriver(const core::dimension2d<s32>& screenSize,
+			EGLSurface window, EGLDisplay display, bool fullscreen,
+			bool stencilBuffer, io::IFileSystem* io, bool vsync, bool antiAlias);
+		
+#else
 		IVideoDriver* createOpenGLDriver(const core::dimension2d<s32>& screenSize, HWND window, 
 			u32 bits, bool fullscreen, bool stencilBuffer, io::IFileSystem* io,
 			bool vsync, bool antiAlias);
+#endif
 	}
 
 } // end namespace irr
@@ -196,7 +201,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			event.KeyInput.Key = (irr::EKEY_CODE)wParam;
 			event.KeyInput.PressedDown = true;
 			dev = getDeviceFromHWnd(hWnd);
-
+#ifndef UNDER_CE
 			BYTE allKeys[256];
 			WORD KeyAsc=0;
 			GetKeyboardState(allKeys);
@@ -208,7 +213,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			if (dev)
 				dev->postEventFromUser(event);
-
+#endif
 			return 0;
 		}
 	case WM_KEYUP:
@@ -217,7 +222,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			event.KeyInput.Key = (irr::EKEY_CODE)wParam;
 			event.KeyInput.PressedDown = false;
 			dev = getDeviceFromHWnd(hWnd);
-
+#ifndef UNDER_CE
 			BYTE allKeys[256];
 			WORD KeyAsc=0;
 			GetKeyboardState(allKeys);
@@ -229,7 +234,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			if (dev)
 				dev->postEventFromUser(event);
-
+#endif
 			return 0;
 		}
 
@@ -247,9 +252,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	case WM_SYSCOMMAND:
+#ifndef UNDER_CE
 		// prevent screensaver or monitor powersave mode from starting
 		if (wParam == SC_SCREENSAVE ||
 			wParam == SC_MONITORPOWER)
+#endif
 			return 0;
 		break;
 	}
@@ -292,7 +299,7 @@ CIrrDeviceWin32::CIrrDeviceWin32(video::E_DRIVER_TYPE driverType,
 		// create the window, only if we do not use the null device
 
 		const c8* ClassName = "CIrrDeviceWin32";
-
+#ifndef UNDER_CE
 		// Register Class
 
 		WNDCLASSEX wcex;
@@ -351,6 +358,7 @@ CIrrDeviceWin32::CIrrDeviceWin32(video::E_DRIVER_TYPE driverType,
 
 		// fix ugly ATI driver bugs. Thanks to ariaci
 		MoveWindow(HWnd, windowLeft, windowTop, realWidth, realHeight, TRUE);
+#endif
 	}
 
 	// attach external window
@@ -402,9 +410,10 @@ CIrrDeviceWin32::~CIrrDeviceWin32()
 			EnvMap.erase(it);
 			break;
 		}
-
+#ifndef UNDER_CE
 	if (ChangedToFullScreen)
 		ChangeDisplaySettings(NULL,0);
+#endif
 }
 
 
@@ -450,7 +459,11 @@ void CIrrDeviceWin32::createDriver(video::E_DRIVER_TYPE driverType,
 		break;	
 	
 	case video::EDT_OPENGL:
-
+#ifdef _IRR_USE_OPENGL_ES_
+		if (Context)
+			VideoDriver = video::createOpenGLDriver(windowSize, eglWindowSurface, eglDisplay, fullscreen, 
+			                                        stencilbuffer, FileSystem, vsync, antiAlias);
+#else
 		#ifdef _IRR_COMPILE_WITH_OPENGL_
 		if (fullscreen)	switchToFullScreen(windowSize.Width, windowSize.Height, bits);
 		VideoDriver = video::createOpenGLDriver(windowSize, HWnd, bits, fullscreen, stencilbuffer, FileSystem,
@@ -462,8 +475,9 @@ void CIrrDeviceWin32::createDriver(video::E_DRIVER_TYPE driverType,
 		#else
 		os::Printer::log("OpenGL driver was not compiled into this dll.", ELL_ERROR);
 		#endif
+#endif
 		break;	
-
+#ifndef UNDER_CE
 	case video::EDT_SOFTWARE:
 		if (fullscreen)	switchToFullScreen(windowSize.Width, windowSize.Height, bits);
 		VideoDriver = video::createSoftwareDriver(windowSize, fullscreen, FileSystem, this);
@@ -473,7 +487,7 @@ void CIrrDeviceWin32::createDriver(video::E_DRIVER_TYPE driverType,
 		if (fullscreen)	switchToFullScreen(windowSize.Width, windowSize.Height, bits);
 		VideoDriver = video::createSoftwareDriver2(windowSize, fullscreen, FileSystem, this);
 		break;
-
+#endif
 	default:
 		// create null driver
 		VideoDriver = video::createNullDriver(FileSystem, windowSize);
@@ -550,6 +564,7 @@ void CIrrDeviceWin32::resizeIfNecessary()
 //! sets the caption of the window
 void CIrrDeviceWin32::setWindowCaption(const wchar_t* text)
 {
+#ifndef UNDER_CE
 	if (IsNonNTWindows)
 	{
 		core::stringc s = text;
@@ -557,6 +572,7 @@ void CIrrDeviceWin32::setWindowCaption(const wchar_t* text)
 	}
 	else
 		SetWindowTextW(HWnd, text);
+#endif
 }
 
 
@@ -564,6 +580,7 @@ void CIrrDeviceWin32::setWindowCaption(const wchar_t* text)
 //! presents a surface in the client area
 void CIrrDeviceWin32::present(video::IImage* image, s32 windowId, core::rect<s32>* src )
 {
+#ifndef UNDER_CE
 	HWND hwnd = HWnd;
 	if ( windowId )
 		hwnd = (HWND)windowId;
@@ -607,6 +624,7 @@ void CIrrDeviceWin32::present(video::IImage* image, s32 windowId, core::rect<s32
 
 		ReleaseDC(hwnd, dc);
 	}
+#endif
 }
 
 
@@ -632,6 +650,7 @@ bool CIrrDeviceWin32::isWindowActive()
 //! switchs to fullscreen
 bool CIrrDeviceWin32::switchToFullScreen(s32 width, s32 height, s32 bits)
 {
+#ifndef UNDER_CE
 	DEVMODE dm;
 	memset(&dm, 0, sizeof(dm));
 	dm.dmSize = sizeof(dm);
@@ -665,6 +684,7 @@ bool CIrrDeviceWin32::switchToFullScreen(s32 width, s32 height, s32 bits)
 	}
 
 	os::Printer::log("An unknown error occured while changing to fullscreen.", ELL_ERROR);
+#endif
 	return false;
 }
 
@@ -704,6 +724,7 @@ video::IVideoModeList* CIrrDeviceWin32::getVideoModeList()
 
 void CIrrDeviceWin32::getWindowsVersion(core::stringc& out)
 {
+#ifndef UNDER_CE
 	OSVERSIONINFOEX osvi;
 	BOOL bOsVersionInfoEx;
 
@@ -819,6 +840,7 @@ void CIrrDeviceWin32::getWindowsVersion(core::stringc& out)
 		out.append("Microsoft Win32s ");
 		break;
    }
+#endif
 }
 
 //! Notifies the device, that it has been resized
@@ -830,6 +852,7 @@ void CIrrDeviceWin32::OnResized()
 //! Sets if the window should be resizeable in windowed mode.
 void CIrrDeviceWin32::setResizeAble(bool resize)
 {
+#ifndef UNDER_CE
 	if (ExternalWindow || !getVideoDriver() || FullScreen)
 		return;
 
@@ -859,6 +882,7 @@ void CIrrDeviceWin32::setResizeAble(bool resize)
 
 	SetWindowPos(HWnd, HWND_TOP, windowLeft, windowTop, realWidth, realHeight, 
 		SWP_FRAMECHANGED | SWP_NOMOVE | SWP_SHOWWINDOW);
+#endif
 }
 
 
