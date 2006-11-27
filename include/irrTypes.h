@@ -62,6 +62,11 @@ typedef double				f64;
 
 } // end namespace
 
+//avoid min max conflict with the functions in CAnimatedMeshMD2
+#if defined(UNDER_CE) && !defined(NOMINMAX)
+#define NOMINMAX
+#endif
+
 #ifdef __SYMBIAN32__
 #   include <stddef.h> //for size_t
 #else
@@ -83,9 +88,9 @@ typedef unsigned short wchar_t;
 #endif
 //! define a break macro for debugging only in Win32 mode.
 #if defined(_DEBUG)
-#if defined(WIN32) && defined(_MSC_VER)
+#if defined(WIN32) && defined(_MSC_VER) &&!defined(UNDER_CE)
 #define _IRR_DEBUG_BREAK_IF( _CONDITION_ ) if (_CONDITION_) {_asm int 3}
-#else 
+#else
 #include "assert.h"
 #define _IRR_DEBUG_BREAK_IF( _CONDITION_ ) assert( !(_CONDITION_) );
 #endif
