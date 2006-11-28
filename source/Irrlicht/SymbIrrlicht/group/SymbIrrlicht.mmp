@@ -204,19 +204,19 @@ SOURCE                                  wrppm.c
 SOURCE                                  wrrle.c 
 SOURCE                                  wrtarga.c 
 
-SOURCEPATH                              ..\..\zlib 
-SOURCE                                  compress.c 
-SOURCE                                  crc32.c 
-SOURCE                                  deflate.c 
-SOURCE                                  gzio.c 
-SOURCE                                  infback.c 
-SOURCE                                  inffast.c 
-SOURCE                                  inflate.c 
-SOURCE                                  inftrees.c 
-SOURCE                                  trees.c 
-SOURCE                                  uncompr.c 
-SOURCE                                  zutil.c 
-SOURCE                                  adler32.c 
+// [-]    SOURCEPATH                              ..\..\zlib 
+// [-]    SOURCE                        compress.c 
+// [-]    SOURCE                        crc32.c 
+// [-]    SOURCE                        deflate.c 
+// [-]    SOURCE                        gzio.c 
+// [-]    SOURCE                        infback.c 
+// [-]    SOURCE                        inffast.c 
+// [-]    SOURCE                        inflate.c 
+// [-]    SOURCE                        inftrees.c 
+// [-]    SOURCE                        trees.c 
+// [-]    SOURCE                        uncompr.c 
+// [-]    SOURCE                        zutil.c 
+// [-]    SOURCE                        adler32.c 
 
 SOURCEPATH                              ..\data 
 START RESOURCE SymbIrrlicht.rss 
@@ -232,13 +232,14 @@ END
 SOURCEPATH                              ..\src 
 SOURCE                                  MainS60.cpp 
 
+USERINCLUDE                             ..\..\..\include\libc 
+USERINCLUDE                             ..\..\..\include 
 USERINCLUDE                             ..\..\..\..\include 
 USERINCLUDE                             ..\..\jpeglib 
-USERINCLUDE                             ..\..\zlib 
 USERINCLUDE                             ..\inc 
 SYSTEMINCLUDE                           \Epoc32\include 
 SYSTEMINCLUDE                           \Epoc32\include\libc 
-// [-]    LIBRARY                       $(NOINHERIT) 
+/* [+] */ LIBRARY                       ezlib.lib 
 LIBRARY                                 libgles_cm.lib 
 LIBRARY                                 estlib.lib 
 LIBRARY                                 euser.lib 

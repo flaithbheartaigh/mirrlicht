@@ -10,9 +10,14 @@
 #include "IrrCompileConfig.h"
 #ifdef _IRR_COMPILE_WITH_ZLIB_
     #ifndef _IRR_USE_NON_SYSTEM_ZLIB_
-    #include <zlib.h> // use system lib
+	  #if defined(__SYMBIAN32__)
+	    #include <ezlib.h>	    
+	  #else
+        #include <zlib.h> // use system lib
+      #endif
     #else // _IRR_USE_NON_SYSTEM_ZLIB_
-    #include "zlib/zlib.h" 
+      #include "zlib/zconf.h"
+      #include "zlib/zlib.h" 
     #endif // _IRR_USE_NON_SYSTEM_ZLIB_
 #endif // _IRR_COMPILE_WITH_ZLIB_
 
