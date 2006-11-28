@@ -98,7 +98,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /NDSProjectFile &quot;$(ProjectPath)&quot; /NDSSDKShortName S60_31"
-				AdditionalDependencies="estlib.lib euser.lib estor.lib edll.lib libgles_cm.lib $(NOINHERIT)"
+				AdditionalDependencies="estlib.lib euser.lib estor.lib edll.lib libgles_cm.lib"
 				OutputFile="C:\Dev\Temp\S60_3rd_FP1\\Epoc32\release\winscw\udeb\mirrlicht.dll"
 				AdditionalLibraryDirectories="C:\Dev\Temp\S60_3rd_FP1\\Epoc32\release\winscw\udeb"
 				IgnoreAllDefaultLibraries="TRUE"
@@ -408,6 +408,9 @@
 			<Filter
 				Name="video impl"
 				Filter="">
+				<File
+					RelativePath="..\..\CSoftwareTexture.cpp">
+				</File>
 				<File
 					RelativePath="..\..\CVideoModeList.cpp">
 				</File>
