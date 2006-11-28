@@ -312,6 +312,9 @@ typedef uLong FAR uLongf;
 #  endif
 #endif
 
+#if defined(__SYMBIAN32__) && defined(__GCCE__)
+#  define NO_vsnprintf
+#endif
 /* MVS linker does not support external names larger than 8 bytes */
 #if defined(__MVS__)
 #   pragma map(deflateInit_,"DEIN")
