@@ -11,11 +11,12 @@ TARGET                                  mirrlicht.dll
 TARGETTYPE                              dll 
 UID                                     0x1000008d 0xea3a6c3d 
 SECUREID                                0xe516d258 
-/* [+] */ USERINCLUDE                   ..\..\..\..\..\include 
+USERINCLUDE                             ..\..\..\..\..\include 
 SYSTEMINCLUDE                           \epoc32\include\libc 
 USERINCLUDE                             ..\inc 
 SYSTEMINCLUDE                           \epoc32\include 
 SOURCEPATH                              ..\..\.. 
+SOURCE                                  CSoftwareTexture.cpp 
 SOURCE                                  CAnimatedMeshB3d.cpp 
 SOURCE                                  CAnimatedMeshMD2.cpp 
 SOURCE                                  CAnimatedMeshMS3D.cpp 
@@ -145,7 +146,7 @@ SOURCE                                  C3DSMeshFileLoader.cpp
 SOURCEPATH                              ..\src 
 SOURCE                                  mirrlicht.cpp 
 
-/* [+] */ LIBRARY                       $(NOINHERIT) 
+// [-]    LIBRARY                       $(NOINHERIT) 
 LIBRARY                                 libgles_cm.lib 
 LIBRARY                                 estlib.lib 
 LIBRARY                                 euser.lib 
