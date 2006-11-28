@@ -82,7 +82,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/QIfist /NDSProjectFile &quot;$(ProjectPath)&quot; /NDSSDKShortName S60_31"
 				Optimization="0"
-				AdditionalIncludeDirectories="c:\Dev\Temp\mirrlicht\trunk\include;c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\jpeglib;c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\zlib;c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\SymbIrrlicht\inc;C:\Dev\Temp\S60_3rd_FP1\\Epoc32\include;C:\Dev\Temp\S60_3rd_FP1\\Epoc32\include\libc;"
+				AdditionalIncludeDirectories="E:\Dev\Graphics\mirrlicht\trunk\source\Irrlicht\SymbIrrlicht\inc;E:\Dev\Graphics\mirrlicht\trunk\source\Irrlicht\jpeglib;E:\Dev\Graphics\mirrlicht\trunk\include;&quot;$(TargetDir)\..\..\..\include&quot;;&quot;$(TargetDir)\..\..\..\include\libc&quot;"
 				PreprocessorDefinitions="__SYMBIAN32__;__SERIES60_31__;__SERIES60_3X__;__SUPPORT_CPP_EXCEPTIONS__;__EXE__;__WINSCW__;__WINS__;__CW32__;_DEBUG;_UNICODE;"
 				IgnoreStandardIncludePath="TRUE"
 				StringPooling="TRUE"
@@ -99,9 +99,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /NDSProjectFile &quot;$(ProjectPath)&quot; /NDSSDKShortName S60_31"
-				AdditionalDependencies="libgles_cm.lib estlib.lib euser.lib apparc.lib cone.lib eikcore.lib avkon.lib commonengine.lib efsrv.lib estor.lib eikcoctl.lib eexe.lib "
-				OutputFile="C:\Dev\Temp\S60_3rd_FP1\\Epoc32\release\winscw\udeb\SymbIrrlicht.exe"
-				AdditionalLibraryDirectories="C:\Dev\Temp\S60_3rd_FP1\\Epoc32\release\winscw\udeb"
+				AdditionalDependencies="estlib.lib ezlib.lib euser.lib apparc.lib cone.lib eikcore.lib avkon.lib commonengine.lib efsrv.lib estor.lib eikcoctl.lib eexe.lib libgles_cm.lib"
+				OutputFile="E:\Dev\Symbian\9.2\S60_3rd_FP1\Epoc32\release\winscw\udeb\SymbIrrlicht.exe"
+				AdditionalLibraryDirectories="&quot;$(TargetDir)&quot;"
 				IgnoreAllDefaultLibraries="TRUE"
 				ForceSymbolReferences="?_E32Bootstrap@@YGXXZ"
 				GenerateDebugInformation="TRUE"
@@ -610,76 +610,6 @@
 				<Filter
 					Name="extern"
 					Filter="">
-					<Filter
-						Name="zlib"
-						Filter="">
-						<File
-							RelativePath="..\zlib\adler32.c">
-						</File>
-						<File
-							RelativePath="..\zlib\compress.c">
-						</File>
-						<File
-							RelativePath="..\zlib\crc32.c">
-						</File>
-						<File
-							RelativePath="..\zlib\crc32.h">
-						</File>
-						<File
-							RelativePath="..\zlib\deflate.c">
-						</File>
-						<File
-							RelativePath="..\zlib\deflate.h">
-						</File>
-						<File
-							RelativePath="..\zlib\gzio.c">
-						</File>
-						<File
-							RelativePath="..\zlib\infback.c">
-						</File>
-						<File
-							RelativePath="..\zlib\inffast.c">
-						</File>
-						<File
-							RelativePath="..\zlib\inffast.h">
-						</File>
-						<File
-							RelativePath="..\zlib\inffixed.h">
-						</File>
-						<File
-							RelativePath="..\zlib\inflate.c">
-						</File>
-						<File
-							RelativePath="..\zlib\inflate.h">
-						</File>
-						<File
-							RelativePath="..\zlib\inftrees.c">
-						</File>
-						<File
-							RelativePath="..\zlib\inftrees.h">
-						</File>
-						<File
-							RelativePath="..\zlib\trees.c">
-						</File>
-						<File
-							RelativePath="..\zlib\trees.h">
-						</File>
-						<File
-							RelativePath="..\zlib\uncompr.c">
-						</File>
-						<File
-							RelativePath="..\zlib\zconf.h">
-						</File>
-						<File
-							RelativePath="..\zlib\zlib.h">
-						</File>
-						<File
-							RelativePath="..\zlib\zutil.c">
-						</File>
-						<File
-							RelativePath="..\zlib\zutil.h">
-						</File>
-					</Filter>
 					<Filter
 						Name="jpeglib"
 						Filter="">

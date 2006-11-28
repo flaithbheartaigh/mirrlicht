@@ -98,9 +98,11 @@ ones. */
 
 //! Define _IRR_USE_NON_SYSTEM_ZLIB_ to let irrlicht use the zlib which comes with irrlicht.
 /** If this is commented out, Irrlicht will try to compile using the zlib installed in the system.
- This is only used when _IRR_COMPILE_WITH_ZLIB_ is defined. */
+ This is only used when _IRR_COMPILE_WITH_ZLIB_ is defined. 
+ \remarks For symbian OS, we prefer use the system zlib in order to reduce the size of the code. */
+#if !defined(__SYMBIAN32__)
 #define _IRR_USE_NON_SYSTEM_ZLIB_
-
+#endif
 
 //! Define _IRR_COMPILE_WITH_JPEGLIB_ to enable compiling the engine using libjpeg.
 /** This enables the engine to read jpeg images. If you comment this out,
