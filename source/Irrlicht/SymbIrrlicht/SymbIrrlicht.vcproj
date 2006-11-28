@@ -82,7 +82,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/QIfist /NDSProjectFile &quot;$(ProjectPath)&quot; /NDSSDKShortName S60_31"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\SymbIrrlicht\inc;C:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\zlib;C:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\jpeglib;C:\Dev\Temp\mirrlicht\trunk\include;C:\Dev\Temp\S60_3rd_FP1\Epoc32\include;C:\Dev\Temp\S60_3rd_FP1\Epoc32\include\libc"
+				AdditionalIncludeDirectories="c:\Dev\Temp\mirrlicht\trunk\include;c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\jpeglib;c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\zlib;c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\SymbIrrlicht\inc;C:\Dev\Temp\S60_3rd_FP1\\Epoc32\include;C:\Dev\Temp\S60_3rd_FP1\\Epoc32\include\libc;"
 				PreprocessorDefinitions="__SYMBIAN32__;__SERIES60_31__;__SERIES60_3X__;__SUPPORT_CPP_EXCEPTIONS__;__EXE__;__WINSCW__;__WINS__;__CW32__;_DEBUG;_UNICODE;"
 				IgnoreStandardIncludePath="TRUE"
 				StringPooling="TRUE"
@@ -99,9 +99,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /NDSProjectFile &quot;$(ProjectPath)&quot; /NDSSDKShortName S60_31"
-				AdditionalDependencies="estlib.lib euser.lib apparc.lib cone.lib eikcore.lib avkon.lib commonengine.lib efsrv.lib estor.lib eikcoctl.lib eexe.lib libgles_cm.lib $(NOINHERIT)"
-				OutputFile="C:\Dev\Temp\S60_3rd_FP1\Epoc32\release\winscw\udeb\SymbIrrlicht.exe"
-				AdditionalLibraryDirectories="&quot;$(TargetDir)&quot;"
+				AdditionalDependencies="libgles_cm.lib estlib.lib euser.lib apparc.lib cone.lib eikcore.lib avkon.lib commonengine.lib efsrv.lib estor.lib eikcoctl.lib eexe.lib "
+				OutputFile="C:\Dev\Temp\S60_3rd_FP1\\Epoc32\release\winscw\udeb\SymbIrrlicht.exe"
+				AdditionalLibraryDirectories="C:\Dev\Temp\S60_3rd_FP1\\Epoc32\release\winscw\udeb"
 				IgnoreAllDefaultLibraries="TRUE"
 				ForceSymbolReferences="?_E32Bootstrap@@YGXXZ"
 				GenerateDebugInformation="TRUE"
@@ -130,6 +130,15 @@
 			<Tool
 				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
+		<Configuration
+			Name="Rel_S60_31_GCCE|Win32"
+			ConfigurationType="0">
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="RCMake.exe &quot;$(ProjectPath)&quot; S60_31 GCCE UREL build"
+				ReBuildCommandLine="RCMake.exe &quot;$(ProjectPath)&quot; S60_31 GCCE UREL rebuild"
+				CleanCommandLine="RCMake.exe &quot;$(ProjectPath)&quot; S60_31 GCCE UREL clean"/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -147,7 +156,7 @@
 						Name="VCCustomBuildTool"
 						CommandLine="RCmake.exe &quot;$(ProjectPath)&quot; S60_31 WINSCW UDEB
 "
-						Outputs="$(ProjectDir)\inc\SymbIrrlicht.rsg;"/>
+						Outputs="c:\Dev\Temp\mirrlicht\trunk\include\SymbIrrlicht.rsg;"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -161,7 +170,7 @@
 						Name="VCCustomBuildTool"
 						CommandLine="RCmake.exe &quot;$(ProjectPath)&quot; S60_31 WINSCW UDEB
 "
-						Outputs="$(ProjectDir)\inc\SymbIrrlicht_reg.rsg"/>
+						Outputs="c:\Dev\Temp\mirrlicht\trunk\include\SymbIrrlicht_reg.rsg;"/>
 				</FileConfiguration>
 			</File>
 		</Filter>

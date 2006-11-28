@@ -59,6 +59,10 @@ define out. */
 
 #define _IRR_USE_OPENGL_ES_
 
+//gcce compiler complains the remove in ISceneNode.h
+#if defined(__GCCE__) && defined(remove)
+#undef remove
+#endif
 #endif
 
 //! Define _IRR_COMPILE_WITH_X11_ to compile the Irrlicht engine with X11 support.
