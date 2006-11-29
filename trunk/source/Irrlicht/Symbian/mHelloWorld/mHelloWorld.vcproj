@@ -146,7 +146,7 @@
 						Name="VCCustomBuildTool"
 						CommandLine="RCmake.exe &quot;$(ProjectPath)&quot; S60_31 WINSCW UDEB
 "
-						Outputs="c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\mirrlicht\mHelloWorld\inc\mHelloWorld.rsg;"/>
+						Outputs="$(ProjectDir)\inc\mHelloWorld.rsg;"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -160,7 +160,7 @@
 						Name="VCCustomBuildTool"
 						CommandLine="RCmake.exe &quot;$(ProjectPath)&quot; S60_31 WINSCW UDEB
 "
-						Outputs="c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\mirrlicht\mHelloWorld\inc\mHelloWorld_reg.rsg;"/>
+						Outputs="$(ProjectDir)\inc\mHelloWorld_reg.rsg;"/>
 				</FileConfiguration>
 			</File>
 		</Filter>
@@ -184,24 +184,6 @@
 		</Filter>
 		<Filter
 			Name="inc">
-			<File
-				RelativePath=".\inc\mHelloWorld.hrh">
-			</File>
-			<File
-				RelativePath=".\inc\mHelloWorld.pan">
-			</File>
-			<File
-				RelativePath=".\inc\mHelloWorldApplication.h">
-			</File>
-			<File
-				RelativePath=".\inc\mHelloWorldAppui.h">
-			</File>
-			<File
-				RelativePath=".\inc\mHelloWorldAppView.h">
-			</File>
-			<File
-				RelativePath=".\inc\mHelloWorldDocument.h">
-			</File>
 		</Filter>
 		<Filter
 			Name="sis">
