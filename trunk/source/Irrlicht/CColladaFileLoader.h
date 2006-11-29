@@ -260,6 +260,37 @@ private:
 	core::array<SColladaInput> Inputs;
 
 	bool CreateInstances;
+
+	// currently supported COLLADA tag names	
+
+	core::stringc colladaSectionName;
+	core::stringc librarySectionName;
+	core::stringc assetSectionName;
+	core::stringc sceneSectionName;
+
+	core::stringc lightPrefabName;
+	core::stringc cameraPrefabName;
+	core::stringc materialSectionName;
+	core::stringc geometrySectionName;
+
+	core::stringc meshSectionName;
+	core::stringc sourceSectionName;
+	core::stringc arraySectionName;
+	core::stringc accessorSectionName;
+	core::stringc verticesSectionName;
+	core::stringc inputTagName;
+	core::stringc polygonsSectionName;
+	core::stringc polygonName;
+	core::stringc nodeSectionName;
+	core::stringc lookatNodeName;
+	core::stringc matrixNodeName;
+	core::stringc perspectiveNodeName;
+	core::stringc rotateNodeName;
+	core::stringc scaleNodeName;
+	core::stringc translateNodeName;
+	core::stringc skewNodeName;
+	core::stringc instanceNodeName;
+	core::stringc paramTagName;
 };
 
 

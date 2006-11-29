@@ -23,38 +23,6 @@ namespace irr
 {
 namespace scene
 {
-	// currently supported COLLADA tag names
-
-	const core::stringc colladaSectionName =   "COLLADA";
-	const core::stringc librarySectionName =   "library";
-	const core::stringc assetSectionName =     "asset";
-	const core::stringc sceneSectionName =     "scene";
-
-	const core::stringc lightPrefabName =      "light";
-	const core::stringc cameraPrefabName =     "camera";
-	const core::stringc materialSectionName =  "material";
-	const core::stringc geometrySectionName =  "geometry";
-
-	const core::stringc meshSectionName =      "mesh";
-	const core::stringc sourceSectionName =	   "source";
-	const core::stringc arraySectionName =     "array";
-	const core::stringc accessorSectionName =  "accessor";
-	const core::stringc verticesSectionName =  "vertices";
-	const core::stringc inputTagName =         "input";
-	const core::stringc polygonsSectionName =  "polygons";
-	const core::stringc polygonName =          "p";
-	const core::stringc nodeSectionName =      "node";
-	const core::stringc lookatNodeName =       "lookat";
-	const core::stringc matrixNodeName =       "matrix";
-	const core::stringc perspectiveNodeName =  "perspective";
-	const core::stringc rotateNodeName =       "rotate";
-	const core::stringc scaleNodeName =        "scale";
-	const core::stringc translateNodeName =    "translate";
-	const core::stringc skewNodeName =         "skew";
-	const core::stringc instanceNodeName =     "instance";
-
-	const core::stringc paramTagName =         "param";
-
 	const char* const inputSemanticNames[] = {"POSITION", "VERTEX", "NORMAL", "TEXCOORD",
 		"UV", "TANGENT", 0};
 
@@ -182,8 +150,36 @@ CColladaFileLoader::CColladaFileLoader(video::IVideoDriver* driver,
 		scene::ISceneManager* smgr, io::IFileSystem* fs)
 : Driver(driver), SceneManager(smgr), FileSystem(fs), DummyMesh(0),
 	CreateInstances(false), FirstLoadedMesh(0), LoadedMeshCount(0)
-{
-	
+{		
+	colladaSectionName =   "COLLADA";
+	librarySectionName =   "library";
+	assetSectionName =     "asset";
+	sceneSectionName =     "scene";
+
+	lightPrefabName =      "light";
+	cameraPrefabName =     "camera";
+	materialSectionName =  "material";
+	geometrySectionName =  "geometry";
+
+	meshSectionName =      "mesh";
+	sourceSectionName =	   "source";
+	arraySectionName =     "array";
+	accessorSectionName =  "accessor";
+	verticesSectionName =  "vertices";
+	inputTagName =         "input";
+	polygonsSectionName =  "polygons";
+	polygonName =          "p";
+	nodeSectionName =      "node";
+	lookatNodeName =       "lookat";
+	matrixNodeName =       "matrix";
+	perspectiveNodeName =  "perspective";
+	rotateNodeName =       "rotate";
+	scaleNodeName =        "scale";
+	translateNodeName =    "translate";
+	skewNodeName =         "skew";
+	instanceNodeName =     "instance";
+
+	paramTagName =         "param";	
 }
 
 
