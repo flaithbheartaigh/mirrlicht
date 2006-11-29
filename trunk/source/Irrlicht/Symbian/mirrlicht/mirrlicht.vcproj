@@ -558,11 +558,6 @@
 					Filter="">
 					<File
 						RelativePath="..\..\C3DSMeshFileLoader.cpp">
-						<FileConfiguration
-							Name="Deb_S60_31_WINSCW|Win32">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\C3DSMeshFileLoader.h">
@@ -578,76 +573,36 @@
 					</File>
 					<File
 						RelativePath="..\..\CColladaFileLoader.cpp">
-						<FileConfiguration
-							Name="Deb_S60_31_WINSCW|Win32">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\CCSMLoader.cpp">
-						<FileConfiguration
-							Name="Deb_S60_31_WINSCW|Win32">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\CDefaultMeshFormatLoader.cpp">
 					</File>
 					<File
 						RelativePath="..\..\CDMFLoader.cpp">
-						<FileConfiguration
-							Name="Deb_S60_31_WINSCW|Win32">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\CLMTSMeshFileLoader.cpp">
-						<FileConfiguration
-							Name="Deb_S60_31_WINSCW|Win32">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\CLMTSMeshFileLoader.h">
 					</File>
 					<File
 						RelativePath="..\..\CMY3DMeshFileLoader.cpp">
-						<FileConfiguration
-							Name="Deb_S60_31_WINSCW|Win32">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\CMY3DStuff.h">
 					</File>
 					<File
 						RelativePath="..\..\COBJMeshFileLoader.cpp">
-						<FileConfiguration
-							Name="Deb_S60_31_WINSCW|Win32">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\COCTLoader.cpp">
-						<FileConfiguration
-							Name="Deb_S60_31_WINSCW|Win32">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\COgreMeshFileLoader.cpp">
-						<FileConfiguration
-							Name="Deb_S60_31_WINSCW|Win32">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\COgreMeshFileLoader.h">
@@ -657,27 +612,12 @@
 					</File>
 					<File
 						RelativePath="..\..\CXAnimationPlayer.cpp">
-						<FileConfiguration
-							Name="Deb_S60_31_WINSCW|Win32">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\CXFileReader.cpp">
-						<FileConfiguration
-							Name="Deb_S60_31_WINSCW|Win32">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\CXMeshFileLoader.cpp">
-						<FileConfiguration
-							Name="Deb_S60_31_WINSCW|Win32">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
 					</File>
 				</Filter>
 				<Filter
@@ -687,16 +627,31 @@
 						RelativePath="..\..\CAnimatedMeshSceneNode.cpp">
 					</File>
 					<File
+						RelativePath="..\..\CAnimatedMeshSceneNode.h">
+					</File>
+					<File
 						RelativePath="..\..\CBillboardSceneNode.cpp">
+					</File>
+					<File
+						RelativePath="..\..\CBillboardSceneNode.h">
 					</File>
 					<File
 						RelativePath="..\..\CCameraFPSSceneNode.cpp">
 					</File>
 					<File
+						RelativePath="..\..\CCameraFPSSceneNode.h">
+					</File>
+					<File
 						RelativePath="..\..\CCameraMayaSceneNode.cpp">
 					</File>
 					<File
+						RelativePath="..\..\CCameraMayaSceneNode.h">
+					</File>
+					<File
 						RelativePath="..\..\CCameraSceneNode.cpp">
+					</File>
+					<File
+						RelativePath="..\..\CCameraSceneNode.h">
 					</File>
 					<File
 						RelativePath="..\..\CCubeSceneNode.cpp">
