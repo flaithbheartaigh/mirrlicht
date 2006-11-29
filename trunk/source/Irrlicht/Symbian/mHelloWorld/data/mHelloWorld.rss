@@ -107,7 +107,7 @@ RESOURCE MENU_PANE r_mHelloWorld_menu
                 },
         MENU_ITEM
                 {
-                command = EmHelloWorldCommand2;
+                command = EmShowTerrain;
                 txt = qtn_hewb_command2;
                 },
         MENU_ITEM
