@@ -20,7 +20,7 @@ rls_string qtn_hewb_short_caption_string "mHellowWorld"
 rls_string qtn_hewb_command1 "Hello"
 
 //d:Second item in "Options" menu pane, "exit" event.
-rls_string qtn_hewb_command2 "Hello from file"
+rls_string qtn_hewb_command2 "Terrain"
 
 //d:Third item in "Options" menu pane, "exit" event.
 rls_string qtn_hewb_exit "Exit"
