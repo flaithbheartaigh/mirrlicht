@@ -81,7 +81,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/QIfist /NDSProjectFile &quot;$(ProjectPath)&quot; /NDSSDKShortName S60_31"
 				Optimization="0"
-				AdditionalIncludeDirectories="c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\Symbian\mirrlicht\inc;C:\Dev\Temp\S60_3rd_FP1\\epoc32\include;C:\Dev\Temp\S60_3rd_FP1\\epoc32\include\libc;C:\Dev\Temp\mirrlicht\trunk\include"
+				AdditionalIncludeDirectories="c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\Symbian\mirrlicht\inc;C:\Dev\Temp\mirrlicht\trunk\include;c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\jpeglib;C:\Dev\Temp\S60_3rd_FP1\\epoc32\include;C:\Dev\Temp\S60_3rd_FP1\\epoc32\include\libc"
 				PreprocessorDefinitions="__SYMBIAN32__;__SERIES60_31__;__SERIES60_3X__;__SUPPORT_CPP_EXCEPTIONS__;__DLL__;__WINSCW__;__WINS__;__CW32__;_DEBUG;_UNICODE;"
 				IgnoreStandardIncludePath="TRUE"
 				StringPooling="TRUE"
@@ -98,7 +98,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /NDSProjectFile &quot;$(ProjectPath)&quot; /NDSSDKShortName S60_31"
-				AdditionalDependencies="estlib.lib euser.lib estor.lib edll.lib libgles_cm.lib"
+				AdditionalDependencies="euser.lib estor.lib edll.lib estlib.lib ezlib.lib libgles_cm.lib"
 				OutputFile="C:\Dev\Temp\S60_3rd_FP1\\Epoc32\release\winscw\udeb\mirrlicht.dll"
 				AdditionalLibraryDirectories="C:\Dev\Temp\S60_3rd_FP1\\Epoc32\release\winscw\udeb"
 				IgnoreAllDefaultLibraries="TRUE"
@@ -173,12 +173,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\include\Keycodes.h">
-			</File>
-			<File
-				RelativePath=".\inc\mirrlicht.h">
-			</File>
-			<File
-				RelativePath=".\inc\mirrlicht.pan">
 			</File>
 			<File
 				RelativePath="..\..\..\..\include\SIrrCreationParameters.h">
@@ -260,9 +254,6 @@
 		</Filter>
 		<Filter
 			Name="src">
-			<File
-				RelativePath=".\src\mirrlicht.cpp">
-			</File>
 			<Filter
 				Name="gui impl"
 				Filter="">
@@ -567,6 +558,11 @@
 					Filter="">
 					<File
 						RelativePath="..\..\C3DSMeshFileLoader.cpp">
+						<FileConfiguration
+							Name="Deb_S60_31_WINSCW|Win32">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\C3DSMeshFileLoader.h">
@@ -582,36 +578,76 @@
 					</File>
 					<File
 						RelativePath="..\..\CColladaFileLoader.cpp">
+						<FileConfiguration
+							Name="Deb_S60_31_WINSCW|Win32">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\CCSMLoader.cpp">
+						<FileConfiguration
+							Name="Deb_S60_31_WINSCW|Win32">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\CDefaultMeshFormatLoader.cpp">
 					</File>
 					<File
 						RelativePath="..\..\CDMFLoader.cpp">
+						<FileConfiguration
+							Name="Deb_S60_31_WINSCW|Win32">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\CLMTSMeshFileLoader.cpp">
+						<FileConfiguration
+							Name="Deb_S60_31_WINSCW|Win32">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\CLMTSMeshFileLoader.h">
 					</File>
 					<File
 						RelativePath="..\..\CMY3DMeshFileLoader.cpp">
+						<FileConfiguration
+							Name="Deb_S60_31_WINSCW|Win32">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\CMY3DStuff.h">
 					</File>
 					<File
 						RelativePath="..\..\COBJMeshFileLoader.cpp">
+						<FileConfiguration
+							Name="Deb_S60_31_WINSCW|Win32">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\COCTLoader.cpp">
+						<FileConfiguration
+							Name="Deb_S60_31_WINSCW|Win32">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\COgreMeshFileLoader.cpp">
+						<FileConfiguration
+							Name="Deb_S60_31_WINSCW|Win32">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\COgreMeshFileLoader.h">
@@ -621,12 +657,27 @@
 					</File>
 					<File
 						RelativePath="..\..\CXAnimationPlayer.cpp">
+						<FileConfiguration
+							Name="Deb_S60_31_WINSCW|Win32">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\CXFileReader.cpp">
+						<FileConfiguration
+							Name="Deb_S60_31_WINSCW|Win32">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\CXMeshFileLoader.cpp">
+						<FileConfiguration
+							Name="Deb_S60_31_WINSCW|Win32">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
 					</File>
 				</Filter>
 				<Filter
@@ -827,6 +878,239 @@
 				<File
 					RelativePath="..\..\os.cpp">
 				</File>
+				<Filter
+					Name="extern"
+					Filter="">
+					<Filter
+						Name="jpeglib"
+						Filter="">
+						<File
+							RelativePath="..\..\jpeglib\\cderror.h">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\cdjpeg.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\cdjpeg.h">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jcapimin.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jcapistd.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jccoefct.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jccolor.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jcdctmgr.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jchuff.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jchuff.h">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jcinit.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jcmainct.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jcmarker.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jcmaster.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jcomapi.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jconfig.h">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jcparam.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jcphuff.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jcprepct.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jcsample.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jctrans.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdapimin.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdapistd.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdatadst.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdatasrc.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdcoefct.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdcolor.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdct.h">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jddctmgr.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdhuff.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdhuff.h">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdinput.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdmainct.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdmarker.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdmaster.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdmerge.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdphuff.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdpostct.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdsample.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jdtrans.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jerror.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jerror.h">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jfdctflt.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jfdctfst.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jfdctint.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jidctflt.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jidctfst.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jidctint.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jidctred.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jinclude.h">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jmemmgr.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jmemnobs.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jmemsys.h">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jmorecfg.h">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jpegint.h">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jpeglib.h">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jpegtran.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jquant1.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jquant2.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jutils.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\jversion.h">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\rdbmp.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\rdcolmap.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\rdgif.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\rdppm.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\rdrle.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\rdswitch.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\rdtarga.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\transupp.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\transupp.h">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\wrbmp.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\wrgif.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\wrppm.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\wrrle.c">
+						</File>
+						<File
+							RelativePath="..\..\jpeglib\\wrtarga.c">
+						</File>
+					</Filter>
+				</Filter>
 			</Filter>
 		</Filter>
 	</Files>

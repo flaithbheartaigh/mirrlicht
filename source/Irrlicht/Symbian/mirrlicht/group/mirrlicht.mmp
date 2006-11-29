@@ -8,9 +8,16 @@
 ============================================================================
 */
 TARGET                                  mirrlicht.dll 
-TARGETTYPE                              dll 
+
+TARGETTYPE                              cdll 
+#ifndef WINS  
+  TARGETTYPE                              dll 
+#endif  
+
 UID                                     0x1000008d 0xea3a6c3d 
 SECUREID                                0xe516d258 
+// [-]    USERINCLUDE                   ..\..\..\zlib 
+USERINCLUDE                             ..\..\..\jpeglib 
 USERINCLUDE                             ..\..\..\..\..\include 
 SYSTEMINCLUDE                           \epoc32\include\libc 
 USERINCLUDE                             ..\inc 
@@ -143,10 +150,84 @@ SOURCE                                  irrXML.cpp
 SOURCE                                  os.cpp 
 SOURCE                                  C3DSMeshFileLoader.cpp 
 
-SOURCEPATH                              ..\src 
-SOURCE                                  mirrlicht.cpp 
+SOURCEPATH                              ..\..\..\jpeglib 
+SOURCE                                  wrtarga.c 
+SOURCE                                  wrrle.c 
+SOURCE                                  wrppm.c 
+SOURCE                                  wrgif.c 
+SOURCE                                  wrbmp.c 
+SOURCE                                  transupp.c 
+SOURCE                                  rdtarga.c 
+SOURCE                                  rdswitch.c 
+SOURCE                                  rdrle.c 
+SOURCE                                  rdppm.c 
+SOURCE                                  rdgif.c 
+SOURCE                                  rdcolmap.c 
+SOURCE                                  rdbmp.c 
+SOURCE                                  jutils.c 
+SOURCE                                  jquant2.c 
+SOURCE                                  jquant1.c 
+SOURCE                                  jpegtran.c 
+SOURCE                                  jmemnobs.c 
+SOURCE                                  jmemmgr.c 
+SOURCE                                  jidctred.c 
+SOURCE                                  jidctint.c 
+SOURCE                                  jidctfst.c 
+SOURCE                                  jidctflt.c 
+SOURCE                                  jfdctint.c 
+SOURCE                                  jfdctfst.c 
+SOURCE                                  jfdctflt.c 
+SOURCE                                  jerror.c 
+SOURCE                                  jdtrans.c 
+SOURCE                                  jdsample.c 
+SOURCE                                  jdpostct.c 
+SOURCE                                  jdphuff.c 
+SOURCE                                  jdmerge.c 
+SOURCE                                  jdmaster.c 
+SOURCE                                  jdmarker.c 
+SOURCE                                  jdmainct.c 
+SOURCE                                  jdinput.c 
+SOURCE                                  jdhuff.c 
+SOURCE                                  jddctmgr.c 
+SOURCE                                  jdcolor.c 
+SOURCE                                  jdcoefct.c 
+SOURCE                                  jdatasrc.c 
+SOURCE                                  jdatadst.c 
+SOURCE                                  jdapistd.c 
+SOURCE                                  jdapimin.c 
+SOURCE                                  jctrans.c 
+SOURCE                                  jcsample.c 
+SOURCE                                  jcprepct.c 
+SOURCE                                  jcphuff.c 
+SOURCE                                  jcparam.c 
+SOURCE                                  jcomapi.c 
+SOURCE                                  jcmaster.c 
+SOURCE                                  jcmarker.c 
+SOURCE                                  jcmainct.c 
+SOURCE                                  jcinit.c 
+SOURCE                                  jchuff.c 
+SOURCE                                  jcdctmgr.c 
+SOURCE                                  jccolor.c 
+SOURCE                                  jccoefct.c 
+SOURCE                                  jcapistd.c 
+SOURCE                                  jcapimin.c 
+SOURCE                                  cdjpeg.c 
 
-// [-]    LIBRARY                       $(NOINHERIT) 
+// [-]    SOURCEPATH                              ..\..\..\zlib 
+// [-]    SOURCE                        zutil.c 
+// [-]    SOURCE                        uncompr.c 
+// [-]    SOURCE                        trees.c 
+// [-]    SOURCE                        inftrees.c 
+// [-]    SOURCE                        inflate.c 
+// [-]    SOURCE                        inffast.c 
+// [-]    SOURCE                        infback.c 
+// [-]    SOURCE                        gzio.c 
+// [-]    SOURCE                        deflate.c 
+// [-]    SOURCE                        crc32.c 
+// [-]    SOURCE                        compress.c 
+// [-]    SOURCE                        adler32.c 
+
+/* [+] */ LIBRARY                       ezlib.lib 
 LIBRARY                                 libgles_cm.lib 
 LIBRARY                                 estlib.lib 
 LIBRARY                                 euser.lib 
