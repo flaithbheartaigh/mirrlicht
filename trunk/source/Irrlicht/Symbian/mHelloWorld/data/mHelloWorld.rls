@@ -11,10 +11,10 @@
 //  LOCALISATION STRINGS
 
 //d:Caption string for app.
-rls_string qtn_hewb_caption_string "m"
+rls_string qtn_hewb_caption_string "mHellowWorld"
 
 //d:Short caption string for app.
-rls_string qtn_hewb_short_caption_string "m"
+rls_string qtn_hewb_short_caption_string "mHellowWorld"
 
 //d:First item in "Options" menu pane, "hello" event.
 rls_string qtn_hewb_command1 "Hello"
