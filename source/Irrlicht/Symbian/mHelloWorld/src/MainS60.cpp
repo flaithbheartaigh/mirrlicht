@@ -7,34 +7,26 @@
 #include <akndoc.h>
 #include <coecntrl.h>
 #include <eikstart.h>
-#include <pathinfo.h>
+
+#include "mHelloWorld.hrh" //menu command
+
 #include <unistd.h> //for chdir
 #include <sys/reent.h> //for CloseSTDLIB
-#define USE_IRRLICHT
+
 
 class CMainS60Application;
 class CMainS60AppUi;
 class CMainS60AppView;
 class CMainS60Document;
 
-#ifdef USE_IRRLICHT
-	#include "irrlicht.h"
-	using namespace irr;
-	using namespace core;
-	using namespace scene;
-	using namespace video;
-	using namespace io;
-	using namespace gui;
+#include "irrlicht.h"
+using namespace irr;
+using namespace core;
+using namespace scene;
+using namespace video;
+using namespace io;
+using namespace gui;
 	
-#else
-	#include <GLES/egl.h>	
-	static EGLDisplay	eglDisplay;
-	static EGLConfig	eglConfig;
-	static EGLContext	eglContext;
-	static EGLSurface	eglWindowSurface;
-	
-
-#endif
 /**
 * CMainS60Application application class.
 * Provides factory to create concrete document object.
@@ -155,6 +147,21 @@ class CMainS60AppView : public CCoeControl
         */
         void Draw( const TRect& aRect ) const;
 
+		/** 
+		* Get the irrlicht render device
+		*/
+		IrrlichtDevice* GetIrrDevice() const { return device; }
+
+		/**
+		* Get the text GUI element. For setting FPS in the update routine
+		*/
+		IGUIStaticText *GetGUIFPSText() const { return textFPS; }
+
+		/** 
+		* Handle key inputs
+		*/
+		virtual TKeyResponse OfferKeyEventL(const TKeyEvent& aKeyEvent,TEventCode aType);
+
         /**
         * From CoeControl, SizeChanged.
         * Called by framework when the view size is changed.
@@ -179,9 +186,11 @@ class CMainS60AppView : public CCoeControl
         CMainS60AppView();
 
 		CPeriodic*	update;
-#ifdef USE_IRRLICHT
+
 		IrrlichtDevice *device;	
-#endif
+
+		//text to show FPS (frames per second)
+		IGUIStaticText *textFPS;
 };
 
 /**
@@ -298,9 +307,13 @@ void CMainS60AppUi::ConstructL()
 {
     // Initialise app UI with standard value.
     BaseConstructL();
+	// Disable key blocking
+	SetKeyBlockMode(ENoKeyBlock);
 
 	// Create view object
 	iAppView = CMainS60AppView::NewL( ClientRect() );
+
+	AddToStackL( iAppView );
 }
 
 // C++ default constructor can NOT contain any code, that might leave.
@@ -329,6 +342,54 @@ void CMainS60AppUi::HandleCommandL( TInt aCommand )
 			CloseSTDLIB();
             Exit();
             break;
+		case EmShowTerrain:
+			{
+				IrrlichtDevice* irrDevice = iAppView->GetIrrDevice();
+				ISceneManager* smgr = irrDevice->getSceneManager();
+				IVideoDriver* driver = irrDevice->getVideoDriver();
+
+				smgr->clear();
+				driver->removeAllTextures();
+
+				scene::ICameraSceneNode* camera = 
+					smgr->addCameraSceneNodeFPS(0,100.0f,1200.0f);
+
+				camera->setPosition(core::vector3df(1900*2,255*2,3700*2));
+				camera->setTarget(core::vector3df(2397*2,343*2,2700*2));
+				camera->setFarValue(12000.0f);
+
+				// add terrain scene node
+				scene::ITerrainSceneNode* terrain = smgr->addTerrainSceneNode( 
+					"../../media/terrain-heightmap.bmp");
+
+				terrain->setScale(core::vector3df(40, 4.4f, 40));
+				terrain->setMaterialFlag(video::EMF_LIGHTING, false);
+
+				terrain->setMaterialTexture(0, driver->getTexture("../../media/terrain-texture-small.jpg"));
+				terrain->setMaterialTexture(1, driver->getTexture("../../media/detailmap3.jpg"));
+
+				terrain->setMaterialType(video::EMT_DETAIL_MAP);
+
+				terrain->scaleTexture(1.0f, 20.0f);
+
+#if 0 //The collision detection causes crash. Therefore it's disabled.
+			
+				// create triangle selector for the terrain	
+				scene::ITriangleSelector* selector
+					= smgr->createTerrainTriangleSelector(terrain, 0);
+				terrain->setTriangleSelector(selector);
+				selector->drop();
+
+				// create collision response animator and attach it to the camera
+				scene::ISceneNodeAnimator* anim = smgr->createCollisionResponseAnimator(
+					selector, camera, core::vector3df(60,100,60),
+					core::vector3df(0,0,0), 
+					core::vector3df(0,50,0));
+				camera->addAnimator(anim);
+				anim->drop();
+#endif
+			}
+			break;
     }
 }
 
@@ -373,7 +434,6 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
     // Activate the window, which makes it ready to be drawn
     ActivateL();
 	
-#ifdef USE_IRRLICHT
 	chdir("C:\\irrlicht\\dummy\\dummy");	
 
 	SIrrlichtCreationParameters parameters;
@@ -383,6 +443,8 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 	device = createDeviceEx(parameters);
 	IVideoDriver* driver = device->getVideoDriver();
 	ISceneManager* smgr = device->getSceneManager();
+	IGUIEnvironment* guienv = device->getGUIEnvironment();
+	textFPS = guienv->addStaticText(L"FPS",	rect<int>(10,10,40,22), true);
 	IAnimatedMesh* mesh = smgr->getMesh("../../media/sydney.md2");
 	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode( mesh );
 	if (node)
@@ -392,34 +454,6 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 		node->setMaterialTexture( 0, driver->getTexture("../../media/sydney.bmp") );
 	}
 	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
-#else
-    //
-    // EGL creation
-    //
-	static const EGLint s_configAttribs[] =
-	{
-		EGL_RED_SIZE,		8,
-		EGL_GREEN_SIZE, 	8,
-		EGL_BLUE_SIZE,		8,
-		EGL_ALPHA_SIZE, 	8,
-		EGL_DEPTH_SIZE, 	16,
-		EGL_NONE
-	};
-
-	EGLint numConfigs;
-	EGLint majorVersion;
-	EGLint minorVersion;
-
-	eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	eglInitialize(eglDisplay, &majorVersion, &minorVersion);
-	eglGetConfigs(eglDisplay, NULL, 0, &numConfigs);
-	eglChooseConfig(eglDisplay, s_configAttribs, &eglConfig, 1, &numConfigs);
-	eglContext = eglCreateContext(eglDisplay, eglConfig, NULL, NULL);
-
-	eglWindowSurface = eglCreateWindowSurface(eglDisplay, eglConfig, &Window(), NULL);
-	eglMakeCurrent(eglDisplay, eglWindowSurface, eglWindowSurface, eglContext);
-
-#endif	
 	
     update = CPeriodic::NewL( CActive::EPriorityIdle );
     
@@ -437,18 +471,7 @@ CMainS60AppView::CMainS60AppView()
 CMainS60AppView::~CMainS60AppView()
 {
 	delete update;
-#if defined(USE_IRRLICHT)	
 	device->drop();
-#else
-	
-	//
-	// EGL destruction
-	//
-	eglMakeCurrent(eglDisplay, NULL, NULL, NULL);
-	eglDestroyContext(eglDisplay, eglContext);
-	eglDestroySurface(eglDisplay, eglWindowSurface);
-	eglTerminate(eglDisplay);	
-#endif
 }
 
 
@@ -462,18 +485,17 @@ void CMainS60AppView::SizeChanged()
 {  
 	TSize size;
     size = this->Size();
-#ifdef USE_IRRLICHT
 	//IVideoDriver* driver = device->getVideoDriver();
 	//driver->OnResize(core::dimension2d<s32>(size.iWidth,size.iHeight)); 
-#endif
 }
 
 TInt CMainS60AppView::Update( TAny* aInstance )
 {
+	static int lastFPS = -1;
+
 	if (aInstance)
 	{		
-#ifdef USE_IRRLICHT
-		IrrlichtDevice* irrDevice = ((CMainS60AppView*)aInstance)->device;
+		IrrlichtDevice* irrDevice = ((CMainS60AppView*)aInstance)->GetIrrDevice();
 		IVideoDriver* driver = irrDevice->getVideoDriver();
 		ISceneManager* smgr = irrDevice->getSceneManager();
 		IGUIEnvironment* guienv = irrDevice->getGUIEnvironment();
@@ -481,18 +503,65 @@ TInt CMainS60AppView::Update( TAny* aInstance )
 			driver->beginScene(true, true, SColor(255,100,101,140));
 
 			smgr->drawAll();
-			//guienv->drawAll();
+			guienv->drawAll();
 
 			driver->endScene();
+
+			// display frames per second in window title
+			int fps = driver->getFPS();
+			if (lastFPS != fps)
+			{
+				core::stringw str = L"FPS:";				
+				str += fps;
+				
+				IGUIStaticText* fpsText=((CMainS60AppView*)aInstance)->GetGUIFPSText();
+				fpsText->setText(str.c_str());
+				lastFPS = fps;
+			}
+
 		}
-#else
-		glClearColor(255,0,0,255);
-		glClear(GL_COLOR_BUFFER_BIT);	
-	    eglSwapBuffers( eglDisplay, eglWindowSurface );
-#endif
 	}
         
     return 0; 
+}
+
+TKeyResponse CMainS60AppView::OfferKeyEventL(const TKeyEvent& aKeyEvent, TEventCode aType)
+{
+	irr::SEvent event;
+	if(aType == EEventKeyDown || aType == EEventKeyUp ){
+		event.EventType = irr::EET_KEY_INPUT_EVENT;
+		if(aType == EEventKeyDown){
+			event.KeyInput.PressedDown = true;
+			//device->getLogger()->log("KeyDown");
+		}else{
+			event.KeyInput.PressedDown = false;
+			//device->getLogger()->log("KeyDown");
+		}
+		switch(aKeyEvent.iScanCode)
+		{
+		case EStdKeyNkp2:
+		case EStdKeyUpArrow:			
+			event.KeyInput.Key = irr::KEY_UP;
+			device->postEventFromUser(event);
+			return EKeyWasConsumed;
+		case EStdKeyNkp8:
+		case EStdKeyDownArrow:
+			event.KeyInput.Key = irr::KEY_DOWN;			
+			device->postEventFromUser(event);
+			return EKeyWasConsumed;	
+		case EStdKeyNkp4:
+		case EStdKeyLeftArrow:
+			event.KeyInput.Key = irr::KEY_LEFT;			
+			device->postEventFromUser(event);
+			return EKeyWasConsumed;
+		case EStdKeyNkp6:
+		case EStdKeyRightArrow:
+			event.KeyInput.Key = irr::KEY_RIGHT;			
+			device->postEventFromUser(event);
+			return EKeyWasConsumed;
+		}
+	}
+	return EKeyWasNotConsumed;
 }
 
 //
