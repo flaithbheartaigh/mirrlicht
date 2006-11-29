@@ -8,9 +8,8 @@
 #include <coecntrl.h>
 #include <eikstart.h>
 #include <pathinfo.h>
-
-#include <GLES/egl.h>
-
+#include <unistd.h> //for chdir
+#include <sys/reent.h> //for CloseSTDLIB
 #define USE_IRRLICHT
 
 class CMainS60Application;
@@ -26,16 +25,14 @@ class CMainS60Document;
 	using namespace video;
 	using namespace io;
 	using namespace gui;
-
-	static IrrlichtDevice *device;	
+	
 #else
-	#include "Game.h"
+	#include <GLES/egl.h>	
 	static EGLDisplay	eglDisplay;
 	static EGLConfig	eglConfig;
 	static EGLContext	eglContext;
 	static EGLSurface	eglWindowSurface;
-
-	static Game game;
+	
 
 #endif
 /**
@@ -182,6 +179,9 @@ class CMainS60AppView : public CCoeControl
         CMainS60AppView();
 
 		CPeriodic*	update;
+#ifdef USE_IRRLICHT
+		IrrlichtDevice *device;	
+#endif
 };
 
 /**
@@ -253,7 +253,7 @@ class CMainS60Document : public CAknDocument
 //
 
 // UID for the application - this should correspond to the uid defined in the mmp file
-const TUid KUidMainS60App = { 0xed8ee21e };
+const TUid KUidMainS60App = { 0xe516d258 };
 
 
 //
@@ -326,6 +326,7 @@ void CMainS60AppUi::HandleCommandL( TInt aCommand )
     switch( aCommand )
     {
         case EAknSoftkeyExit:
+			CloseSTDLIB();
             Exit();
             break;
     }
@@ -363,34 +364,6 @@ CMainS60AppView* CMainS60AppView::NewLC( const TRect& aRect )
 // Symbian 2nd phase constructor can leave.
 void CMainS60AppView::ConstructL( const TRect& aRect )
 {
-/*
-	// Set the default path
-	RFs fileServer;
-	TFileName path;
-	char buffer[128] = {0};
-	char* temp = 0;
-
-	fileServer.Connect();
-	path = PathInfo::MemoryCardRootPath();
-	path.Append(PathInfo::OthersPath());
-	fileServer.Close();
-
-	if (path.Length() + 1 <= 128)
-	{
-		temp = (char*)path.Ptr();	
-		for (int i = 0; i < path.Length()*2; i+=2)
-		{
-			buffer[i/2] = temp[i];
-		}
-		buffer[path.Length()] = 0;
-	}
-*/
-	// Set the search path to the Others directory on the memory card
-	//Loader::setSearchPath(buffer);
-#ifndef USE_IRRLICHT
-	Loader::setSearchPath("C:\\Temp\\VS2003Temp\\Symbian1\\data\\");
-#endif
-
     // Create a window for this application view
     CreateWindowL();
 
@@ -401,6 +374,8 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
     ActivateL();
 	
 #ifdef USE_IRRLICHT
+	chdir("C:\\irrlicht\\dummy\\dummy");	
+
 	SIrrlichtCreationParameters parameters;
 	parameters.WindowSize = core::dimension2d<s32>(240, 320);
 	parameters.DriverType = EDT_OPENGL;
@@ -408,14 +383,13 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 	device = createDeviceEx(parameters);
 	IVideoDriver* driver = device->getVideoDriver();
 	ISceneManager* smgr = device->getSceneManager();
-	//IAnimatedMesh* mesh = smgr->getMesh("C:\\Temp\\VS2003Temp\\Symbian1\\data\\sydney.md2");
-	IAnimatedMesh* mesh = smgr->getMesh("C:\\irrlicht_media\\sydney.md2");
+	IAnimatedMesh* mesh = smgr->getMesh("../../media/sydney.md2");
 	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode( mesh );
 	if (node)
 	{
 		node->setMaterialFlag(EMF_LIGHTING, false);
 		node->setMD2Animation ( scene::EMAT_STAND );
-		node->setMaterialTexture( 0, driver->getTexture("C:\\irrlicht_media\\sydney.bmp") );
+		node->setMaterialTexture( 0, driver->getTexture("../../media/sydney.bmp") );
 	}
 	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
 #else
@@ -444,9 +418,6 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 
 	eglWindowSurface = eglCreateWindowSurface(eglDisplay, eglConfig, &Window(), NULL);
 	eglMakeCurrent(eglDisplay, eglWindowSurface, eglWindowSurface, eglContext);
-	game.init();
-
-	game.reshape(aRect.Width(), aRect.Height());
 
 #endif	
 	
@@ -469,7 +440,6 @@ CMainS60AppView::~CMainS60AppView()
 #if defined(USE_IRRLICHT)	
 	device->drop();
 #else
-	game.destroy();
 	
 	//
 	// EGL destruction
@@ -495,20 +465,19 @@ void CMainS60AppView::SizeChanged()
 #ifdef USE_IRRLICHT
 	//IVideoDriver* driver = device->getVideoDriver();
 	//driver->OnResize(core::dimension2d<s32>(size.iWidth,size.iHeight)); 
-#else
-    game.reshape(size.iWidth, size.iHeight);
 #endif
 }
 
 TInt CMainS60AppView::Update( TAny* aInstance )
 {
 	if (aInstance)
-	{
+	{		
 #ifdef USE_IRRLICHT
-		IVideoDriver* driver = device->getVideoDriver();
-		ISceneManager* smgr = device->getSceneManager();
-		IGUIEnvironment* guienv = device->getGUIEnvironment();
-		if(device->run()){
+		IrrlichtDevice* irrDevice = ((CMainS60AppView*)aInstance)->device;
+		IVideoDriver* driver = irrDevice->getVideoDriver();
+		ISceneManager* smgr = irrDevice->getSceneManager();
+		IGUIEnvironment* guienv = irrDevice->getGUIEnvironment();
+		if(irrDevice->run()){
 			driver->beginScene(true, true, SColor(255,100,101,140));
 
 			smgr->drawAll();
@@ -517,8 +486,8 @@ TInt CMainS60AppView::Update( TAny* aInstance )
 			driver->endScene();
 		}
 #else
-		game.update();
-	
+		glClearColor(255,0,0,255);
+		glClear(GL_COLOR_BUFFER_BIT);	
 	    eglSwapBuffers( eglDisplay, eglWindowSurface );
 #endif
 	}
