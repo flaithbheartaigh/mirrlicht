@@ -7,51 +7,40 @@
  Description : Main application class
 ============================================================================
 */
+TARGET                                  mHelloWorld.exe 
+TARGETTYPE                              exe 
+UID                                     0x0 0xe516d258 
+SECUREID                                0xe516d258 
+EPOCSTACKSIZE                           0x5000 
+SOURCEPATH                              ..\data 
+START RESOURCE mHelloWorld.rss 
+  TARGETPATH                              \resource\apps 
+  HEADER                                   
+END  
 
-TARGET            mHelloWorld.exe
-TARGETTYPE        exe
-UID		          0x0 0xe516d258
+START RESOURCE mHelloWorld_reg.rss 
+  TARGETPATH                              \private\10003a3f\apps 
+END  
 
-SECUREID	      0xe516d258
-EPOCSTACKSIZE	  0x5000
 
-SOURCEPATH        ..\src
-SOURCE            mHelloWorld.cpp
-SOURCE            mHelloWorldApplication.cpp
-SOURCE            mHelloWorldAppView.cpp
-SOURCE            mHelloWorldAppUi.cpp
-SOURCE            mHelloWorldDocument.cpp
+SOURCEPATH                              ..\src 
+SOURCE                                  MainS60.cpp 
 
-SOURCEPATH        ..\data
-
-START RESOURCE    mHelloWorld.rss
-HEADER
-TARGETPATH        \resource\apps
-END //RESOURCE
-
-START RESOURCE    mHelloWorld_reg.rss
-TARGETPATH 	      \private\10003a3f\apps
-END //RESOURCE
-
-USERINCLUDE       ..\inc
-USERINCLUDE       ..\..\mirrlicht\inc
-
-SYSTEMINCLUDE     \epoc32\include
-
-LIBRARY           mirrlicht.lib
-LIBRARY           euser.lib
-LIBRARY           apparc.lib
-LIBRARY           cone.lib
-LIBRARY           eikcore.lib
-LIBRARY           avkon.lib
-LIBRARY           commonengine.lib
-LIBRARY		  	  efsrv.lib 
-LIBRARY           estor.lib
-
-LANG SC
-
-VENDORID	  	  0
-CAPABILITY	  	  NONE
-
-// End of File
-
+SYSTEMINCLUDE                           \epoc32\include\libc 
+USERINCLUDE                             ..\..\..\..\..\include 
+USERINCLUDE                             ..\..\mirrlicht\inc 
+USERINCLUDE                             ..\inc 
+SYSTEMINCLUDE                           \epoc32\include 
+/* [+] */ LIBRARY                       estlib.lib 
+LIBRARY                                 mirrlicht.lib 
+LIBRARY                                 euser.lib 
+LIBRARY                                 apparc.lib 
+LIBRARY                                 cone.lib 
+LIBRARY                                 eikcore.lib 
+LIBRARY                                 avkon.lib 
+LIBRARY                                 commonengine.lib 
+LIBRARY                                 efsrv.lib 
+LIBRARY                                 estor.lib 
+LANG                                    SC 
+VENDORID                                0 
+CAPABILITY                              NONE 
