@@ -71,7 +71,7 @@ void CXMLWriter::writeElement(const wchar_t* name, bool empty,
 	// write name
 
 	File->write(L"<", 2);
-    File->write(name, wcslen(name)*2);
+	File->write(name, wcslen(name)*2);
 
 	// write attributes
 
@@ -107,7 +107,7 @@ void CXMLWriter::writeElement(const wchar_t* name, bool empty,
 	// write name
 
 	File->write(L"<", 2);
-    File->write(name, wcslen(name)*2);
+	File->write(name, wcslen(name)*2);
 
 	// write attributes
 	u32 i=0;
@@ -165,7 +165,7 @@ void CXMLWriter::writeClosingTag(const wchar_t* name)
 	}
 
 	File->write(L"</", 4);
-    File->write(name, wcslen(name)*2);
+	File->write(name, wcslen(name)*2);
 	File->write(L">", 2);
 }
 
