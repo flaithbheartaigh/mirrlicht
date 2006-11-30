@@ -74,14 +74,13 @@
 		</Configuration>
 		<Configuration
 			Name="Deb_S60_31_WINSCW|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/QIfist /NDSProjectFile &quot;$(ProjectPath)&quot; /NDSSDKShortName S60_31"
 				Optimization="0"
-				AdditionalIncludeDirectories="c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\Symbian\mirrlicht\inc;C:\Dev\Temp\mirrlicht\trunk\include;c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\jpeglib;C:\Dev\Temp\S60_3rd_FP1\\epoc32\include;C:\Dev\Temp\S60_3rd_FP1\\epoc32\include\libc"
+				AdditionalIncludeDirectories="c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\jpeglib;c:\Dev\Temp\mirrlicht\trunk\include;c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\Symbian\mirrlicht\inc;C:\Dev\Temp\S60_3rd_FP1\\epoc32\include\libc;C:\Dev\Temp\S60_3rd_FP1\\epoc32\include;"
 				PreprocessorDefinitions="__SYMBIAN32__;__SERIES60_31__;__SERIES60_3X__;__SUPPORT_CPP_EXCEPTIONS__;__DLL__;__WINSCW__;__WINS__;__CW32__;_DEBUG;_UNICODE;"
 				IgnoreStandardIncludePath="TRUE"
 				StringPooling="TRUE"
@@ -98,7 +97,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /NDSProjectFile &quot;$(ProjectPath)&quot; /NDSSDKShortName S60_31"
-				AdditionalDependencies="euser.lib estor.lib edll.lib estlib.lib ezlib.lib libgles_cm.lib"
+				AdditionalDependencies="ezlib.lib libgles_cm.lib estlib.lib euser.lib estor.lib edll.lib "
 				OutputFile="C:\Dev\Temp\S60_3rd_FP1\\Epoc32\release\winscw\udeb\mirrlicht.dll"
 				AdditionalLibraryDirectories="C:\Dev\Temp\S60_3rd_FP1\\Epoc32\release\winscw\udeb"
 				IgnoreAllDefaultLibraries="TRUE"
@@ -128,6 +127,15 @@
 				Name="VCManagedWrapperGeneratorTool"/>
 			<Tool
 				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Rel_S60_31_GCCE|Win32"
+			ConfigurationType="0">
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="RCMake.exe &quot;$(ProjectPath)&quot; S60_31 GCCE UREL build"
+				ReBuildCommandLine="RCMake.exe &quot;$(ProjectPath)&quot; S60_31 GCCE UREL rebuild"
+				CleanCommandLine="RCMake.exe &quot;$(ProjectPath)&quot; S60_31 GCCE UREL clean"/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -250,7 +258,7 @@
 			Name="sis">
 			<File
 				RelativePath=".\sis\mirrlicht.pkg">
-			</File>
+			</File>			
 		</Filter>
 		<Filter
 			Name="src">
@@ -1006,9 +1014,6 @@
 						</File>
 						<File
 							RelativePath="..\..\jpeglib\\jpeglib.h">
-						</File>
-						<File
-							RelativePath="..\..\jpeglib\\jpegtran.c">
 						</File>
 						<File
 							RelativePath="..\..\jpeglib\\jquant1.c">
