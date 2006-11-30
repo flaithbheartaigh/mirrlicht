@@ -8,15 +8,16 @@
 ============================================================================
 */
 TARGET                                  mirrlicht.dll 
-
+#ifdef WINS
 TARGETTYPE                              cdll 
+#endif
+
 #ifndef WINS  
   TARGETTYPE                              dll 
 #endif  
 
 UID                                     0x1000008d 0xea3a6c3d 
 SECUREID                                0xe516d258 
-// [-]    USERINCLUDE                   ..\..\..\zlib 
 USERINCLUDE                             ..\..\..\jpeglib 
 USERINCLUDE                             ..\..\..\..\..\include 
 SYSTEMINCLUDE                           \epoc32\include\libc 
@@ -167,7 +168,7 @@ SOURCE                                  rdbmp.c
 SOURCE                                  jutils.c 
 SOURCE                                  jquant2.c 
 SOURCE                                  jquant1.c 
-SOURCE                                  jpegtran.c 
+// [-]    SOURCE                        jpegtran.c 
 SOURCE                                  jmemnobs.c 
 SOURCE                                  jmemmgr.c 
 SOURCE                                  jidctred.c 
@@ -213,21 +214,7 @@ SOURCE                                  jcapistd.c
 SOURCE                                  jcapimin.c 
 SOURCE                                  cdjpeg.c 
 
-// [-]    SOURCEPATH                              ..\..\..\zlib 
-// [-]    SOURCE                        zutil.c 
-// [-]    SOURCE                        uncompr.c 
-// [-]    SOURCE                        trees.c 
-// [-]    SOURCE                        inftrees.c 
-// [-]    SOURCE                        inflate.c 
-// [-]    SOURCE                        inffast.c 
-// [-]    SOURCE                        infback.c 
-// [-]    SOURCE                        gzio.c 
-// [-]    SOURCE                        deflate.c 
-// [-]    SOURCE                        crc32.c 
-// [-]    SOURCE                        compress.c 
-// [-]    SOURCE                        adler32.c 
-
-/* [+] */ LIBRARY                       ezlib.lib 
+LIBRARY                                 ezlib.lib 
 LIBRARY                                 libgles_cm.lib 
 LIBRARY                                 estlib.lib 
 LIBRARY                                 euser.lib 

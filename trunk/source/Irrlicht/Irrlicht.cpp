@@ -23,8 +23,16 @@
 
 #include "irrlicht.h"
 
+#if defined(__SYMBIAN32__) && defined(__DLL__)
+#ifdef IRRLICHT_API
+#undef IRRLICHT_API
+#endif
+#define IRRLICHT_API EXPORT_C
+#endif 
+
 namespace irr
 {
+
 	//! stub for calling createDeviceEx
 	IRRLICHT_API IrrlichtDevice* IRRCALLCONV createDevice(video::E_DRIVER_TYPE driverType,
 											const core::dimension2d<s32>& windowSize,
