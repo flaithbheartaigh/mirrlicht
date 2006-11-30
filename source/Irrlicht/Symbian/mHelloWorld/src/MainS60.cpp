@@ -333,6 +333,7 @@ CMainS60AppUi::~CMainS60AppUi()
 
 }
 
+
 // Takes care of command handling.
 void CMainS60AppUi::HandleCommandL( TInt aCommand )
 {
@@ -359,8 +360,9 @@ void CMainS60AppUi::HandleCommandL( TInt aCommand )
 				camera->setFarValue(12000.0f);
 
 				// add terrain scene node
+				//smaller heighmap. 75% of the original 256x256 size. The emulator's memory should set to above 48M.
 				scene::ITerrainSceneNode* terrain = smgr->addTerrainSceneNode( 
-					"../../media/terrain-heightmap.bmp");
+					"../../media/terrain-heightmap-small.bmp"); 
 
 				terrain->setScale(core::vector3df(40, 4.4f, 40));
 				terrain->setMaterialFlag(video::EMF_LIGHTING, false);
@@ -372,8 +374,6 @@ void CMainS60AppUi::HandleCommandL( TInt aCommand )
 
 				terrain->scaleTexture(1.0f, 20.0f);
 
-#if 0 //The collision detection causes crash. Therefore it's disabled.
-			
 				// create triangle selector for the terrain	
 				scene::ITriangleSelector* selector
 					= smgr->createTerrainTriangleSelector(terrain, 0);
@@ -387,7 +387,6 @@ void CMainS60AppUi::HandleCommandL( TInt aCommand )
 					core::vector3df(0,50,0));
 				camera->addAnimator(anim);
 				anim->drop();
-#endif
 			}
 			break;
     }
