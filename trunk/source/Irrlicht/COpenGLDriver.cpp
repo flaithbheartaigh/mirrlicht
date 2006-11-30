@@ -36,7 +36,7 @@ COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, HWND wind
 	ARBVertexProgramExtension(false), ARBFragmentProgramExtension(false),
 	ARBShadingLanguage100Extension(false), SeparateStencilExtension(false),
 	GenerateMipmapExtension(false), TextureCompressionExtension(false),
-	TextureNPOTExtension(false), EXTPackedDepthStencil(false),
+	TextureNPOTExtension(false), FramebufferObjectExtension(false), EXTPackedDepthStencil(false),
 	RenderTargetTexture(0), LastSetLight(-1), MaxAnisotropy(1),
 	MaxTextureUnits(1), MaxLights(1), CurrentRendertargetSize(0,0),
 #ifdef _IRR_OPENGL_USE_EXTPOINTER_
@@ -203,7 +203,7 @@ COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool full
 	ARBVertexProgramExtension(false), ARBFragmentProgramExtension(false),
 	ARBShadingLanguage100Extension(false), SeparateStencilExtension(false),
 	GenerateMipmapExtension(false), TextureCompressionExtension(false),
-	TextureNPOTExtension(false), EXTPackedDepthStencil(false),
+	TextureNPOTExtension(false), FramebufferObjectExtension(false), EXTPackedDepthStencil(false),
 	RenderTargetTexture(0), LastSetLight(-1), MaxAnisotropy(1),
 	MaxTextureUnits(1), MaxLights(1),
 	CurrentRendertargetSize(0,0), _device(device)
@@ -234,7 +234,7 @@ COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool full
 	ARBVertexProgramExtension(false), ARBFragmentProgramExtension(false),
 	ARBShadingLanguage100Extension(false), SeparateStencilExtension(false),
 	GenerateMipmapExtension(false), TextureCompressionExtension(false),
-	TextureNPOTExtension(false), EXTPackedDepthStencil(false),
+	TextureNPOTExtension(false), FramebufferObjectExtension(false), EXTPackedDepthStencil(false),
 	RenderTargetTexture(0), LastSetLight(-1), MaxAnisotropy(1),
 	MaxTextureUnits(1), MaxLights(1), CurrentRendertargetSize(0,0)
 #ifdef _IRR_OPENGL_USE_EXTPOINTER_
@@ -281,33 +281,6 @@ COpenGLDriver::~COpenGLDriver()
 
 #endif // LINUX
 
-#ifdef __SYMBIAN32__
-//! opengl es constructor and init code
-COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool fullscreen, bool stencilBuffer, 
-							 EGLSurface window, EGLDisplay display, io::IFileSystem* io, bool vsync, bool antiAlias)
-							 : CNullDriver(io, screenSize),
-							 CurrentRenderMode(ERM_NONE), ResetRenderStates(true), StencilBuffer(stencilBuffer), AntiAlias(antiAlias),
-							 Transformation3DChanged(true), LastSetLight(-1), MultiTextureExtension(false),
-							 MultiSamplingExtension(false), MaxTextureUnits(1), eglWindowSurface(window), eglDisplay(display),
-							 ARBVertexProgramExtension(false), ARBFragmentProgramExtension(false),
-							 ARBShadingLanguage100Extension(false),
-							 RenderTargetTexture(0), MaxAnisotropy(1), AnisotropyExtension(false),
-							 CurrentRendertargetSize(0,0)
-{
-#ifdef _DEBUG
-	setDebugName("COpenGLDriver");
-#endif	
-	genericDriverInit(screenSize);
-	eglSwapInterval(display, vsync ? 1 : 0);
-}
-
-//! opengl es destructor
-COpenGLDriver::~COpenGLDriver()
-{
-	deleteAllTextures();
-}
-
-#endif // opengl es
 
 
 // -----------------------------------------------------------------------
@@ -340,19 +313,19 @@ bool COpenGLDriver::genericDriverInit(const core::dimension2d<s32>& screenSize)
 
 	glViewport(0, 0, screenSize.Width, screenSize.Height); // Reset The Current Viewport
 	setAmbientLight(SColorf(0.0f,0.0f,0.0f,0.0f));
-#ifdef _IRR_USE_OPENGL_ES_
-	glClearDepthf(1.0f);
-#else
+#ifdef GL_EXT_separate_specular_color
 	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
-	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, 1);
-	glClearDepth(1.0f);
 #endif
+	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, 1);
+	glClearDepth(1.0);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glHint(GL_POINT_SMOOTH_HINT, GL_FASTEST);
+	glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
 	glDepthFunc(GL_LEQUAL);
 	glFrontFace( GL_CW );
 	glEnable(GL_POINT_SMOOTH);
-	glEnable(GL_LINE_SMOOTH);
+// currently disabled, because often in software, and thus very slow
+//	glEnable(GL_LINE_SMOOTH);
 
 	if (AntiAlias && MultiSamplingExtension)
 		glEnable(GL_MULTISAMPLE_ARB);
@@ -420,20 +393,6 @@ void COpenGLDriver::createMaterialRenderers()
 
 void COpenGLDriver::loadExtensions()
 {
-#ifdef _IRR_USE_OPENGL_ES_
-	//const GLubyte* t = glGetString(GL_EXTENSIONS);
-	//os::Printer::log((const c8*)t, ELL_INFORMATION);
-#if defined(GL_OES_VERSION_1_0) || defined(GL_OES_VERSION_1_1)
-	MultiTextureExtension = true;
-	MultiSamplingExtension = true;
-	ARBVertexProgramExtension = false;
-	ARBFragmentProgramExtension = false;
-	ARBShadingLanguage100Extension = false;
-	AnisotropyExtension = false;
-	TextureNPOTExtension = false;
-#endif
-#else
-
 	if (atof((c8*)glGetString(GL_VERSION)) >= 1.2)
 		os::Printer::log("OpenGL driver version is 1.2 or better.", ELL_INFORMATION);
 	else
@@ -457,6 +416,7 @@ void COpenGLDriver::loadExtensions()
 		GenerateMipmapExtension = gluCheckExtension((const GLubyte*)"GL_SGIS_generate_mipmap", t);
 		TextureCompressionExtension = gluCheckExtension((const GLubyte*)"GL_ARB_texture_compression", t);
 		TextureNPOTExtension = gluCheckExtension((const GLubyte*)"GL_ARB_texture_non_power_of_two", t);
+		FramebufferObjectExtension = gluCheckExtension((const GLubyte*)"GL_EXT_framebuffer_object", t);
 		EXTPackedDepthStencil = gluCheckExtension((const GLubyte*)"GL_EXT_packed_depth_stencil", t);
 	}
 	else
@@ -506,6 +466,9 @@ void COpenGLDriver::loadExtensions()
 				if (strstr(p, "GL_ARB_texture_non_power_of_two"))
 					TextureNPOTExtension = true;
 				else
+				if (strstr(p, "GL_EXT_framebuffer_object"))
+					FramebufferObjectExtension = true;
+				else
 				if (strstr(p, "GL_EXT_packed_depth_stencil"))
 					EXTPackedDepthStencil = true;
 
@@ -515,7 +478,6 @@ void COpenGLDriver::loadExtensions()
 
 		delete [] str;
 	}
-#endif //_IRR_USE_OPENGL_ES_
 
 	if (MultiTextureExtension)
 	{
@@ -741,9 +703,7 @@ void COpenGLDriver::loadExtensions()
 
 		glGetIntegerv(GL_MAX_TEXTURE_UNITS, &MaxTextureUnits);
 		glGetIntegerv(GL_MAX_LIGHTS, &MaxLights);
-#ifdef GL_EXT_texture_filter_anisotropic
 		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &MaxAnisotropy);
-#endif
 	}
 
 #ifdef _IRR_OPENGL_USE_EXTPOINTER_
@@ -759,7 +719,7 @@ void COpenGLDriver::loadExtensions()
 		MultiTextureExtension = false;
 		os::Printer::log("Warning: OpenGL device only has one texture unit. Disabling multitexturing.", ELL_WARNING);
 	}
-	MaxTextureUnits = core::min_(MaxTextureUnits,MATERIAL_MAX_TEXTURES);
+	MaxTextureUnits = core::min_((s32)MaxTextureUnits,MATERIAL_MAX_TEXTURES);
 }
 
 
@@ -782,12 +742,6 @@ bool COpenGLDriver::endScene( s32 windowId, core::rect<s32>* sourceRect )
 	_device->flush();
 	return true;
 #endif
-
-#ifdef _IRR_USE_OPENGL_ES_
-	eglSwapBuffers( eglDisplay, eglWindowSurface );
-	return true;
-#endif
-
 }
 
 
@@ -985,7 +939,6 @@ void COpenGLDriver::drawVertexPrimitiveList(const void* vertices, s32 vertexCoun
 		case scene::EPT_TRIANGLES:
 			glDrawElements(GL_TRIANGLES, primitiveCount*3, GL_UNSIGNED_SHORT, indexList);
 			break;
-#ifndef _IRR_USE_OPENGL_ES_
 		case scene::EPT_QUAD_STRIP:
 			glDrawElements(GL_QUAD_STRIP, primitiveCount*2+2, GL_UNSIGNED_SHORT, indexList);
 			break;
@@ -995,7 +948,6 @@ void COpenGLDriver::drawVertexPrimitiveList(const void* vertices, s32 vertexCoun
 		case scene::EPT_POLYGON:
 			glDrawElements(GL_POLYGON, primitiveCount, GL_UNSIGNED_SHORT, indexList);
 			break;
-#endif
 	}
 
 	glFlush();
@@ -1020,59 +972,7 @@ void COpenGLDriver::drawVertexPrimitiveList(const void* vertices, s32 vertexCoun
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
-#ifdef _IRR_USE_OPENGL_ES_
-void drawQuads(	core::rect<float>& npos, core::rect<f32>& tcoords, video::SColor* useColor=NULL)
-{
-	GLfloat points[2*4];
-	GLfloat texcoords[2*4];
-	GLubyte colors[4*4];
 
-	//lower left
-	points[0] = npos.UpperLeftCorner.X;
-	points[1] = npos.LowerRightCorner.Y;	
-	texcoords[0] = tcoords.UpperLeftCorner.X;
-	texcoords[1] = tcoords.LowerRightCorner.Y;
-	
-	//upper left
-	points[2] = npos.UpperLeftCorner.X;
-	points[3] = npos.UpperLeftCorner.Y;	
-	texcoords[2] = tcoords.UpperLeftCorner.X;
-	texcoords[3] = tcoords.UpperLeftCorner.Y;
-
-	//lower right
-	points[4] = npos.LowerRightCorner.X;
-	points[5] = npos.LowerRightCorner.Y;	
-	texcoords[4] = tcoords.LowerRightCorner.X;
-	texcoords[5] = tcoords.LowerRightCorner.Y;
-
-	//upper right
-	points[6] = npos.LowerRightCorner.X;
-	points[7] = npos.UpperLeftCorner.Y;	
-	texcoords[6] = tcoords.LowerRightCorner.X;
-	texcoords[7] = tcoords.UpperLeftCorner.Y;	
-
-	if(useColor){
-		for (u32 i = 0; i < 4; i++){
-			useColor[i].toOpenGLColor(&colors[i*4]);
-		}
-	}
-
-	glVertexPointer(2, GL_FLOAT, 0, points);
-	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	if(useColor){
-		glColorPointer(4, GL_UNSIGNED_BYTE, 0, colors);
-		glEnableClientState(GL_COLOR_ARRAY);
-	}
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);	
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	if(useColor){
-		glDisableClientState(GL_COLOR_ARRAY);
-	}
-}
-#endif
 
 //! draws a 2d image, using a color and the alpha channel of the texture if
 //! desired. The image is drawn at pos, clipped against clipRect (if != 0).
@@ -1181,7 +1081,7 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture,
 	tcoords.LowerRightCorner.Y = ((f32)sourcePos.Y +0.5f + (f32)sourceSize.Height) / ss.Height;
 
 	core::rect<s32> poss(targetPos, sourceSize);
-	core::rect<float> npos;
+	core::rect<f32> npos;
 
 	s32 xPlus = renderTargetSize.Width>>1;
 	f32 xFact = 1.0f / xPlus;
@@ -1197,9 +1097,6 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture,
 	setRenderStates2DMode(color.getAlpha()<255, true, useAlphaChannelOfTexture);
 
 	glColor4ub(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-#ifdef _IRR_USE_OPENGL_ES_
-	drawQuads(npos,tcoords);
-#else
 	glBegin(GL_QUADS);
 
 	glTexCoord2f(tcoords.UpperLeftCorner.X, tcoords.UpperLeftCorner.Y);
@@ -1215,7 +1112,6 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture,
 	glVertex2f(npos.UpperLeftCorner.X, npos.LowerRightCorner.Y);
 
 	glEnd();
-#endif
 }
 
 
@@ -1274,15 +1170,13 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture,
 	tcoords.LowerRightCorner.Y = ((f32)sourcePos.Y +0.5f + (f32)sourceSize.Height) / ss.Height;
 
 	core::rect<s32> poss(targetPos, sourceSize);
-	core::rect<float> npos;
+	core::rect<f32> npos;
 
 	npos.UpperLeftCorner.X = (f32)(poss.UpperLeftCorner.X-xPlus+0.5f) * xFact;
 	npos.UpperLeftCorner.Y = (f32)(yPlus-poss.UpperLeftCorner.Y+0.5f) * yFact;
 	npos.LowerRightCorner.X = (f32)(poss.LowerRightCorner.X-xPlus+0.5f) * xFact;
 	npos.LowerRightCorner.Y = (f32)(yPlus-poss.LowerRightCorner.Y+0.5f) * yFact;
-#ifdef _IRR_USE_OPENGL_ES_
-	drawQuads(npos,tcoords);
-#else
+
 	glBegin(GL_QUADS);
 
 	glTexCoord2f(tcoords.UpperLeftCorner.X, tcoords.UpperLeftCorner.Y);
@@ -1298,7 +1192,6 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture,
 	glVertex2f(npos.UpperLeftCorner.X, npos.LowerRightCorner.Y);
 
 	glEnd();
-#endif
 	targetPos.X += sourceRects[currentIndex].getWidth();
 	}
 	if (clipRect)
@@ -1318,8 +1211,8 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture, const core::rect<s32>&
 
 	const core::dimension2d<s32>& renderTargetSize = getCurrentRenderTargetSize();
 	const core::dimension2d<s32>& ss = texture->getOriginalSize();
-	float ssw=1.0f/ss.Width;
-	float ssh=1.0f/ss.Height;
+	f32 ssw=1.0f/ss.Width;
+	f32 ssh=1.0f/ss.Height;
 
 	core::rect<f32> tcoords;
 	tcoords.UpperLeftCorner.X = (((f32)sourceRect.UpperLeftCorner.X)+0.5f) * ssw;
@@ -1333,7 +1226,7 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture, const core::rect<s32>&
 	s32 yPlus = renderTargetSize.Height-(renderTargetSize.Height>>1);
 	f32 yFact = 1.0f / (renderTargetSize.Height>>1);
 
-	core::rect<float> npos;
+	core::rect<f32> npos;
 	npos.UpperLeftCorner.X = (f32)(trgRect.UpperLeftCorner.X-xPlus+0.5f) * xFact;
 	npos.UpperLeftCorner.Y = (f32)(yPlus-trgRect.UpperLeftCorner.Y+0.5f) * yFact;
 	npos.LowerRightCorner.X = (f32)(trgRect.LowerRightCorner.X-xPlus+0.5f) * xFact;
@@ -1353,9 +1246,7 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture, const core::rect<s32>&
 
 	disableTextures(1);
 	setTexture(0, texture);
-#ifdef _IRR_USE_OPENGL_ES_
-	drawQuads(npos, tcoords, useColor);
-#else
+
 	glBegin(GL_QUADS);
 
 	glColor4ub(useColor[0].getRed(), useColor[0].getGreen(), useColor[0].getBlue(), useColor[0].getAlpha());
@@ -1375,7 +1266,6 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture, const core::rect<s32>&
 	glVertex2f(npos.UpperLeftCorner.X, npos.LowerRightCorner.Y);
 
 	glEnd();
-#endif
 }
 
 
@@ -1403,39 +1293,10 @@ void COpenGLDriver::draw2DRectangle(SColor color, const core::rect<s32>& positio
 	f32 yFact = 1.0f / (renderTargetSize.Height>>1);
 
 	glColor4ub(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-#ifdef _IRR_USE_OPENGL_ES_
-	GLfloat points[2*4];
-	GLfloat x1 = (pos.UpperLeftCorner.X-xPlus) * xFact;
-	GLfloat y1 = (yPlus-pos.UpperLeftCorner.Y) * yFact;
-	GLfloat x2 = (pos.LowerRightCorner.X-xPlus) * xFact;
-	GLfloat y2 = (yPlus-pos.LowerRightCorner.Y) * yFact;
-	//lower left
-	points[0] = x1;
-	points[1] = y2;	
-	
-	//upper left
-	points[2] = x1;
-	points[3] = y1;	
-	
-	//lower right
-	points[4] = x2;
-	points[5] = y2;	
-	
-	//upper right
-	points[6] = x2;
-	points[7] = y1;			
-
-	glVertexPointer(2, GL_FLOAT, 0, points);	
-	glEnableClientState(GL_VERTEX_ARRAY);	
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);		
-	glDisableClientState(GL_VERTEX_ARRAY);
-#else
-	
 	glRectf((pos.UpperLeftCorner.X-xPlus) * xFact,
 		(yPlus-pos.UpperLeftCorner.Y) * yFact,
 		(pos.LowerRightCorner.X-xPlus) * xFact,
 		(yPlus-pos.LowerRightCorner.Y) * yFact);
-#endif
 }
 
 
@@ -1460,7 +1321,7 @@ void COpenGLDriver::draw2DRectangle(const core::rect<s32>& position,
 	s32 yPlus = renderTargetSize.Height-(renderTargetSize.Height>>1);
 	f32 yFact = 1.0f / (renderTargetSize.Height>>1);
 
-	core::rect<float> npos;
+	core::rect<f32> npos;
 	npos.UpperLeftCorner.X = (f32)(pos.UpperLeftCorner.X-xPlus) * xFact;
 	npos.UpperLeftCorner.Y = (f32)(yPlus-pos.UpperLeftCorner.Y) * yFact;
 	npos.LowerRightCorner.X = (f32)(pos.LowerRightCorner.X-xPlus) * xFact;
@@ -1472,40 +1333,7 @@ void COpenGLDriver::draw2DRectangle(const core::rect<s32>& position,
 		colorRightDown.getAlpha() < 255, false, false);
 
 	disableTextures();
-#ifdef _IRR_USE_OPENGL_ES_
-	GLfloat points[2*4];
-	GLubyte colors[4*4];
 
-	//lower left
-	points[0] = npos.UpperLeftCorner.X;
-	points[1] = npos.LowerRightCorner.Y;	
-	colorLeftDown.toOpenGLColor(&colors[0]);
-
-	//upper left
-	points[2] = npos.UpperLeftCorner.X;
-	points[3] = npos.UpperLeftCorner.Y;	
-	colorLeftUp.toOpenGLColor(&colors[4]);
-
-	//lower right
-	points[4] = npos.LowerRightCorner.X;
-	points[5] = npos.LowerRightCorner.Y;	
-	colorRightDown.toOpenGLColor(&colors[8]);
-
-	//upper right
-	points[6] = npos.LowerRightCorner.X;
-	points[7] = npos.UpperLeftCorner.Y;	
-	colorRightUp.toOpenGLColor(&colors[12]);	
-
-	glVertexPointer(2, GL_FLOAT, 0, points);	
-	glEnableClientState(GL_VERTEX_ARRAY);	
-	glColorPointer(4, GL_UNSIGNED_BYTE, 0, colors);
-	glEnableClientState(GL_COLOR_ARRAY);
-	
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);	
-	
-	glDisableClientState(GL_VERTEX_ARRAY);	
-	glDisableClientState(GL_COLOR_ARRAY);	
-#else
 	glBegin(GL_QUADS);
 	glColor4ub(colorLeftUp.getRed(), colorLeftUp.getGreen(),
 		colorLeftUp.getBlue(), colorLeftUp.getAlpha());
@@ -1524,7 +1352,6 @@ void COpenGLDriver::draw2DRectangle(const core::rect<s32>& position,
 	glVertex2f(npos.UpperLeftCorner.X, npos.LowerRightCorner.Y);
 
 	glEnd();
-#endif
 }
 
 
@@ -1554,25 +1381,12 @@ void COpenGLDriver::draw2DLine(const core::position2d<s32>& start,
 
 	setRenderStates2DMode(color.getAlpha() < 255, false, false);
 	disableTextures();
-#ifdef _IRR_USE_OPENGL_ES_
-	GLfloat points[2*2];	
-	points[0] = npos_start.X;
-	points[1] = npos_start.Y;		
-	points[2] = npos_end.X;
-	points[3] = npos_end.Y;			
 
-	glColor4ub(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-	glVertexPointer(2, GL_FLOAT, 0, points);	
-	glEnableClientState(GL_VERTEX_ARRAY);		
-	glDrawArrays(GL_LINES, 0, 2);	
-	glDisableClientState(GL_VERTEX_ARRAY);	
-#else
 	glBegin(GL_LINES);
 	glColor4ub(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
 	glVertex2f(npos_start.X, npos_start.Y);
 	glVertex2f(npos_end.X,   npos_end.Y);
 	glEnd();
-#endif
 }
 
 
@@ -1602,6 +1416,8 @@ bool COpenGLDriver::queryFeature(E_VIDEO_DRIVER_FEATURE feature)
 		return ARBShadingLanguage100Extension;
 	case EVDF_TEXTURE_NPOT:
 		return TextureNPOTExtension;
+	case EVDF_FRAMEBUFFER_OBJECT:
+		return FramebufferObjectExtension;
 	default:
 		return false;
 	};
@@ -1714,10 +1530,8 @@ bool COpenGLDriver::testGLError()
 		os::Printer::log("GL_STACK_UNDERFLOW", ELL_ERROR); break;
 	case GL_OUT_OF_MEMORY:
 		os::Printer::log("GL_OUT_OF_MEMORY", ELL_ERROR); break;
-#ifdef GL_ARB_imaging
 	case GL_TABLE_TOO_LARGE:
 		os::Printer::log("GL_TABLE_TOO_LARGE", ELL_ERROR); break;
-#endif
 	};
 	return true;
 #endif
@@ -1760,11 +1574,10 @@ void COpenGLDriver::setRenderStates3DMode()
 			MaterialRenderers[LastMaterial.MaterialType].Renderer->OnUnsetMaterial();
 
 		// set new material.
-
 		if (Material.MaterialType >= 0 && Material.MaterialType < (s32)MaterialRenderers.size())
 			MaterialRenderers[Material.MaterialType].Renderer->OnSetMaterial(
 				Material, LastMaterial, ResetRenderStates, this);
-		setBasicRenderStates(Material, LastMaterial, ResetRenderStates);
+
 		LastMaterial = Material;
 		ResetRenderStates = false;
 	}
@@ -1789,7 +1602,7 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 	{
 		GLfloat color[4];
 
-		float inv = 1.0f / 255.0f;
+		f32 inv = 1.0f / 255.0f;
 
 		color[0] = material.AmbientColor.getRed() * inv;
 		color[1] = material.AmbientColor.getGreen() * inv;
@@ -1805,14 +1618,10 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 
 		// disable Specular colors if no shininess is set
 		if (material.Shininess == 0.0f)
-#ifdef _IRR_USE_OPENGL_ES_
-			;
-#else
 			glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SINGLE_COLOR);
-#endif
 		else
 		{
-#ifndef _IRR_USE_OPENGL_ES_
+#ifdef GL_EXT_separate_specular_color
 			glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 #endif
 			glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, material.Shininess);
@@ -1850,18 +1659,17 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 		else
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 				(material.BilinearFilter || material.TrilinearFilter) ? GL_LINEAR : GL_NEAREST);
-#ifdef GL_EXT_texture_filter_anisotropic
+
 		if (AnisotropyExtension)
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
 				material.AnisotropicFilter ? MaxAnisotropy : 1.0f );
-#endif
 	}
 
 	// fillmode
-#ifndef _IRR_USE_OPENGL_ES_
+
 	if (resetAllRenderStates || lastmaterial.Wireframe != material.Wireframe || lastmaterial.PointCloud != material.PointCloud)
 		glPolygonMode(GL_FRONT_AND_BACK, material.Wireframe ? GL_LINE : material.PointCloud? GL_POINT : GL_FILL);
-#endif
+
 	// shademode
 
 	if (resetAllRenderStates || lastmaterial.GouraudShading != material.GouraudShading)
@@ -1879,16 +1687,16 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 		if (material.Lighting)
 		{
 			glEnable(GL_LIGHTING);
-#ifndef _IRR_USE_OPENGL_ES_
+#ifdef GL_EXT_separate_specular_color
 			// enable specular colors
 			glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 #endif
 		}
 		else
 		{
-			// disable specular colors
 			glDisable(GL_LIGHTING);
-#ifndef _IRR_USE_OPENGL_ES_
+#ifdef GL_EXT_separate_specular_color
+			// disable specular colors
 			glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SINGLE_COLOR);
 #endif
 		}
@@ -1971,17 +1779,12 @@ void COpenGLDriver::setRenderStates2DMode(bool alpha, bool texture, bool alphaCh
 
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_FOG);
-
-#ifndef _IRR_USE_OPENGL_ES_
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-#endif
-
 		glDisable(GL_LIGHTING);
 
-#ifndef _IRR_USE_OPENGL_ES_
 		glDisable(GL_TEXTURE_GEN_S);
 		glDisable(GL_TEXTURE_GEN_T);
-#endif
+
 		glDisable(GL_ALPHA_TEST);
 		glCullFace(GL_BACK);
 	}
@@ -2189,31 +1992,8 @@ void COpenGLDriver::drawStencilShadowVolume(const core::vector3df* triangles, s3
 	}
 
 	// store current OpenGL state
-#ifdef _IRR_USE_OPENGL_ES_	
-	GLboolean bLighting = glIsEnabled(GL_LIGHTING);
-	GLboolean bFog      = glIsEnabled(GL_FOG);
-	GLboolean bStencil  = glIsEnabled(GL_STENCIL_TEST);
-	GLboolean bCull     = glIsEnabled(GL_CULL_FACE);
-	GLboolean bDepthMask;
-	glGetBooleanv(GL_DEPTH_WRITEMASK, &bDepthMask);
-	GLboolean bColorMask[4];
-	glGetBooleanv(GL_COLOR_WRITEMASK, bColorMask);
-	GLint depthFunc;
-	glGetIntegerv(GL_DEPTH_FUNC, &depthFunc);
-	GLint stencilFunc, stencilRef, stencilMask;
-	glGetIntegerv(GL_STENCIL_FUNC, &stencilFunc);
-	glGetIntegerv(GL_STENCIL_REF, &stencilRef);
-	glGetIntegerv(GL_STENCIL_VALUE_MASK, &stencilMask);
-	GLint stencilFail, stencilZFail, stencilZPass;
-	glGetIntegerv(GL_STENCIL_FAIL, &stencilFail);
-	glGetIntegerv(GL_STENCIL_PASS_DEPTH_FAIL,&stencilZFail);
-	glGetIntegerv(GL_STENCIL_PASS_DEPTH_PASS,&stencilZPass);
-	GLint cullFaceMode;
-	glGetIntegerv(GL_CULL_FACE_MODE, &cullFaceMode);
-#else
 	glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT |
 		GL_POLYGON_BIT | GL_STENCIL_BUFFER_BIT);
-#endif
 
 	glDisable(GL_LIGHTING);
 	glDisable(GL_FOG);
@@ -2226,6 +2006,7 @@ void COpenGLDriver::drawStencilShadowVolume(const core::vector3df* triangles, s3
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3,GL_FLOAT,sizeof(core::vector3df),&triangles[0]);
+
 	if (!zfail)
 	{
 		// ZPASS Method
@@ -2250,30 +2031,9 @@ void COpenGLDriver::drawStencilShadowVolume(const core::vector3df* triangles, s3
 		glCullFace(GL_BACK);
 		glDrawArrays(GL_TRIANGLES,0,count);
 	}
+
 	glDisableClientState(GL_VERTEX_ARRAY); //not stored on stack
-
-#ifdef _IRR_USE_OPENGL_ES_	
-	if(bLighting) glEnable(GL_LIGHTING);
-	else glDisable(GL_LIGHTING);
-
-	if(bFog) glEnable(GL_FOG);
-	else glDisable(GL_FOG);
-
-	if(bStencil) glEnable(GL_STENCIL_TEST);
-	else glDisable(GL_STENCIL_TEST);
-
-	if(bCull) glEnable(GL_CULL_FACE);
-	else glDisable(GL_CULL_FACE);
-
-	glDepthMask(bDepthMask);
-	glDepthFunc(depthFunc);
-	glColorMask(bColorMask[0],bColorMask[1],bColorMask[2],bColorMask[3]);
-	glStencilOp(stencilFail, stencilZFail, stencilZPass);
-	glStencilFunc(stencilFunc,stencilRef,stencilMask);
-	glCullFace(cullFaceMode);
-#else
 	glPopAttrib();
-#endif
 }
 
 
@@ -2287,36 +2047,8 @@ void COpenGLDriver::drawStencilShadow(bool clearStencilBuffer, video::SColor lef
 	disableTextures();
 
 	// store attributes
-#ifdef _IRR_USE_OPENGL_ES_
-	GLboolean bLighting = glIsEnabled(GL_LIGHTING);
-	GLboolean bFog      = glIsEnabled(GL_FOG);
-	GLboolean bStencil  = glIsEnabled(GL_STENCIL_TEST);
-	GLboolean bBlend    = glIsEnabled(GL_BLEND);
-	GLboolean bDepthMask;
-	glGetBooleanv(GL_DEPTH_WRITEMASK, &bDepthMask);
-	GLboolean bColorMask[4];
-	glGetBooleanv(GL_COLOR_WRITEMASK, bColorMask);
-	GLint depthFunc;
-	glGetIntegerv(GL_DEPTH_FUNC, &depthFunc);
-	GLint stencilFunc, stencilRef, stencilMask;
-	glGetIntegerv(GL_STENCIL_FUNC, &stencilFunc);
-	glGetIntegerv(GL_STENCIL_REF, &stencilRef);
-	glGetIntegerv(GL_STENCIL_VALUE_MASK, &stencilMask);
-	GLint stencilFail, stencilZFail, stencilZPass;
-	glGetIntegerv(GL_STENCIL_FAIL, &stencilFail);
-	glGetIntegerv(GL_STENCIL_PASS_DEPTH_FAIL,&stencilZFail);
-	glGetIntegerv(GL_STENCIL_PASS_DEPTH_PASS,&stencilZPass);
-	GLint shadeModel;
-	glGetIntegerv(GL_SHADE_MODEL, &shadeModel);
-	GLint frontFace;
-	glGetIntegerv(GL_FRONT_FACE, &frontFace);
-	GLint blendSrc, blendDst;
-	glGetIntegerv(GL_BLEND_SRC, &blendSrc);
-	glGetIntegerv(GL_BLEND_DST, &blendDst);
-#else
 	glPushAttrib( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT | GL_POLYGON_BIT | GL_STENCIL_BUFFER_BIT );
-#endif	
-	
+
 	glDisable( GL_LIGHTING );
 	glDisable(GL_FOG);
 	glDepthMask(GL_FALSE);
@@ -2330,83 +2062,46 @@ void COpenGLDriver::drawStencilShadow(bool clearStencilBuffer, video::SColor lef
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glEnable( GL_STENCIL_TEST );
-	
-	glStencilFunc(GL_LESS, 0, 0xFFFFFFFFL);	
+	glStencilFunc(GL_NOTEQUAL, 0, 0xFFFFFFFFL);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
+	// draw a shadow rectangle covering the entire screen using stencil buffer
+	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
 
 	// draw a shadow rectangle covering the entire screen using stencil buffer
 #ifdef _IRR_USE_OPENGL_ES_
 	GLfloat points[3*4] = {
-		-10.1f, 10.1f, 0.90f,
-		-10.1f,-10.1f,0.90f,
-		10.1f, 10.1f,0.90f,
-		10.1f,-10.1f,0.90f,
+		-1.1f, 1.1f, 0.90f,
+		-1.1f,-1.1f,0.90f,
+		1.1f, 1.1f,0.90f,
+		1.1f,-1.1f,0.90f,
 	};
 	GLubyte colors[4*4];
 
-	leftUpEdge.toOpenGLColor(&colors[0]);
-	leftDownEdge.toOpenGLColor(&colors[4]);
-	rightUpEdge.toOpenGLColor(&colors[8]);
-	rightDownEdge.toOpenGLColor(&colors[12]);	
-
-	glVertexPointer(3, GL_FLOAT, 0, points);	
-	glEnableClientState(GL_VERTEX_ARRAY);	
-	glColorPointer(4, GL_UNSIGNED_BYTE, 0, colors);
-	glEnableClientState(GL_COLOR_ARRAY);
-
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);	
-
-	glDisableClientState(GL_VERTEX_ARRAY);	
-	glDisableClientState(GL_COLOR_ARRAY);
-#else
 	glBegin(GL_TRIANGLE_STRIP);
 
 	glColor4ub (leftUpEdge.getRed(), leftUpEdge.getGreen(), leftUpEdge.getBlue(), leftUpEdge.getAlpha() );
-	glVertex3f(-10.1f, 10.1f,0.90f);
+	glVertex3f(-1.1f, 1.1f,0.9f);
 
 	glColor4ub (leftDownEdge.getRed(), leftDownEdge.getGreen(), leftDownEdge.getBlue(), leftDownEdge.getAlpha() );
-	glVertex3f(-10.1f,-10.1f,0.90f);
+	glVertex3f(-1.1f,-1.1f,0.9f);
 
 	glColor4ub (rightUpEdge.getRed(), rightUpEdge.getGreen(), rightUpEdge.getBlue(), rightUpEdge.getAlpha() );
-	glVertex3f( 10.1f, 10.1f,0.90f);
+	glVertex3f( 1.1f, 1.1f,0.9f);
 
 	glColor4ub (rightDownEdge.getRed(), rightDownEdge.getGreen(), rightDownEdge.getBlue(), rightDownEdge.getAlpha() );
-	glVertex3f( 10.1f,-10.1f,0.90f);
+	glVertex3f( 1.1f,-1.1f,0.9f);
 
 	glEnd();
-#endif
+
 	if (clearStencilBuffer)
 		glClear(GL_STENCIL_BUFFER_BIT);
 
 	// restore settings
 	glPopMatrix();
-#ifdef _IRR_USE_OPENGL_ES_
-	if(bLighting) glEnable(GL_LIGHTING);
-	else glDisable(GL_LIGHTING);
-
-	if(bFog) glEnable(GL_FOG);
-	else glDisable(GL_FOG);
-
-	if(bStencil) glEnable(GL_STENCIL_TEST);
-	else glDisable(GL_STENCIL_TEST);
-
-	if(bBlend) glEnable(GL_BLEND);
-	else glDisable(GL_BLEND);
-
-	glDepthMask(bDepthMask);
-	glDepthFunc(depthFunc);
-	glShadeModel(shadeModel);
-	glFrontFace(frontFace);
-	glBlendFunc(blendSrc, blendDst);
-	glColorMask(bColorMask[0],bColorMask[1],bColorMask[2],bColorMask[3]);
-	glStencilOp(stencilFail, stencilZFail, stencilZPass);
-	glStencilFunc(stencilFunc,stencilRef,stencilMask);
-#else
 	glPopAttrib();
-#endif
 }
 
 
@@ -2415,13 +2110,10 @@ void COpenGLDriver::setFog(SColor c, bool linearFog, f32 start,
 			f32 end, f32 density, bool pixelFog, bool rangeFog)
 {
 	CNullDriver::setFog(c, linearFog, start, end, density, pixelFog, rangeFog);
-#ifdef _IRR_USE_OPENGL_ES_
-	glFogf(GL_FOG_MODE, linearFog ? GL_LINEAR : GL_EXP);	
-#else
+
 	glFogi(GL_FOG_MODE, linearFog ? GL_LINEAR : GL_EXP);
-#   ifdef GL_VERSION_1_4
+#ifdef GL_VERSION_1_4
 	glFogi(GL_FOG_COORDINATE_SOURCE, GL_FRAGMENT_DEPTH);
-#   endif
 #endif
 
 	if(linearFog)
@@ -2444,24 +2136,7 @@ void COpenGLDriver::draw3DLine(const core::vector3df& start,
 				const core::vector3df& end, SColor color)
 {
 	setRenderStates3DMode();
-#ifdef _IRR_USE_OPENGL_ES_
-	static GLfloat points[3*2];
 
-	points[0] = start.X;
-	points[1] = start.Y;
-	points[2] = start.Z;
-
-	points[3] = end.X;
-	points[4] = end.Y;
-	points[5] = end.Z;
-
-	glColor4ub(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-
-	glVertexPointer(3, GL_FLOAT, 0, points);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glDrawArrays(GL_LINES, 0, 2);	
-	glDisableClientState(GL_VERTEX_ARRAY);
-#else
 	glBegin(GL_LINES);
 	glColor4ub(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
 	glVertex3f(start.X, start.Y, start.Z);
@@ -2469,7 +2144,6 @@ void COpenGLDriver::draw3DLine(const core::vector3df& start,
 	glColor4ub(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
 	glVertex3f(end.X, end.Y, end.Z);
 	glEnd();
-#endif
 }
 
 
@@ -3079,7 +2753,7 @@ ITexture* COpenGLDriver::createRenderTargetTexture(const core::dimension2d<s32>&
 	video::ITexture* rtt = 0;
 #if defined(GL_EXT_framebuffer_object)
 	// if driver supports FrameBufferObjects, use them
-	if (pGlFramebufferTexture2DEXT)
+	if (FramebufferObjectExtension)
         	rtt = new COpenGLTexture(size, EXTPackedDepthStencil, "rt", this);
 	else
 #endif
@@ -3294,17 +2968,6 @@ IVideoDriver* createOpenGLDriver(const core::dimension2d<s32>& screenSize,
 #endif //  _IRR_COMPILE_WITH_OPENGL_
 }
 #endif // LINUX
-
-#ifdef _IRR_USE_OPENGL_ES_
-IVideoDriver* createOpenGLDriver(const core::dimension2d<s32>& screenSize,
-								 EGLSurface window, EGLDisplay display, bool fullscreen,
-								 bool stencilBuffer, io::IFileSystem* io, bool vsync, bool antiAlias)
-{
-	return new COpenGLDriver(screenSize, fullscreen, stencilBuffer,
-		window, display, io, antiAlias, vsync);
-}
-#endif // SYMBIAN
-
 
 } // end namespace
 } // end namespace

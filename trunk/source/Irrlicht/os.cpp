@@ -27,7 +27,7 @@
 	#elif defined(__SYMBIAN32__)
 		#define bswap_16(X) (((u8)(X) << 8) | (((u16)(X)) >> 8))
 		#define bswap_32(X) ( ((X)<<24) | (((u16)(X)) >> 24) | (((X) &0x0000ff00) << 8) | (((X) & 0x00ff0000) >> 8))	
-	#elif !defined(__sun__)
+	#elif !defined(__sun__) && !defined(__PPC__)
 		#include <byteswap.h>
 	#else
 		#define bswap_16(X) ((((X)&0xFF) << 8) | (((X)&=0xFF00) >> 8))
@@ -53,7 +53,7 @@ namespace os
 // ----------------------------------------------------------------
 
 #ifdef _IRR_WINDOWS_
-#define WINDOWS_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 #ifdef _XBOX
