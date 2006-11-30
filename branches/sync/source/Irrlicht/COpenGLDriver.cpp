@@ -36,7 +36,7 @@ COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, HWND wind
 	ARBVertexProgramExtension(false), ARBFragmentProgramExtension(false),
 	ARBShadingLanguage100Extension(false), SeparateStencilExtension(false),
 	GenerateMipmapExtension(false), TextureCompressionExtension(false),
-	TextureNPOTExtension(false), EXTPackedDepthStencil(false),
+	TextureNPOTExtension(false), FramebufferObjectExtension(false), EXTPackedDepthStencil(false),
 	RenderTargetTexture(0), LastSetLight(-1), MaxAnisotropy(1),
 	MaxTextureUnits(1), MaxLights(1), CurrentRendertargetSize(0,0),
 #ifdef _IRR_OPENGL_USE_EXTPOINTER_
@@ -203,7 +203,7 @@ COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool full
 	ARBVertexProgramExtension(false), ARBFragmentProgramExtension(false),
 	ARBShadingLanguage100Extension(false), SeparateStencilExtension(false),
 	GenerateMipmapExtension(false), TextureCompressionExtension(false),
-	TextureNPOTExtension(false), EXTPackedDepthStencil(false),
+	TextureNPOTExtension(false), FramebufferObjectExtension(false), EXTPackedDepthStencil(false),
 	RenderTargetTexture(0), LastSetLight(-1), MaxAnisotropy(1),
 	MaxTextureUnits(1), MaxLights(1),
 	CurrentRendertargetSize(0,0), _device(device)
@@ -234,7 +234,7 @@ COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool full
 	ARBVertexProgramExtension(false), ARBFragmentProgramExtension(false),
 	ARBShadingLanguage100Extension(false), SeparateStencilExtension(false),
 	GenerateMipmapExtension(false), TextureCompressionExtension(false),
-	TextureNPOTExtension(false), EXTPackedDepthStencil(false),
+	TextureNPOTExtension(false), FramebufferObjectExtension(false), EXTPackedDepthStencil(false),
 	RenderTargetTexture(0), LastSetLight(-1), MaxAnisotropy(1),
 	MaxTextureUnits(1), MaxLights(1), CurrentRendertargetSize(0,0)
 #ifdef _IRR_OPENGL_USE_EXTPOINTER_
@@ -320,10 +320,12 @@ bool COpenGLDriver::genericDriverInit(const core::dimension2d<s32>& screenSize)
 	glClearDepth(1.0);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glHint(GL_POINT_SMOOTH_HINT, GL_FASTEST);
+	glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
 	glDepthFunc(GL_LEQUAL);
 	glFrontFace( GL_CW );
 	glEnable(GL_POINT_SMOOTH);
-	glEnable(GL_LINE_SMOOTH);
+// currently disabled, because often in software, and thus very slow
+//	glEnable(GL_LINE_SMOOTH);
 
 	if (AntiAlias && MultiSamplingExtension)
 		glEnable(GL_MULTISAMPLE_ARB);
@@ -414,6 +416,7 @@ void COpenGLDriver::loadExtensions()
 		GenerateMipmapExtension = gluCheckExtension((const GLubyte*)"GL_SGIS_generate_mipmap", t);
 		TextureCompressionExtension = gluCheckExtension((const GLubyte*)"GL_ARB_texture_compression", t);
 		TextureNPOTExtension = gluCheckExtension((const GLubyte*)"GL_ARB_texture_non_power_of_two", t);
+		FramebufferObjectExtension = gluCheckExtension((const GLubyte*)"GL_EXT_framebuffer_object", t);
 		EXTPackedDepthStencil = gluCheckExtension((const GLubyte*)"GL_EXT_packed_depth_stencil", t);
 	}
 	else
@@ -462,6 +465,9 @@ void COpenGLDriver::loadExtensions()
 				else
 				if (strstr(p, "GL_ARB_texture_non_power_of_two"))
 					TextureNPOTExtension = true;
+				else
+				if (strstr(p, "GL_EXT_framebuffer_object"))
+					FramebufferObjectExtension = true;
 				else
 				if (strstr(p, "GL_EXT_packed_depth_stencil"))
 					EXTPackedDepthStencil = true;
@@ -713,7 +719,7 @@ void COpenGLDriver::loadExtensions()
 		MultiTextureExtension = false;
 		os::Printer::log("Warning: OpenGL device only has one texture unit. Disabling multitexturing.", ELL_WARNING);
 	}
-	MaxTextureUnits = core::min_(MaxTextureUnits,MATERIAL_MAX_TEXTURES);
+	MaxTextureUnits = core::min_((s32)MaxTextureUnits,MATERIAL_MAX_TEXTURES);
 }
 
 
@@ -1075,7 +1081,7 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture,
 	tcoords.LowerRightCorner.Y = ((f32)sourcePos.Y +0.5f + (f32)sourceSize.Height) / ss.Height;
 
 	core::rect<s32> poss(targetPos, sourceSize);
-	core::rect<float> npos;
+	core::rect<f32> npos;
 
 	s32 xPlus = renderTargetSize.Width>>1;
 	f32 xFact = 1.0f / xPlus;
@@ -1164,7 +1170,7 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture,
 	tcoords.LowerRightCorner.Y = ((f32)sourcePos.Y +0.5f + (f32)sourceSize.Height) / ss.Height;
 
 	core::rect<s32> poss(targetPos, sourceSize);
-	core::rect<float> npos;
+	core::rect<f32> npos;
 
 	npos.UpperLeftCorner.X = (f32)(poss.UpperLeftCorner.X-xPlus+0.5f) * xFact;
 	npos.UpperLeftCorner.Y = (f32)(yPlus-poss.UpperLeftCorner.Y+0.5f) * yFact;
@@ -1205,8 +1211,8 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture, const core::rect<s32>&
 
 	const core::dimension2d<s32>& renderTargetSize = getCurrentRenderTargetSize();
 	const core::dimension2d<s32>& ss = texture->getOriginalSize();
-	float ssw=1.0f/ss.Width;
-	float ssh=1.0f/ss.Height;
+	f32 ssw=1.0f/ss.Width;
+	f32 ssh=1.0f/ss.Height;
 
 	core::rect<f32> tcoords;
 	tcoords.UpperLeftCorner.X = (((f32)sourceRect.UpperLeftCorner.X)+0.5f) * ssw;
@@ -1220,7 +1226,7 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture, const core::rect<s32>&
 	s32 yPlus = renderTargetSize.Height-(renderTargetSize.Height>>1);
 	f32 yFact = 1.0f / (renderTargetSize.Height>>1);
 
-	core::rect<float> npos;
+	core::rect<f32> npos;
 	npos.UpperLeftCorner.X = (f32)(trgRect.UpperLeftCorner.X-xPlus+0.5f) * xFact;
 	npos.UpperLeftCorner.Y = (f32)(yPlus-trgRect.UpperLeftCorner.Y+0.5f) * yFact;
 	npos.LowerRightCorner.X = (f32)(trgRect.LowerRightCorner.X-xPlus+0.5f) * xFact;
@@ -1315,7 +1321,7 @@ void COpenGLDriver::draw2DRectangle(const core::rect<s32>& position,
 	s32 yPlus = renderTargetSize.Height-(renderTargetSize.Height>>1);
 	f32 yFact = 1.0f / (renderTargetSize.Height>>1);
 
-	core::rect<float> npos;
+	core::rect<f32> npos;
 	npos.UpperLeftCorner.X = (f32)(pos.UpperLeftCorner.X-xPlus) * xFact;
 	npos.UpperLeftCorner.Y = (f32)(yPlus-pos.UpperLeftCorner.Y) * yFact;
 	npos.LowerRightCorner.X = (f32)(pos.LowerRightCorner.X-xPlus) * xFact;
@@ -1410,6 +1416,8 @@ bool COpenGLDriver::queryFeature(E_VIDEO_DRIVER_FEATURE feature)
 		return ARBShadingLanguage100Extension;
 	case EVDF_TEXTURE_NPOT:
 		return TextureNPOTExtension;
+	case EVDF_FRAMEBUFFER_OBJECT:
+		return FramebufferObjectExtension;
 	default:
 		return false;
 	};
@@ -1566,11 +1574,10 @@ void COpenGLDriver::setRenderStates3DMode()
 			MaterialRenderers[LastMaterial.MaterialType].Renderer->OnUnsetMaterial();
 
 		// set new material.
-
 		if (Material.MaterialType >= 0 && Material.MaterialType < (s32)MaterialRenderers.size())
 			MaterialRenderers[Material.MaterialType].Renderer->OnSetMaterial(
 				Material, LastMaterial, ResetRenderStates, this);
-		setBasicRenderStates(Material, LastMaterial, ResetRenderStates);
+
 		LastMaterial = Material;
 		ResetRenderStates = false;
 	}
@@ -1595,7 +1602,7 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 	{
 		GLfloat color[4];
 
-		float inv = 1.0f / 255.0f;
+		f32 inv = 1.0f / 255.0f;
 
 		color[0] = material.AmbientColor.getRed() * inv;
 		color[1] = material.AmbientColor.getGreen() * inv;
@@ -1997,7 +2004,7 @@ void COpenGLDriver::drawStencilShadowVolume(const core::vector3df* triangles, s3
 	glStencilFunc(GL_ALWAYS, 0, 0);
 	glEnable(GL_CULL_FACE);
 
-	glEnable(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3,GL_FLOAT,sizeof(core::vector3df),&triangles[0]);
 
 	if (!zfail)
@@ -2025,7 +2032,7 @@ void COpenGLDriver::drawStencilShadowVolume(const core::vector3df* triangles, s3
 		glDrawArrays(GL_TRIANGLES,0,count);
 	}
 
-	glDisable(GL_VERTEX_ARRAY); //not stored on stack
+	glDisableClientState(GL_VERTEX_ARRAY); //not stored on stack
 	glPopAttrib();
 }
 
@@ -2041,7 +2048,6 @@ void COpenGLDriver::drawStencilShadow(bool clearStencilBuffer, video::SColor lef
 
 	// store attributes
 	glPushAttrib( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT | GL_POLYGON_BIT | GL_STENCIL_BUFFER_BIT );
-	glPushMatrix();
 
 	glDisable( GL_LIGHTING );
 	glDisable(GL_FOG);
@@ -2056,26 +2062,27 @@ void COpenGLDriver::drawStencilShadow(bool clearStencilBuffer, video::SColor lef
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glEnable( GL_STENCIL_TEST );
-	glStencilFunc(GL_LESS, 0, 0xFFFFFFFFL);
+	glStencilFunc(GL_NOTEQUAL, 0, 0xFFFFFFFFL);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
-	glLoadIdentity();
-
 	// draw a shadow rectangle covering the entire screen using stencil buffer
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
 
 	glBegin(GL_TRIANGLE_STRIP);
 
 	glColor4ub (leftUpEdge.getRed(), leftUpEdge.getGreen(), leftUpEdge.getBlue(), leftUpEdge.getAlpha() );
-	glVertex3f(-10.1f, 10.1f,0.90f);
+	glVertex3f(-1.1f, 1.1f,0.9f);
 
 	glColor4ub (leftDownEdge.getRed(), leftDownEdge.getGreen(), leftDownEdge.getBlue(), leftDownEdge.getAlpha() );
-	glVertex3f(-10.1f,-10.1f,0.90f);
+	glVertex3f(-1.1f,-1.1f,0.9f);
 
 	glColor4ub (rightUpEdge.getRed(), rightUpEdge.getGreen(), rightUpEdge.getBlue(), rightUpEdge.getAlpha() );
-	glVertex3f( 10.1f, 10.1f,0.90f);
+	glVertex3f( 1.1f, 1.1f,0.9f);
 
 	glColor4ub (rightDownEdge.getRed(), rightDownEdge.getGreen(), rightDownEdge.getBlue(), rightDownEdge.getAlpha() );
-	glVertex3f( 10.1f,-10.1f,0.90f);
+	glVertex3f( 1.1f,-1.1f,0.9f);
 
 	glEnd();
 
@@ -2736,7 +2743,7 @@ ITexture* COpenGLDriver::createRenderTargetTexture(const core::dimension2d<s32>&
 	video::ITexture* rtt = 0;
 #if defined(GL_EXT_framebuffer_object)
 	// if driver supports FrameBufferObjects, use them
-	if (pGlFramebufferTexture2DEXT)
+	if (FramebufferObjectExtension)
         	rtt = new COpenGLTexture(size, EXTPackedDepthStencil, "rt", this);
 	else
 #endif
