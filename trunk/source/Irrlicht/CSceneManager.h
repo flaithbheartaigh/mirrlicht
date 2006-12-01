@@ -502,6 +502,12 @@ namespace scene
 		CMeshCache* MeshCache;
 
 		E_SCENE_NODE_RENDER_PASS CurrentRendertime;	
+
+		//! const strings. Made as member variable for Symbian dll.
+		const core::stringw IRR_XML_FORMAT_SCENE;
+		const core::stringw IRR_XML_FORMAT_NODE;
+		const core::stringw IRR_XML_FORMAT_NODE_ATTR_TYPE;
+
 	};
 
 } // end namespace video
