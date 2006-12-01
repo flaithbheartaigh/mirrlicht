@@ -118,12 +118,12 @@ the engine will no longer read .jpeg images. */
 //! Define _IRR_COMPILE_WITH_LIBPNG_ to enable compiling the engine using libpng.
 /** This enables the engine to read png images. If you comment this out,
 the engine will no longer read .png images. */
-//#define _IRR_COMPILE_WITH_LIBPNG_
+#define _IRR_COMPILE_WITH_LIBPNG_
 
 //! Define _IRR_USE_NON_SYSTEM_LIBPNG_ to let irrlicht use the libpng which comes with irrlicht.
 /** If this is commented out, Irrlicht will try to compile using the libpng installed in the system.
  This is only used when _IRR_COMPILE_WITH_LIBPNG_ is defined. */
-//#define _IRR_USE_NON_SYSTEM_LIB_PNG_
+#define _IRR_USE_NON_SYSTEM_LIB_PNG_
 
 
 //! Define _IRR_D3D_NO_SHADER_DEBUGGING to disable shader debugging in D3D9
