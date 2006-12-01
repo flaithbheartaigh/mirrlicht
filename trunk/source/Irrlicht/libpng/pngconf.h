@@ -1234,6 +1234,11 @@ typedef z_stream FAR *  png_zstreamp;
 #  endif
 #endif
 
+#if defined(__SYMBIAN32__)
+#  undef PNGAPI
+#  define PNGAPI 
+#endif 
+
 #if defined(__CYGWIN__)
 #  undef PNGAPI
 #  define PNGAPI __cdecl

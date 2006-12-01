@@ -74,13 +74,14 @@
 		</Configuration>
 		<Configuration
 			Name="Deb_S60_31_WINSCW|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/QIfist /NDSProjectFile &quot;$(ProjectPath)&quot; /NDSSDKShortName S60_31"
 				Optimization="0"
-				AdditionalIncludeDirectories="c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\jpeglib;c:\Dev\Temp\mirrlicht\trunk\include;c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\Symbian\mirrlicht\inc;C:\Dev\Temp\S60_3rd_FP1\\epoc32\include\libc;C:\Dev\Temp\S60_3rd_FP1\\epoc32\include;"
+				AdditionalIncludeDirectories="c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\libpng;c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\jpeglib;c:\Dev\Temp\mirrlicht\trunk\include;c:\Dev\Temp\mirrlicht\trunk\source\Irrlicht\Symbian\mirrlicht\inc;C:\Dev\Temp\S60_3rd_FP1\\epoc32\include\libc;C:\Dev\Temp\S60_3rd_FP1\\epoc32\include"
 				PreprocessorDefinitions="__SYMBIAN32__;__SERIES60_31__;__SERIES60_3X__;__SUPPORT_CPP_EXCEPTIONS__;__DLL__;__WINSCW__;__WINS__;__CW32__;_DEBUG;_UNICODE;"
 				IgnoreStandardIncludePath="TRUE"
 				StringPooling="TRUE"
@@ -258,7 +259,7 @@
 			Name="sis">
 			<File
 				RelativePath=".\sis\mirrlicht.pkg">
-			</File>			
+			</File>
 		</Filter>
 		<Filter
 			Name="src">
@@ -1068,6 +1069,61 @@
 						</File>
 						<File
 							RelativePath="..\..\jpeglib\\wrtarga.c">
+						</File>
+					</Filter>
+					<Filter
+						Name="libpng"
+						Filter="">
+						<File
+							RelativePath="..\..\libpng\png.c">
+						</File>
+						<File
+							RelativePath="..\..\libpng\png.h">
+						</File>
+						<File
+							RelativePath="..\..\libpng\pngconf.h">
+						</File>
+						<File
+							RelativePath="..\..\libpng\pngerror.c">
+						</File>
+						<File
+							RelativePath="..\..\libpng\pngget.c">
+						</File>
+						<File
+							RelativePath="..\..\libpng\pngmem.c">
+						</File>
+						<File
+							RelativePath="..\..\libpng\pngpread.c">
+						</File>
+						<File
+							RelativePath="..\..\libpng\pngread.c">
+						</File>
+						<File
+							RelativePath="..\..\libpng\pngrio.c">
+						</File>
+						<File
+							RelativePath="..\..\libpng\pngrtran.c">
+						</File>
+						<File
+							RelativePath="..\..\libpng\pngrutil.c">
+						</File>
+						<File
+							RelativePath="..\..\libpng\pngset.c">
+						</File>
+						<File
+							RelativePath="..\..\libpng\pngtrans.c">
+						</File>
+						<File
+							RelativePath="..\..\libpng\pngwio.c">
+						</File>
+						<File
+							RelativePath="..\..\libpng\pngwrite.c">
+						</File>
+						<File
+							RelativePath="..\..\libpng\pngwtran.c">
+						</File>
+						<File
+							RelativePath="..\..\libpng\pngwutil.c">
 						</File>
 					</Filter>
 				</Filter>
