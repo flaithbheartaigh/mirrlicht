@@ -985,6 +985,7 @@ void COpenGLDriver::drawVertexPrimitiveList(const void* vertices, s32 vertexCoun
 		case scene::EPT_LINES:
 			glDrawElements(GL_LINES, primitiveCount*2, GL_UNSIGNED_SHORT, indexList);
 			break;
+#ifndef _IRR_USE_OPENGL_ES_
 		case scene::EPT_TRIANGLE_STRIP:
 			glDrawElements(GL_TRIANGLE_STRIP, primitiveCount+2, GL_UNSIGNED_SHORT, indexList);
 			break;
@@ -994,7 +995,6 @@ void COpenGLDriver::drawVertexPrimitiveList(const void* vertices, s32 vertexCoun
 		case scene::EPT_TRIANGLES:
 			glDrawElements(GL_TRIANGLES, primitiveCount*3, GL_UNSIGNED_SHORT, indexList);
 			break;
-#ifndef _IRR_USE_OPENGL_ES_
 		case scene::EPT_QUAD_STRIP:
 			glDrawElements(GL_QUAD_STRIP, primitiveCount*2+2, GL_UNSIGNED_SHORT, indexList);
 			break;
@@ -1004,6 +1004,89 @@ void COpenGLDriver::drawVertexPrimitiveList(const void* vertices, s32 vertexCoun
 		case scene::EPT_POLYGON:
 			glDrawElements(GL_POLYGON, primitiveCount, GL_UNSIGNED_SHORT, indexList);
 			break;
+#else
+		//note that PolygonMode in OpenGL ES is not directly supported. The following provides 
+		//a workaround for PolygonMode(GL_LINES) or PolygonMode(GL_POINTS). However, the wireframe 
+		//mode, which corresponds to GL_LINES, is inefficiently emulated because a large number 
+		//of function calls are needed.
+        //
+		//QUAD_STRIP, QUADS and POLYGON are also not directly supported. We use triangle strips, 
+		//triangle loops to render them.
+		case scene::EPT_TRIANGLE_STRIP:
+			if(Material.Wireframe)
+			{
+				for(s32 i = 0; i < primitiveCount; i++)
+					glDrawElements(GL_LINE_LOOP, 3, GL_UNSIGNED_SHORT, indexList+i);
+			}
+			else
+				glDrawElements(Material.PointCloud ? GL_POINTS : GL_TRIANGLE_STRIP, primitiveCount+2, GL_UNSIGNED_SHORT, indexList);
+			break;
+		case scene::EPT_TRIANGLE_FAN:
+			if(Material.Wireframe)
+			{
+				//draw the outer line loop
+				glDrawElements(GL_LINE_LOOP, primitiveCount, GL_UNSIGNED_SHORT, indexList);
+
+				//draw inner lines
+				u16 lineIndex[2];
+				lineIndex[0] = indexList[0];
+				for(s32 i = 2; i <= primitiveCount; i++)
+				{
+					lineIndex[1] = indexList[i];
+					glDrawElements(GL_LINES, 2, GL_UNSIGNED_SHORT, lineIndex);
+				}
+			}
+			glDrawElements(Material.PointCloud ? GL_POINTS : GL_TRIANGLE_FAN, primitiveCount+2, GL_UNSIGNED_SHORT, indexList);
+			break;
+		case scene::EPT_TRIANGLES:
+			if(Material.Wireframe)
+			{
+				for(s32 i = 0; i < primitiveCount; i++)
+					glDrawElements(GL_LINE_LOOP, 3, GL_UNSIGNED_SHORT, indexList+(i*3));
+			}
+			else
+				glDrawElements(Material.PointCloud ? GL_POINTS : GL_TRIANGLES, primitiveCount*3, GL_UNSIGNED_SHORT, indexList);
+			break;
+		case scene::EPT_QUAD_STRIP:
+			if(Material.Wireframe)
+			{
+				u16 lineIndex[4];
+				for(s32 i = 0; i < primitiveCount; i++)
+				{
+					lineIndex[0] = indexList[i*2];
+					lineIndex[1] = indexList[i*2+1];	
+					lineIndex[2] = indexList[i*2+3];
+					lineIndex[3] = indexList[i*2+2];
+					glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, lineIndex);
+				}
+			}
+			else
+				glDrawElements(Material.PointCloud ? GL_POINTS : GL_TRIANGLE_STRIP, primitiveCount*2+2, GL_UNSIGNED_SHORT, indexList);
+			break;
+		case scene::EPT_QUADS:
+			if(Material.Wireframe)
+			{
+				for(s32 i = 0; i < primitiveCount; i++)			
+					glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, indexList+i*4);				
+			}
+			else if(Material.PointCloud)
+				glDrawElements(GL_POINTS, primitiveCount*4, GL_UNSIGNED_SHORT, indexList);
+			else
+			{
+                for(s32 i = 0; i < primitiveCount; i++) 
+					glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_SHORT, indexList+i*4);
+			}
+			break;
+		case scene::EPT_POLYGON:
+			if(Material.Wireframe)
+			{
+				for(s32 i = 0; i < primitiveCount; i++)
+					glDrawElements(GL_LINE_LOOP, primitiveCount, GL_UNSIGNED_SHORT, indexList);
+			}
+			else 
+				glDrawElements(Material.PointCloud ? GL_POINTS : GL_TRIANGLE_FAN, primitiveCount, GL_UNSIGNED_SHORT, indexList);
+			break;
+
 #endif
 	}
 
