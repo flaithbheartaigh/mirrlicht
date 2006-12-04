@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="WinCE"
 	ProjectGUID="{13259A8D-7D07-435C-89CD-545EF6EEE72B}"
 	RootNamespace="WinCE"
@@ -66,14 +66,14 @@
 				Name="VCLinkerTool"
 				AdditionalOptions=" /subsystem:windowsce,4.20 /machine:ARM /ARMPADCODE"
 				AdditionalDependencies="libEGL.lib libGLES_CM_NoE.lib"
-				OutputFile="$(OutDir)/IrrlichtCE.dll"
+				OutputFile="$(ProjectDir)/../../../bin/WinCE-ppc2003/IrrlichtCED.dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames=""
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/WinCE.pdb"
 				SubSystem="0"
-				ImportLibrary="$(OutDir)/IrrlichtCE.lib"
+				ImportLibrary="$(ProjectDir)/../../../lib/WinCE-ppc2003/IrrlichtCED.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -92,7 +92,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="%CSIDL_WINDOWS%\"
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>
@@ -148,7 +148,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions=" /subsystem:windowsce,4.20 /machine:ARM /ARMPADCODE"
 				AdditionalDependencies="libEGL.lib libGLES_CM_NoE.lib"
-				OutputFile="$(OutDir)/IrrlichtCE.dll"
+				OutputFile="$(ProjectDir)/../../../bin/WinCE-ppc2003/IrrlichtCE.dll"
 				LinkIncremental="1"
 				DelayLoadDLLs="$(NOINHERIT)"
 				GenerateDebugInformation="true"
@@ -156,7 +156,7 @@
 				SubSystem="0"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)/IrrlichtCE.lib"
+				ImportLibrary="$(ProjectDir)/../../../lib/WinCE-ppc2003/IrrlichtCE.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -175,7 +175,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="%CSIDL_WINDOWS%\"
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>
