@@ -146,8 +146,10 @@ Note that the engine will run in D3D REF for this, which is a lot slower than HA
 
 #if defined(IRRLICHT_EXPORTS) || defined(WINCE_EXPORTS)
 #define IRRLICHT_API __declspec(dllexport)
-#else
+#elif defined(_USRDLL)
 #define IRRLICHT_API __declspec(dllimport)
+#else
+#define IRRLICHT_API
 #endif // IRRLICHT_EXPORT
 
 #if defined(_STDCALL_SUPPORTED)
