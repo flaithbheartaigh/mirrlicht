@@ -327,6 +327,7 @@ CMainS60AppUi::~CMainS60AppUi()
 {
     if ( iAppView )
     {
+        RemoveFromStack(iAppView);
         delete iAppView;
         iAppView = NULL;
     }
