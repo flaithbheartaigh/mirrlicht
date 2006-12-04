@@ -281,6 +281,7 @@ CIrrDeviceWin32::CIrrDeviceWin32(video::E_DRIVER_TYPE driverType,
 	Win32CursorControl(0), IsNonNTWindows(false), Resized(false),
 	FullScreen(fullscreen), ExternalWindow(false)
 {
+
 	core::stringc winversion;
 	getWindowsVersion(winversion);
 	Operator = new COSOperator(winversion.c_str());
@@ -371,6 +372,49 @@ CIrrDeviceWin32::CIrrDeviceWin32(video::E_DRIVER_TYPE driverType,
 		windowSize.Height = r.bottom - r.top;
 		fullscreen = false;
 		ExternalWindow = true;
+
+#ifdef _IRR_USE_OPENGL_ES_
+		static EGLint s_configAttribs[] =
+		{
+			EGL_RED_SIZE,		8,
+			EGL_GREEN_SIZE, 	8,
+			EGL_BLUE_SIZE,		8,
+			EGL_ALPHA_SIZE, 	8,
+			EGL_DEPTH_SIZE, 	16,
+			EGL_STENCIL_SIZE,   0,
+			EGL_NONE
+		};	
+
+		if(stencilbuffer){		
+			s_configAttribs[11] = 8;
+		}
+		EGLint numConfigs;
+		EGLint majorVersion;
+		EGLint minorVersion;
+		EGLConfig	eglConfig;
+
+		eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+		eglInitialize(eglDisplay, &majorVersion, &minorVersion);
+		eglGetConfigs(eglDisplay, NULL, 0, &numConfigs);
+
+		eglChooseConfig(eglDisplay, s_configAttribs, &eglConfig, 1, &numConfigs);
+
+		Context = eglCreateContext(eglDisplay, eglConfig, NULL, NULL);
+
+		eglWindowSurface = eglCreateWindowSurface(eglDisplay, eglConfig, HWnd, NULL);
+		eglMakeCurrent(eglDisplay, eglWindowSurface, eglWindowSurface, Context);
+
+		if (!eglDisplay)
+		{
+			os::Printer::log("Error: Need running XServer to start Irrlicht Engine.", ELL_ERROR);
+			return;
+		}
+
+
+		if (fullscreen)
+		{
+		}
+#endif
 	}
 
 	// create cursor control
@@ -394,6 +438,7 @@ CIrrDeviceWin32::CIrrDeviceWin32(video::E_DRIVER_TYPE driverType,
 	// set this as active window
 	SetActiveWindow(HWnd);
 	SetForegroundWindow(HWnd);
+
 }
 
 
