@@ -377,10 +377,10 @@ namespace scene
 		}
 
 
-		//! Sets the rotation of the node.
+		//! Gets the rotation of the node.
 		/** Note that this is the relative rotation of the node.
 		\return Current relative rotation of the scene node. */
-		virtual const core::vector3df getRotation() const
+		virtual const core::vector3df& getRotation() const
 		{
 			return RelativeRotation;
 		}
