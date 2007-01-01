@@ -5,7 +5,9 @@
 #ifndef __C_XML_WRITER_H_INCLUDED__
 #define __C_XML_WRITER_H_INCLUDED__
 
+#ifndef __SYMBIAN32__
 #include <wchar.h>
+#endif
 #include "IXMLWriter.h"
 #include "IWriteFile.h"
 
