@@ -205,7 +205,7 @@ bool CIrrDeviceLinux::createWindow(const core::dimension2d<s32>& windowSize,
 			{
 				if (bestMode==-1 && modes[i]->hdisplay >= Width && modes[i]->vdisplay >= Height)
 					bestMode = i;
-				else if (bestMode!=-1 && modes[i]->hdisplay >= Width && modes[i]->vdisplay >= Height && modes[i]->hdisplay < modes[bestMode]->vdisplay && modes[i]->vdisplay < modes[bestMode]->hdisplay)
+				else if (bestMode!=-1 && modes[i]->hdisplay >= Width && modes[i]->vdisplay >= Height && modes[i]->hdisplay < modes[bestMode]->hdisplay && modes[i]->vdisplay < modes[bestMode]->vdisplay)
 					bestMode = i;
 				VideoModeList.addMode(core::dimension2d<s32>(
 					modes[i]->hdisplay, modes[i]->vdisplay), defaultDepth);
@@ -266,7 +266,7 @@ bool CIrrDeviceLinux::createWindow(const core::dimension2d<s32>& windowSize,
 
 	Context=0;
 	GLXFBConfig glxFBConfig;
-	s32 major, minor;
+	int major, minor;
 	bool isAvailableGLX=false;
 	if (DriverType==video::EDT_OPENGL)
 	{
@@ -752,11 +752,14 @@ bool CIrrDeviceLinux::run()
 				break;
 
 			case ClientMessage:
-				if (*XGetAtomName(display, event.xclient.message_type) ==
-					*wmDeleteWindow)
 				{
-					os::Printer::log("Quit message received.", ELL_INFORMATION);
-					Close = true;
+					char *atom = XGetAtomName(display, event.xclient.message_type);
+					if (*atom == *wmDeleteWindow)
+					{
+						os::Printer::log("Quit message received.", ELL_INFORMATION);
+						Close = true;
+					}
+					XFree(atom);
 				}
 				break;
 

@@ -77,7 +77,7 @@ CSceneManager::CSceneManager(video::IVideoDriver* driver, io::IFileSystem* fs,
 	CursorControl(cursorControl), CollisionManager(0),
 	ShadowColor(150,0,0,0), MeshManipulator(0), CurrentRendertime(ESNRP_COUNT),
 	MeshCache(cache), AmbientLight(0,0,0,0),
-	IRR_XML_FORMAT_SCENE(L"irr_scene"),IRR_XML_FORMAT_NODE(L"node"),IRR_XML_FORMAT_NODE_ATTR_TYPE(L"type")
+	IRR_XML_FORMAT_SCENE(L"irr_scene"), IRR_XML_FORMAT_NODE(L"node"), IRR_XML_FORMAT_NODE_ATTR_TYPE(L"type")
 {
 	#ifdef _DEBUG
 	ISceneManager::setDebugName("CSceneManager ISceneManager");
