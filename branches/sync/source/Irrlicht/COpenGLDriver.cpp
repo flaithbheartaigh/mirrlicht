@@ -15,8 +15,6 @@
 #include "COpenGLParallaxMapRenderer.h"
 #include "CImage.h"
 #include "os.h"
-#include <stdlib.h>
-#include <string.h>
 
 namespace irr
 {
@@ -395,6 +393,9 @@ void COpenGLDriver::createMaterialRenderers()
 	renderer->drop();
 	renderer = new COpenGLParallaxMapRenderer(this, tmp, MaterialRenderers[EMT_TRANSPARENT_VERTEX_ALPHA].Renderer);
 	renderer->drop();
+
+	// add basic 1 texture blending
+	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_ONETEXTURE_BLEND(this));
 }
 
 void COpenGLDriver::loadExtensions()
@@ -791,10 +792,9 @@ const core::matrix4& COpenGLDriver::getTransform(E_TRANSFORMATION_STATE state)
 //! sets transformation
 void COpenGLDriver::setTransform(E_TRANSFORMATION_STATE state, const core::matrix4& mat)
 {
-	Transformation3DChanged = true;
-
 	GLfloat glmat[16];
 	Matrices[state] = mat;
+	Transformation3DChanged = true;
 
 	switch(state)
 	{
@@ -812,15 +812,21 @@ void COpenGLDriver::setTransform(E_TRANSFORMATION_STATE state, const core::matri
 		glMatrixMode(GL_PROJECTION);
 		glLoadMatrixf(glmat);
 		break;
-	default:
-		break;
+	case ETS_TEXTURE_0:
+	case ETS_TEXTURE_1:
+		createGLTextureMatrix(glmat, mat );
+		if (MultiTextureExtension)
+			extGlActiveTextureARB(GL_TEXTURE0_ARB + ( state - ETS_TEXTURE_0 ));
+
+		glMatrixMode(GL_TEXTURE);
+		glLoadMatrixf(glmat);
 	}
 }
 
 
 
 //! draws a vertex primitive list
-void COpenGLDriver::drawVertexPrimitiveList(const void* vertices, s32 vertexCount, const u16* indexList, s32 primitiveCount, E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType)
+void COpenGLDriver::drawVertexPrimitiveList(const void* vertices, u32 vertexCount, const u16* indexList, u32 primitiveCount, E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType)
 {
 	if (!primitiveCount || !vertexCount)
 		return;
@@ -833,12 +839,14 @@ void COpenGLDriver::drawVertexPrimitiveList(const void* vertices, s32 vertexCoun
 	// convert colors to gl color format.
 	vertexCount *= 4; //reused as color component count
 	ColorBuffer.set_used(vertexCount);
+	u32 i;
+
 	switch (vType)
 	{
 		case EVT_STANDARD:
 		{
 			const S3DVertex* p = (const S3DVertex*)vertices;
-			for (s32 i=0; i<vertexCount; i+=4)
+			for ( i=0; i<vertexCount; i+=4)
 			{
 				p->Color.toOpenGLColor(&ColorBuffer[i]);
 				++p;
@@ -848,7 +856,7 @@ void COpenGLDriver::drawVertexPrimitiveList(const void* vertices, s32 vertexCoun
 		case EVT_2TCOORDS:
 		{
 			const S3DVertex2TCoords* p = (const S3DVertex2TCoords*)vertices;
-			for (s32 i=0; i<vertexCount; i+=4)
+			for ( i=0; i<vertexCount; i+=4)
 			{
 				p->Color.toOpenGLColor(&ColorBuffer[i]);
 				++p;
@@ -858,7 +866,7 @@ void COpenGLDriver::drawVertexPrimitiveList(const void* vertices, s32 vertexCoun
 		case EVT_TANGENTS:
 		{
 			const S3DVertexTangents* p = (const S3DVertexTangents*)vertices;
-			for (s32 i=0; i<vertexCount; i+=4)
+			for ( i=0; i<vertexCount; i+=4)
 			{
 				p->Color.toOpenGLColor(&ColorBuffer[i]);
 				++p;
@@ -1081,24 +1089,21 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture,
 
 	const core::dimension2d<s32>& ss = texture->getOriginalSize();
 	core::rect<f32> tcoords;
-	tcoords.UpperLeftCorner.X = ((f32)sourcePos.X+0.5f) / ss.Width;
-	tcoords.UpperLeftCorner.Y = ((f32)sourcePos.Y+0.5f) / ss.Height;
-	tcoords.LowerRightCorner.X = ((f32)sourcePos.X +0.5f + (f32)sourceSize.Width) / ss.Width;
-	tcoords.LowerRightCorner.Y = ((f32)sourcePos.Y +0.5f + (f32)sourceSize.Height) / ss.Height;
+
+	tcoords.UpperLeftCorner.X = (f32)sourcePos.X / (f32)ss.Width;
+	tcoords.UpperLeftCorner.Y = (f32)sourcePos.Y / (f32)ss.Height;
+	tcoords.LowerRightCorner.X = ((f32)sourcePos.X +(f32)sourceSize.Width) / (f32)ss.Width;
+	tcoords.LowerRightCorner.Y = ((f32)sourcePos.Y + (f32)sourceSize.Height) / (f32)ss.Height;
 
 	core::rect<s32> poss(targetPos, sourceSize);
 	core::rect<f32> npos;
+	f32 xFact = 2.0f / ( renderTargetSize.Width );
+	f32 yFact = 2.0f / ( renderTargetSize.Height );
 
-	s32 xPlus = renderTargetSize.Width>>1;
-	f32 xFact = 1.0f / xPlus;
-
-	s32 yPlus = renderTargetSize.Height>>1;
-	f32 yFact = 1.0f / yPlus;
-
-	npos.UpperLeftCorner.X = (f32)(poss.UpperLeftCorner.X-xPlus+0.5f) * xFact;
-	npos.UpperLeftCorner.Y = (f32)(yPlus-poss.UpperLeftCorner.Y+0.5f) * yFact;
-	npos.LowerRightCorner.X = (f32)(poss.LowerRightCorner.X-xPlus+0.5f) * xFact;
-	npos.LowerRightCorner.Y = (f32)(yPlus-poss.LowerRightCorner.Y+0.5f) * yFact;
+	npos.UpperLeftCorner.X = ( poss.UpperLeftCorner.X * xFact ) - 1.0f;
+	npos.UpperLeftCorner.Y = 1.0f - ( poss.UpperLeftCorner.Y * yFact );
+	npos.LowerRightCorner.X = ( poss.LowerRightCorner.X * xFact ) - 1.0f;
+	npos.LowerRightCorner.Y = 1.0f - ( poss.LowerRightCorner.Y * yFact );
 
 	setRenderStates2DMode(color.getAlpha()<255, true, useAlphaChannelOfTexture);
 
@@ -1156,11 +1161,8 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture,
 	core::position2d<s32> sourcePos;
 	core::dimension2d<s32> sourceSize;
 	core::rect<f32> tcoords;
-	s32 xPlus = renderTargetSize.Width>>1;
-	f32 xFact = 1.0f / xPlus;
-
-	s32 yPlus = renderTargetSize.Height>>1;
-	f32 yFact = 1.0f / yPlus;
+	f32 xFact = 2.0f / ( renderTargetSize.Width );
+	f32 yFact = 2.0f / ( renderTargetSize.Height );
 
 	for (u32 i=0; i<indices.size(); ++i)
 	{
@@ -1170,35 +1172,36 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture,
 		sourcePos=sourceRects[currentIndex].UpperLeftCorner;
 		sourceSize=sourceRects[currentIndex].getSize();
 
-	tcoords.UpperLeftCorner.X = ((f32)sourcePos.X+0.5f) / ss.Width;
-	tcoords.UpperLeftCorner.Y = ((f32)sourcePos.Y+0.5f) / ss.Height;
-	tcoords.LowerRightCorner.X = ((f32)sourcePos.X +0.5f + (f32)sourceSize.Width) / ss.Width;
-	tcoords.LowerRightCorner.Y = ((f32)sourcePos.Y +0.5f + (f32)sourceSize.Height) / ss.Height;
+		tcoords.UpperLeftCorner.X = (f32)sourceRects[currentIndex].UpperLeftCorner.X / (f32)ss.Width;
+		tcoords.UpperLeftCorner.Y = (f32)sourceRects[currentIndex].UpperLeftCorner.Y / (f32)ss.Height;
+		tcoords.LowerRightCorner.X = (f32)sourceRects[currentIndex].LowerRightCorner.X / (f32)ss.Width;
+		tcoords.LowerRightCorner.Y = (f32)sourceRects[currentIndex].LowerRightCorner.Y / (f32)ss.Height;
 
-	core::rect<s32> poss(targetPos, sourceSize);
-	core::rect<f32> npos;
+		core::rect<s32> poss(targetPos, sourceSize);
+		core::rect<f32> npos;
 
-	npos.UpperLeftCorner.X = (f32)(poss.UpperLeftCorner.X-xPlus+0.5f) * xFact;
-	npos.UpperLeftCorner.Y = (f32)(yPlus-poss.UpperLeftCorner.Y+0.5f) * yFact;
-	npos.LowerRightCorner.X = (f32)(poss.LowerRightCorner.X-xPlus+0.5f) * xFact;
-	npos.LowerRightCorner.Y = (f32)(yPlus-poss.LowerRightCorner.Y+0.5f) * yFact;
+		npos.UpperLeftCorner.X = ( poss.UpperLeftCorner.X * xFact ) - 1.0f;
+		npos.UpperLeftCorner.Y = 1.0f - ( poss.UpperLeftCorner.Y * yFact );
 
-	glBegin(GL_QUADS);
+		npos.LowerRightCorner.X = ( poss.LowerRightCorner.X * xFact ) - 1.0f;
+		npos.LowerRightCorner.Y = 1.0f - ( poss.LowerRightCorner.Y * yFact ); 
 
-	glTexCoord2f(tcoords.UpperLeftCorner.X, tcoords.UpperLeftCorner.Y);
-	glVertex2f(npos.UpperLeftCorner.X, npos.UpperLeftCorner.Y);
+		glBegin(GL_QUADS);
 
-	glTexCoord2f(tcoords.LowerRightCorner.X, tcoords.UpperLeftCorner.Y);
-	glVertex2f(npos.LowerRightCorner.X, npos.UpperLeftCorner.Y);
+		glTexCoord2f(tcoords.UpperLeftCorner.X, tcoords.UpperLeftCorner.Y);
+		glVertex2f(npos.UpperLeftCorner.X, npos.UpperLeftCorner.Y);
 
-	glTexCoord2f(tcoords.LowerRightCorner.X, tcoords.LowerRightCorner.Y);
-	glVertex2f(npos.LowerRightCorner.X, npos.LowerRightCorner.Y);
+		glTexCoord2f(tcoords.LowerRightCorner.X, tcoords.UpperLeftCorner.Y);
+		glVertex2f(npos.LowerRightCorner.X, npos.UpperLeftCorner.Y);
 
-	glTexCoord2f(tcoords.UpperLeftCorner.X, tcoords.LowerRightCorner.Y);
-	glVertex2f(npos.UpperLeftCorner.X, npos.LowerRightCorner.Y);
+		glTexCoord2f(tcoords.LowerRightCorner.X, tcoords.LowerRightCorner.Y);
+		glVertex2f(npos.LowerRightCorner.X, npos.LowerRightCorner.Y);
 
-	glEnd();
-	targetPos.X += sourceRects[currentIndex].getWidth();
+		glTexCoord2f(tcoords.UpperLeftCorner.X, tcoords.LowerRightCorner.Y);
+		glVertex2f(npos.UpperLeftCorner.X, npos.LowerRightCorner.Y);
+
+		glEnd();
+		targetPos.X += sourceRects[currentIndex].getWidth();
 	}
 	if (clipRect)
 		glDisable(GL_SCISSOR_TEST);
@@ -1213,30 +1216,21 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture, const core::rect<s32>&
 	if (!texture)
 		return;
 
-	core::rect<s32> trgRect=destRect;
+	const core::dimension2d<s32>& ss = texture->getOriginalSize();
+	core::rect<f32> tcoords;
+	tcoords.UpperLeftCorner.X = (f32)sourceRect.UpperLeftCorner.X / (f32)ss.Width;
+	tcoords.UpperLeftCorner.Y = (f32)sourceRect.UpperLeftCorner.Y / (f32)ss.Height;
+	tcoords.LowerRightCorner.X = (f32)sourceRect.LowerRightCorner.X / (f32)ss.Width;
+	tcoords.LowerRightCorner.Y = (f32)sourceRect.LowerRightCorner.Y / (f32)ss.Height;
 
 	const core::dimension2d<s32>& renderTargetSize = getCurrentRenderTargetSize();
-	const core::dimension2d<s32>& ss = texture->getOriginalSize();
-	f32 ssw=1.0f/ss.Width;
-	f32 ssh=1.0f/ss.Height;
-
-	core::rect<f32> tcoords;
-	tcoords.UpperLeftCorner.X = (((f32)sourceRect.UpperLeftCorner.X)+0.5f) * ssw;
-	tcoords.UpperLeftCorner.Y = (((f32)sourceRect.UpperLeftCorner.Y)+0.5f) * ssh;
-	tcoords.LowerRightCorner.X = (((f32)sourceRect.UpperLeftCorner.X +0.5f + (f32)sourceRect.getWidth())) * ssw;
-	tcoords.LowerRightCorner.Y = (((f32)sourceRect.UpperLeftCorner.Y +0.5f + (f32)sourceRect.getHeight())) * ssh;
-
-	s32 xPlus = renderTargetSize.Width>>1;
-	f32 xFact = 1.0f / (renderTargetSize.Width>>1);
-
-	s32 yPlus = renderTargetSize.Height-(renderTargetSize.Height>>1);
-	f32 yFact = 1.0f / (renderTargetSize.Height>>1);
-
 	core::rect<f32> npos;
-	npos.UpperLeftCorner.X = (f32)(trgRect.UpperLeftCorner.X-xPlus+0.5f) * xFact;
-	npos.UpperLeftCorner.Y = (f32)(yPlus-trgRect.UpperLeftCorner.Y+0.5f) * yFact;
-	npos.LowerRightCorner.X = (f32)(trgRect.LowerRightCorner.X-xPlus+0.5f) * xFact;
-	npos.LowerRightCorner.Y = (f32)(yPlus-trgRect.LowerRightCorner.Y+0.5f) * yFact;
+	f32 xFact = 2.0f / ( renderTargetSize.Width );
+	f32 yFact = 2.0f / ( renderTargetSize.Height );
+	npos.UpperLeftCorner.X = ( destRect.UpperLeftCorner.X * xFact ) - 1.0f;
+	npos.UpperLeftCorner.Y = 1.0f - ( destRect.UpperLeftCorner.Y * yFact );
+	npos.LowerRightCorner.X = ( destRect.LowerRightCorner.X * xFact ) - 1.0f;
+	npos.LowerRightCorner.Y = 1.0f - ( destRect.LowerRightCorner.Y * yFact ); 
 
 	video::SColor temp[4] =
 	{
@@ -1463,11 +1457,6 @@ bool COpenGLDriver::setTexture(s32 stage, video::ITexture* texture)
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D,
 			((COpenGLTexture*)texture)->getOpenGLTextureName());
-		GLfloat glmat[16];
-
-		createGLMatrix(glmat, texture->getTransformation());
-		glMatrixMode(GL_TEXTURE);
-		glLoadMatrixf(glmat);
 	}
 	return true;
 }
@@ -1486,15 +1475,36 @@ bool COpenGLDriver::disableTextures(s32 fromStage)
 
 
 
-//! creates a transposed matrix in supplied GLfloat array to pass to OpenGL
+//! creates a matrix in supplied GLfloat array to pass to OpenGL
 inline void COpenGLDriver::createGLMatrix(GLfloat gl_matrix[16], const core::matrix4& m)
 {
-	s32 i = 0;
-	for (s32 r=0; r<4; ++r)
-		for (s32 c=0; c<4; ++c)
-			gl_matrix[i++] = m(r,c);
+	memcpy ( gl_matrix, &m.M[0], 16 * sizeof(f32) );
 }
 
+
+//! creates a opengltexturematrix from a D3D style texture matrix
+inline void COpenGLDriver::createGLTextureMatrix(GLfloat *o, const core::matrix4& m)
+{
+	o[0] = m.M[0];
+	o[1] = m.M[1];
+	o[2] = 0.f;
+	o[3] = 0.f;
+
+	o[4] = m.M[4];
+	o[5] = m.M[5];
+	o[6] = 0.f;
+	o[7] = 0.f;
+
+	o[8] = 0.f;
+	o[9] = 0.f;
+	o[10] = 1.f;
+	o[11] = 0.f;
+
+	o[12] = m.M[8];
+	o[13] = m.M[9];
+	o[14] = 0.f;
+	o[15] = 1.f;
+}
 
 
 //! returns a device dependent texture from a software surface (IImage)
@@ -1709,20 +1719,33 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 	}
 
 	// zbuffer
-
 	if (resetAllRenderStates || lastmaterial.ZBuffer != material.ZBuffer)
 	{
-		if (material.ZBuffer)
-			glEnable(GL_DEPTH_TEST);
-		else
-			glDisable(GL_DEPTH_TEST);
+		switch (material.ZBuffer)
+		{
+			case 0:
+				glDisable(GL_DEPTH_TEST);
+				break;
+			case 1:
+				glEnable(GL_DEPTH_TEST);
+				glDepthFunc ( GL_LEQUAL );
+				break;
+			case 2:
+				glEnable(GL_DEPTH_TEST);
+				glDepthFunc ( GL_EQUAL );
+				break;
+		}
 	}
+
+
 
 	// zwrite
 	if (resetAllRenderStates || lastmaterial.ZWriteEnable != material.ZWriteEnable)
 	{
 		if (material.ZWriteEnable)
+		{
 			glDepthMask(GL_TRUE);
+		}
 		else
 			glDepthMask(GL_FALSE);
 	}
@@ -1761,6 +1784,17 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 		glPointSize(material.Thickness);
 		glLineWidth(material.Thickness);
 	}
+
+	// texture address mode
+	if (resetAllRenderStates || lastmaterial.TextureWrap != material.TextureWrap)
+	{
+		u32 mode = material.TextureWrap ? GL_REPEAT : GL_CLAMP;
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode);
+	}
+
+
 }
 
 
@@ -1781,6 +1815,9 @@ void COpenGLDriver::setRenderStates2DMode(bool alpha, bool texture, bool alphaCh
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+
 		Transformation3DChanged = false;
 
 		glDisable(GL_DEPTH_TEST);
@@ -1799,6 +1836,9 @@ void COpenGLDriver::setRenderStates2DMode(bool alpha, bool texture, bool alphaCh
 	{
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 		if (alphaChannel)
 		{
@@ -1949,7 +1989,7 @@ void COpenGLDriver::addDynamicLight(const SLight& light)
 
 
 //! returns the maximal amount of dynamic lights the device can handle
-s32 COpenGLDriver::getMaximalDynamicLightAmount()
+u32 COpenGLDriver::getMaximalDynamicLightAmount()
 {
 	return MaxLights;
 }
@@ -2902,8 +2942,6 @@ IImage* COpenGLDriver::createScreenShot()
 } // end namespace
 } // end namespace
 
-#endif // _IRR_COMPILE_WITH_OPENGL_
-
 
 namespace irr
 {
@@ -2968,4 +3006,6 @@ IVideoDriver* createOpenGLDriver(const core::dimension2d<s32>& screenSize,
 } // end namespace
 } // end namespace
 
+
+#endif // _IRR_COMPILE_WITH_OPENGL_
 

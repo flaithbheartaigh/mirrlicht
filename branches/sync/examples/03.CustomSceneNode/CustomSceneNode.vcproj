@@ -2,7 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="CustomSceneNode"
+	Name="03.CustomSceneNode"
+	ProjectGUID="{32078844-1903-47AB-AEAC-FC2E3415DB46}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -38,7 +39,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\bin\Win32-VisualStudio\CustomSceneNode.exe"
+				OutputFile="..\..\bin\Win32-VisualStudio\03.CustomSceneNode.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\lib\Win32-visualstudio"
@@ -100,7 +101,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\bin\Win32-VisualStudio\CustomSceneNode.exe"
+				OutputFile="..\..\bin\Win32-VisualStudio\03.CustomSceneNode.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\lib\Win32-visualstudio"

@@ -33,25 +33,20 @@ CDemo::~CDemo()
 
 void CDemo::run()
 {
-	if ( driverType == video::EDT_SOFTWARE2 )
+	core::dimension2d<s32> resolution ( 800, 600 );
+
+	if ( driverType == video::EDT_SOFTWARE2 || driverType == video::EDT_SOFTWARE )
 	{
-		// any resultion possible for burning video, but use a smaller one
-		device = createDevice(driverType,
-			core::dimension2d<s32>(640, 480), 32, fullscreen, shadows, vsync, this);
+		resolution.Width = 640;
+		resolution.Height = 480;
 	}
-	else
-	{
-		device = createDevice(driverType,
-			core::dimension2d<s32>(800, 600), 32, fullscreen, shadows, vsync, this);
-	}
+
+	device = createDevice(driverType,resolution, 32, fullscreen, shadows, vsync, this);
 
 	device->getFileSystem()->addZipFileArchive("irrlicht.dat");
 	device->getFileSystem()->addZipFileArchive("../../media/irrlicht.dat");
 	device->getFileSystem()->addZipFileArchive("map-20kdm2.pk3");
 	device->getFileSystem()->addZipFileArchive("../../media/map-20kdm2.pk3");
-
-//	device->getFileSystem()->addUnZipFileArchive ( "/baseq3" );
-
 
 	video::IVideoDriver* driver = device->getVideoDriver();
 	scene::ISceneManager* smgr = device->getSceneManager();
@@ -59,16 +54,16 @@ void CDemo::run()
 
 	device->setWindowCaption(L"Irrlicht Engine Demo");
 
-	// clear backbuffer
-	if ( driver )
-	{
-		driver->beginScene(true, true, 0);
-		driver->endScene();
-	}
+	// set ambient light
+	smgr->setAmbientLight ( video::SColorf ( 0x00c0c0c0 ) );
+
 
 	wchar_t tmp[255];
 
-	u32 now = 0;
+	// draw everything
+
+	s32 now = 0;
+	sceneStartTime = device->getTimer()->getTime();
 	while(device->run() && driver)
 	{
 		if (device->isWindowActive())
@@ -81,15 +76,13 @@ void CDemo::run()
 			#endif
 
 			// load next scene if necessary
-			u32 now = device->getTimer()->getTime();
+			now = device->getTimer()->getTime();
 			if (now - sceneStartTime > timeForThisScene && timeForThisScene!=-1)
 				switchToNextScene();
 
 			createParticleImpacts();
 
-			// draw everything
-
-			driver->beginScene(false, true, backColor);
+			driver->beginScene(timeForThisScene != -1, true, backColor);
 
 			smgr->drawAll();
 			guienv->drawAll();
@@ -97,10 +90,21 @@ void CDemo::run()
 			driver->endScene();
 
 			// write statistics
+			static s32 lastfps = 0;
+			s32 nowfps = driver->getFPS();
 
-			swprintf(tmp, 255, L"%ls fps:%d", driver->getName(),	driver->getFPS());
+			swprintf(tmp, 255, L"%ls fps:%3d triangle:%0.3f million", 
+								driver->getName(),
+								driver->getFPS(),
+								(f32) driver->getPrimitiveCountDrawn() * ( 1.f / 1000000.f )
+								);
 
 			statusText->setText(tmp);
+			if ( nowfps != lastfps )
+			{
+				device->setWindowCaption ( tmp );
+				lastfps = nowfps;
+			}
 		}
 	}
 
@@ -146,8 +150,8 @@ bool CDemo::OnEvent(SEvent event)
 			device->getVideoDriver()->writeImageToFile(image, "screenshot.png");
 			device->getVideoDriver()->writeImageToFile(image, "screenshot.tga");
 			device->getVideoDriver()->writeImageToFile(image, "screenshot.ppm");
+			image->drop();
 		}
-		image->drop();
 	}
 	else
 	if (device->getSceneManager()->getActiveCamera())
@@ -175,6 +179,7 @@ void CDemo::switchToNextScene()
 	{
 		sm->setActiveCamera(0);
 		camera->remove();
+		camera = 0;
 	}
 
 	switch(currentScene)
@@ -187,18 +192,13 @@ void CDemo::switchToNextScene()
 	case 0: // load scene
 		timeForThisScene = 0;
 		loadSceneData();
-		//currentScene += 2;
 		break;
 
 	case 1: // panorama camera
 		{
-			#if 0
-			camera = sm->addCameraSceneNodeFPS(0, 100, 500);
-			timeForThisScene = 14000000;
-			#else
 			currentScene += 1;
-			camera = sm->addCameraSceneNode(0, core::vector3df(0,0,0), core::vector3df(-586,708,52));
-			camera->setTarget(core::vector3df(0,400,0));
+			//camera = sm->addCameraSceneNode(0, core::vector3df(0,0,0), core::vector3df(-586,708,52));
+			//camera->setTarget(core::vector3df(0,400,0));
 			
 			core::array<core::vector3df> points;
 		 
@@ -242,21 +242,22 @@ void CDemo::switchToNextScene()
 			points.push_back(core::vector3df(99.612457f, 102.463669f, 347.603210f));
 			points.push_back(core::vector3df(99.612457f, 102.463669f, 347.603210f));
 
-
 			timeForThisScene = (points.size()-3)* 1000;
-			
+
+			camera = sm->addCameraSceneNode(0, points[0], core::vector3df(0 ,400,0));
+			//camera->setTarget(core::vector3df(0,400,0));
+
 			sa = sm->createFollowSplineAnimator(device->getTimer()->getTime(), 
 				points);
 			camera->addAnimator(sa);
 			sa->drop();			
-			#endif
-		model1->setVisible(false);
-		model2->setVisible(false);
-		campFire->setVisible(false);
-		inOutFader->fadeIn(7000);
-	
-		break;
-		}
+
+			model1->setVisible(false);
+			model2->setVisible(false);
+			campFire->setVisible(false);
+			inOutFader->fadeIn(7000);
+		}break;
+
 	case 2:	// down fly anim camera
 		camera = sm->addCameraSceneNode(0, core::vector3df(100,40,-80), core::vector3df(844,670,-885));
 		sa = sm->createFlyStraightAnimator(	core::vector3df(94, 1002, 127),
@@ -274,9 +275,9 @@ void CDemo::switchToNextScene()
 			model1->setVisible(true);
 			model2->setVisible(true);
 			campFire->setVisible(true);
-			timeForThisScene = (u32)-1;
+			timeForThisScene = -1;
 
-			SKeyMap keyMap[8];
+			SKeyMap keyMap[9];
 			keyMap[0].Action = EKA_MOVE_FORWARD;
 			keyMap[0].KeyCode = KEY_UP;
 			keyMap[1].Action = EKA_MOVE_FORWARD;
@@ -297,14 +298,17 @@ void CDemo::switchToNextScene()
 			keyMap[7].Action = EKA_STRAFE_RIGHT;
 			keyMap[7].KeyCode = KEY_KEY_D;
 
-			camera = sm->addCameraSceneNodeFPS(0, 100.0f, 700.0f, -1, keyMap, 8);
+			keyMap[8].Action = EKA_JUMP_UP;
+			keyMap[8].KeyCode = KEY_KEY_J;
+
+			camera = sm->addCameraSceneNodeFPS(0, 100.0f, 400.0f, -1, keyMap, 9, false, 0.f);
 			camera->setPosition(core::vector3df(108,140,-140));
 			
 			scene::ISceneNodeAnimatorCollisionResponse* collider = 
 				sm->createCollisionResponseAnimator(
-				metaSelector, camera, core::vector3df(30,50,30), 
-				core::vector3df(0, quakeLevelMesh ? -3.0f : 0.0f,0), 
-					core::vector3df(0,40,0), 0.0005f);
+				metaSelector, camera, core::vector3df(25,50,25), 
+				core::vector3df(0, quakeLevelMesh ? -2.5f : 0.0f,0), 
+					core::vector3df(0,45,0), 0.005f);
 		    
 			camera->addAnimator(collider);
 			collider->drop();
@@ -314,11 +318,6 @@ void CDemo::switchToNextScene()
 
 	sceneStartTime = device->getTimer()->getTime();
 
-	// if we've got a new created camera, we call OnPostRender to let all animators
-	// set the right position of the camera, otherwise the camera would
-	// be at a wrong position in the first frame
-	if (device->getSceneManager()->getActiveCamera())
-		device->getSceneManager()->getActiveCamera()->OnPostRender(sceneStartTime);
 }
 
 
@@ -329,24 +328,66 @@ void CDemo::loadSceneData()
 	video::IVideoDriver* driver = device->getVideoDriver();
 	scene::ISceneManager* sm = device->getSceneManager();
 
-	quakeLevelMesh = sm->getMesh("20kdm2.bsp");
+	quakeLevelMesh = (scene::IQ3LevelMesh*) sm->getMesh("maps/20kdm2.bsp");
 	
 	if (quakeLevelMesh)
 	{
-		quakeLevelNode = sm->addOctTreeSceneNode(quakeLevelMesh->getMesh(0));
+		u32 i;
+
+		//move all quake level meshes (non-realtime)
+		core::matrix4 m;
+		m.setTranslation ( core::vector3df(-1300,-70,-1249) );
+
+		for ( i = 0; i!= scene::quake3::E_Q3_MESH_SIZE; ++i )
+		{
+			sm->getMeshManipulator()->transformMesh ( quakeLevelMesh->getMesh(i), m );
+		}
+
+		quakeLevelNode = sm->addOctTreeSceneNode( 
+			quakeLevelMesh->getMesh( scene::quake3::E_Q3_MESH_GEOMETRY)
+									);
 		if (quakeLevelNode)
 		{
-			quakeLevelNode->setPosition(core::vector3df(-1300,-70,-1249));
+			//quakeLevelNode->setPosition(core::vector3df(-1300,-70,-1249));
 			quakeLevelNode->setVisible(true);
 			
 			// create map triangle selector
 			mapSelector = sm->createOctTreeTriangleSelector(quakeLevelMesh->getMesh(0),
 				quakeLevelNode, 128);
 
+			// if not using shader and no gamma it's better to use more lighting, because
+			// quake3 level are dark
+			quakeLevelNode->setMaterialType ( video::EMT_LIGHTMAP_M4 );
+
 			// set additive blending if wanted
 			if (additive)
 				quakeLevelNode->setMaterialType(video::EMT_LIGHTMAP_ADD);
 		}
+
+		// the additional mesh can be quite huge and is unoptimized
+		scene::IMesh * additional_mesh = quakeLevelMesh->getMesh ( scene::E_Q3_MESH_ITEMS );
+
+		for ( i = 0; i!= additional_mesh->getMeshBufferCount (); ++i )
+		{
+			scene::IMeshBuffer *meshBuffer = additional_mesh->getMeshBuffer ( i );
+			const video::SMaterial &material = meshBuffer->getMaterial();
+
+			//! The ShaderIndex is stored in the material parameter
+			s32 shaderIndex = (s32) material.MaterialTypeParam2;
+
+			// the meshbuffer can be rendered without additional support, or it has no shader
+			const scene::quake3::SShader *shader = quakeLevelMesh->getShader ( shaderIndex );
+			if ( 0 == shader )
+			{
+				continue;
+			}
+			// Now add the MeshBuffer(s) with the current Shader to the Manager
+			sm->addQuake3SceneNode ( meshBuffer, shader );
+		}
+
+		// original mesh is not needed anymore
+		quakeLevelMesh->releaseMesh ( scene::E_Q3_MESH_ITEMS );
+
 	}
 
 	// load sydney model and create 2 instances
@@ -365,6 +406,7 @@ void CDemo::loadSceneData()
 			model1->setMaterialFlag(video::EMF_LIGHTING, false);
 			model1->setMaterialType(video::EMT_SPHERE_MAP);
 			model1->addShadowVolumeSceneNode();
+			model1->setAutomaticCulling ( scene::EAC_BOX );
 		}
 
 		model2 = sm->addAnimatedMeshSceneNode(mesh);
@@ -373,10 +415,10 @@ void CDemo::loadSceneData()
 			model2->setPosition(core::vector3df(180,15,-60));
 			model2->setScale(core::vector3df(2,2,2));
 			model2->setMD2Animation(scene::EMAT_RUN);
-			//model2->setAnimationSpeed(1);
 			model2->setMaterialTexture(0, device->getVideoDriver()->getTexture("../../media/sydney.bmp"));
 			model2->setMaterialFlag(video::EMF_LIGHTING, true);
 			model2->addShadowVolumeSceneNode();
+			model2->setAutomaticCulling ( scene::EAC_BOX );
 		}
 	}
 
@@ -442,10 +484,11 @@ void CDemo::loadSceneData()
 
 	scene::ILightSceneNode* light = 0;
 
-	light = device->getSceneManager()->addLightSceneNode(0,
-		core::vector3df(0,0,0),	video::SColorf(1.0f, 0.5f, 0.5f, 1.0f), 1500);
+	light = sm->addLightSceneNode(0,
+		core::vector3df(0,0,0),	video::SColorf(1.0f, 1.0f, 1.f, 1.0f), 500.f);
+	light->setDebugDataVisible ( scene::EDS_FULL );
 
-	anim = device->getSceneManager()->createFlyCircleAnimator(
+	anim = sm->createFlyCircleAnimator(
 		core::vector3df(100,150,80), 80.0f, 0.0005f);
 
 	light->addAnimator(anim);
@@ -496,9 +539,6 @@ void CDemo::loadSceneData()
 		startSound();
 	#endif
 
-	// set background color
-
-	backColor.set(0,0,0,0);
 }
 
 
@@ -516,22 +556,16 @@ void CDemo::createLoadingScreen()
 	// create in fader
 
 	inOutFader = device->getGUIEnvironment()->addInOutFader();
-	inOutFader->setColor(backColor);
+	inOutFader->setColor(backColor,	video::SColor ( 0, 230, 230, 230 ));
 
 	// irrlicht logo
-/*
-	gui::IGUIImage* img = device->getGUIEnvironment()->addImage(
-		core::rect<int>(10,10,98,41));
-	img->setImage(
-		device->getVideoDriver()->getTexture("../../media/irrlichtlogoaligned.jpg"));
-*/
-	device->getGUIEnvironment()->addImage(device->getVideoDriver()->getTexture("../../media/irrlichtlogoalpha2.tga"),
+	device->getGUIEnvironment()->addImage(device->getVideoDriver()->getTexture("../../media/irrlichtlogo2.png"),
 		core::position2d<s32>(5,5));
 
 	// loading text
 
-	const int lwidth = 220;
-	const int lheight = 15;
+	const int lwidth = size.Width - 20;
+	const int lheight = 16;
 
 	core::rect<int> pos(10, size.Height-lheight-10, 10+lwidth, size.Height-10);
 	
@@ -542,7 +576,7 @@ void CDemo::createLoadingScreen()
 	// load bigger font
 
 	device->getGUIEnvironment()->getSkin()->setFont(
-		device->getGUIEnvironment()->getFont("../../media/fonthaettenschweiler.bmp"));
+		device->getGUIEnvironment()->getFont("../../media/fontlucida.png"));
 
 	// set new font color
 
@@ -568,7 +602,7 @@ void CDemo::shoot()
 	core::vector3df start = camera->getPosition();
 	core::vector3df end = (camera->getTarget() - start);
 	end.normalize();
-	start += end*5.0f;
+	start += end*8.0f;
 	end = start + (end * camera->getFarValue());
 	
 
@@ -592,9 +626,11 @@ void CDemo::shoot()
 	else
 	{
 		// doesnt collide with wall
-		end = (camera->getTarget() - start);
+		core::vector3df start = camera->getPosition();
+		core::vector3df end = (camera->getTarget() - start);
 		end.normalize();
-		end = start + (end * 1000);
+		start += end*8.0f;
+		end = start + (end * camera->getFarValue());
 	}
 
 	// create fire ball

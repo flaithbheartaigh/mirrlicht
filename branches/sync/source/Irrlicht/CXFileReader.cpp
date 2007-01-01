@@ -5,11 +5,6 @@
 #include "CXFileReader.h"
 #include "os.h"
 #include "fast_atof.h"
-#include <ctype.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
 
 namespace irr
 {
@@ -305,8 +300,16 @@ bool CXFileReader::parseDataObject()
 	else
 	if (objectName == "Frame")
 	{
-		RootFrames.push_back(SXFrame());
-		m_pgCurFrame = &RootFrames[ RootFrames.size() - 1 ];
+		if (!m_pgCurFrame)
+		{
+			RootFrames.push_back(SXFrame());
+			m_pgCurFrame = &RootFrames[ RootFrames.size() - 1 ];
+		}
+		else
+		{
+			m_pgCurFrame->ChildFrames.push_back(SXFrame());
+			m_pgCurFrame = &(m_pgCurFrame->ChildFrames[ m_pgCurFrame->ChildFrames.size() - 1 ]);
+		}
 		return parseDataObjectFrame( * m_pgCurFrame );
 	}
 	else
@@ -1133,6 +1136,11 @@ bool CXFileReader::parseDataObjectAnimationKey(SXAnimationKey& animkey)
 	// read number of keys
 	animkey.numberOfKeys = readInt();
 
+	// eat the semicolon after the "0".  if there are keys present, readInt()
+	// does this for us.  If there aren't, we need to do it explicitly
+	if (!binary && animkey.numberOfKeys == 0)
+		getNextToken(); // skip semicolon
+
 	animkey.init();
 
 	// read keys
@@ -1689,7 +1697,7 @@ core::stringc CXFileReader::getNextToken()
 		if (P >= End)
 			return s;
 
-		while(P < End && !isspace(P[0]))
+		while(P < End && !core::isspace(P[0]))
 		{
 			s.append(P[0]);
 			++P;
@@ -1709,7 +1717,7 @@ void CXFileReader::findNextNoneWhiteSpaceNumber()
 	while(true)
 	{
 		while((P < End) && (P[0] != '-') && (P[0] != '.') &&
-				!(isdigit(P[0])))
+			!( core::isdigit(P[0])))
 			++P;
 
 		if (P >= End)

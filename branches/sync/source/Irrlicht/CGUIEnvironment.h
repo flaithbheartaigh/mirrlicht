@@ -13,6 +13,10 @@
 
 namespace irr
 {
+namespace io
+{
+	class IXMLWriter;
+}
 namespace gui
 {
 
@@ -39,6 +43,9 @@ public:
 	//! use this method, it is used by the internal engine.
 	virtual void setUserEventReceiver(IEventReceiver* evr);
 
+	//! removes all elements from the environment
+	virtual void clear();
+
 	//! called if an event happened.
 	virtual bool OnEvent(SEvent event);
 
@@ -50,7 +57,7 @@ public:
 
 	//! Creates a new GUI Skin based on a template.
 	/** \return Returns a pointer to the created skin.
-	If you no longer need the image, you should call IGUISkin::drop().
+	If you no longer need the skin, you should call IGUISkin::drop().
 	See IUnknown::drop() for more information. */
 	virtual IGUISkin* createSkin(EGUI_SKIN_TYPE type);
 
@@ -58,11 +65,14 @@ public:
 	virtual IGUIFont* getFont(const c8* filename);
 
 	//! adds an button. The returned pointer must not be dropped.
-	virtual IGUIButton* addButton(const core::rect<s32>& rectangle, IGUIElement* parent=0, s32 id=-1, const wchar_t* text=0);
+	virtual IGUIButton* addButton(const core::rect<s32>& rectangle, IGUIElement* parent=0, s32 id=-1, const wchar_t* text=0,const wchar_t* tooltiptext = 0);
 
 	//! adds a window. The returned pointer must not be dropped.
 	virtual IGUIWindow* addWindow(const core::rect<s32>& rectangle, bool modal = false, 
 		const wchar_t* text=0, IGUIElement* parent=0, s32 id=-1);
+
+	//! adds a modal screen. The returned pointer must not be dropped.
+	virtual IGUIElement* addModalScreen(IGUIElement* parent);
 
 	//! Adds a message box.
 	virtual IGUIWindow* addMessageBox(const wchar_t* caption, const wchar_t* text=0,
@@ -133,6 +143,9 @@ public:
 	//! Returns if the element has focus
 	virtual bool hasFocus(IGUIElement* element);
 
+	//! Returns the element with the focus
+	virtual IGUIElement* getFocus();
+
 	//! returns default font
 	virtual IGUIFont* getBuiltInFont();
 
@@ -141,6 +154,53 @@ public:
 
 	//! Returns the root gui element. 
     virtual IGUIElement* getRootGUIElement();
+
+	virtual void OnPostRender( u32 time );
+
+	//! Returns the default element factory which can create all built in elements
+	virtual IGUIElementFactory* getDefaultGUIElementFactory();
+
+	//! Adds an element factory to the gui environment.
+	/** Use this to extend the gui environment with new element types which it should be
+	able to create automaticly, for example when loading data from xml files. */
+	virtual void registerGUIElementFactory(IGUIElementFactory* factoryToAdd);
+
+	//! Returns amount of registered scene node factories.
+	virtual s32 getRegisteredGUIElementFactoryCount();
+
+	//! Returns a scene node factory by index
+	virtual IGUIElementFactory* getGUIElementFactory(s32 index);
+
+
+	//! Saves the current gui into a file.
+	//! \param filename: Name of the file.
+	virtual bool saveGUI(const c8* filename);
+
+	//! Saves the current gui into a file.
+	virtual bool saveGUI(io::IWriteFile* file);
+
+	//! Loads the gui. Note that the current gui is not cleared before.
+	//! \param filename: Name of the file .
+	virtual bool loadGUI(const c8* filename);
+
+	//! Loads the gui. Note that the current gui is not cleared before.
+	virtual bool loadGUI(io::IReadFile* file);	
+
+	//! Writes attributes of the environment
+	virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0);
+
+	//! Reads attributes of the environment.
+	virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0);
+
+	//! writes an element
+	virtual void writeGUIElement(io::IXMLWriter* writer, IGUIElement* node);
+
+	//! reads an element
+	virtual void readGUIElement(io::IXMLReader* reader, IGUIElement* parent);
+
+	//! gets the type name from a gui element type id
+	virtual const c8* getGUIElementTypeName(EGUI_ELEMENT_TYPE type);
+
 
 private:
 
@@ -155,9 +215,18 @@ private:
 		}
 	};
 
+	struct SToolTip
+	{
+		u32 LastTime;
+		u32 LaunchTime;
+		IGUIStaticText* Element;
+	};
+	SToolTip ToolTip;
 	void updateHoveredElement(core::position2d<s32> mousePos);
 
 	void loadBuiltInFont();
+
+	core::array<IGUIElementFactory*> GUIElementFactoryList;
 
 	core::array<SFont> Fonts;
 	video::IVideoDriver* Driver;
