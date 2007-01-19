@@ -3,7 +3,7 @@
 #include "CImageLoaderTGA.h"
 #include "IWriteFile.h"
 #include "CColorConverter.h"
-#include "string.h"
+#include "irrString.h"
 
 namespace irr
 {

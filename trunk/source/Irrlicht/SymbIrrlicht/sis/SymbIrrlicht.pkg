@@ -1,23 +1,22 @@
 ; SymbIrrlicht.pkg
-;
-;Language - standard language definitions
+
+; Languages
 &EN
 
-; standard SIS file header
-#{"SymbIrrlicht"},(0xebf1104c),1,0,0
+; Header
+#{"SymbIrrlicht"},(0xebf1104c), 0, 1, 1
 
-;Localised Vendor name
-%{"Ming Li-EN"}
+; Platform compatibility
+[0x102032BE], *, *, *, {"Series60ProductID"}
 
-;Unique Vendor name
+; vendor
+%{"Ming Li"}
 :"Ming Li"
 
-;Supports Series 60 v 3.0
-[0x101F7961], 0, 0, 0, {"Series60ProductID"}
+; Target
+"E:\Dev\Symbian\9.2\S60_3rd_FP1\Epoc32\release\gcce\UREL\SymbIrrlicht.exe"-"!:\sys\bin\SymbIrrlicht.exe"
+"E:\Dev\Symbian\9.2\S60_3rd_FP1\Epoc32\data\z\resource\apps\SymbIrrlicht.rSC"-"!:\resource\apps\SymbIrrlicht.rSC"
+"E:\Dev\Symbian\9.2\S60_3rd_FP1\Epoc32\data\z\resource\apps\SymbIrrlicht_reg.mif"-"!:\resource\apps\SymbIrrlicht_reg.mif"
+"E:\Dev\Symbian\9.2\S60_3rd_FP1\Epoc32\data\z\private\10003a3f\apps\SymbIrrlicht_reg.rSC"-"!:\private\10003a3f\import\apps\SymbIrrlicht_reg.rSC"
 
-;Files to install
-"..\..\..\epoc32\release\armv5\urel\SymbIrrlicht.exe"                 -"!:\sys\bin\SymbIrrlicht.exe"
-"..\..\..\epoc32\data\z\resource\apps\SymbIrrlicht.rsc"               -"!:\resource\apps\SymbIrrlicht.rsc"
-"..\..\..\epoc32\data\z\resource\apps\SymbIrrlicht.mif"               -"!:\resource\apps\SymbIrrlicht.mif"
-"..\..\..\epoc32\data\z\private\10003a3f\apps\SymbIrrlicht_reg.rsc"   -"!:\private\10003a3f\import\apps\SymbIrrlicht_reg.rsc"
 

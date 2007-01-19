@@ -9,8 +9,6 @@
 #include "SMeshBuffer.h"
 #include "IMeshManipulator.h"
 
-#include <stdio.h>
-
 namespace irr
 {
 namespace scene
@@ -320,29 +318,19 @@ void CXAnimationPlayer::addFacesToBuffer(s32 meshbuffernr, CXFileReader::SXMesh&
 	// generate missing normals
 	if (!ncnt)
 	{
-		video::S3DVertex* vertex = &buf->Vertices[0];
-		fcnt = buf->Indices.size();
-
-		for (s32 u=0; u<(s32)fcnt; u+=3)
-		{
-			core::plane3d<f32> p(vertex[buf->Indices[u+0]].Pos,
-				vertex[buf->Indices[u+1]].Pos, vertex[buf->Indices[u+2]].Pos);
-			vertex[buf->Indices[u+0]].Normal = p.Normal;
-			vertex[buf->Indices[u+1]].Normal = p.Normal;
-			vertex[buf->Indices[u+2]].Normal = p.Normal;
-		}
+		// Using Mesh manipulator
+		Manipulator->recalculateNormals ( buf, true );
 	}
 
 	// transform vertices and normals
-	/*core::matrix4 mat = frame.LocalMatrix;
-	mat.makeInverse();
+	core::matrix4 mat = frame.LocalMatrix;
 
 	s32 vcnt = buf->Vertices.size();
 	for (s32 u=0; u<vcnt; ++u)
 	{
 		mat.transformVect(buf->Vertices[u].Pos);
-		mat.inverseRotateVect(buf->Vertices[u].Normal);
-	}*/
+		mat.rotateVect(buf->Vertices[u].Normal);
+	} 
 }
 
 
@@ -633,7 +621,7 @@ void CXAnimationPlayer::modifySkin()
 	bool somethingIsWrong = false;
 
 	// check if all vertices are set to zero
-	for (s32 mb=0; mb<AnimatedMesh->getMeshBufferCount(); ++mb)
+	for (u32 mb=0; mb<AnimatedMesh->getMeshBufferCount(); ++mb)
 	{
 		video::S3DVertex* v = (video::S3DVertex*)AnimatedMesh->getMeshBuffer(mb)->getVertices();
 		s32 c = AnimatedMesh->getMeshBuffer(mb)->getVertexCount();
@@ -656,7 +644,7 @@ void CXAnimationPlayer::modifySkin()
 		sprintf(tmp, "CXAnimationPlayer: Meshbuffers:%d", AnimatedMesh->getMeshBufferCount());
 		os::Printer::log(tmp);
 
-		for (s32 mb=0; mb<AnimatedMesh->getMeshBufferCount(); ++mb)
+		for (u32 mb=0; mb<AnimatedMesh->getMeshBufferCount(); ++mb)
 		{
 			sprintf(tmp, "CXAnimationPlayer: Meshbuffer #%d: %d vertices", mb, AnimatedMesh->getMeshBuffer(mb)->getVertexCount());	
 			os::Printer::log(tmp);
@@ -665,12 +653,12 @@ void CXAnimationPlayer::modifySkin()
 #endif
 
 	// transform vertices
-	for (s32 mb=0; mb<AnimatedMesh->getMeshBufferCount(); ++mb)
+	for (u32 mb=0; mb<AnimatedMesh->getMeshBufferCount(); ++mb)
 	{
 		video::S3DVertex* av = (video::S3DVertex*)AnimatedMesh->getMeshBuffer(mb)->getVertices();
 		video::S3DVertex* ov = (video::S3DVertex*)OriginalMesh.getMeshBuffer(mb)->getVertices();
-		const s32 c = AnimatedMesh->getMeshBuffer(mb)->getVertexCount();
-		for (s32 vt=0; vt<c; ++vt)
+		const u32 c = AnimatedMesh->getMeshBuffer(mb)->getVertexCount();
+		for (u32 vt=0; vt<c; ++vt)
 		{
 			core::vector3df vtmp;
 			core::vector3df orig = ov[vt].Pos;
@@ -682,7 +670,7 @@ void CXAnimationPlayer::modifySkin()
 			for (w=0; w<weight.weightCount; ++w)
 			{
 				Joints[weight.joint[w]].CombinedAnimationMatrix.transformVect(
-					orig, vtmp);
+					vtmp, orig);
 
 				vtmp *= weight.weight[w];
 				av[vt].Pos += vtmp;
@@ -694,7 +682,7 @@ void CXAnimationPlayer::modifySkin()
 
 			for( w = 0; w < weight.weightCount; ++w )
 			{
-				Joints[weight.joint[w]].CombinedAnimationMatrix.transformVect( orig, vtmp );
+				Joints[weight.joint[w]].CombinedAnimationMatrix.transformVect( vtmp,orig );
 				vtmp *= weight.weight[w];
 				av[vt].Normal += vtmp;
 			}
@@ -736,14 +724,22 @@ void CXAnimationPlayer::prepareAnimationData()
 					continue;
 				}
 
+				// copy track
+				s32 keyCount = (s32)readerSet.Animations[a].Keys[k].numberOfKeys;
+				if (!keyCount)
+				{
+					os::Printer::log(
+						"CXAnimationPlayer: Skipping Animationtrack with zero key frames",
+						readerSet.Animations[a].FrameName.c_str());
+					continue;
+				}
+
 				// add new track
 				mySet.Animations.push_back(SXAnimationTrack());
 				SXAnimationTrack& myTrack = mySet.Animations.getLast();
 				myTrack.jointNr = jntnr;
 				IsAnimatedSkinnedMesh = true;
 
-				// copy track
-				s32 keyCount = (s32)readerSet.Animations[a].Keys[k].numberOfKeys;
 				s32 type = readerSet.Animations[a].Keys[k].keyType;
 				s32 l;
 				myTrack.keyType = type;
@@ -773,11 +769,14 @@ void CXAnimationPlayer::prepareAnimationData()
 				}
 
 				// copy times
-				for (l=0; l<keyCount; ++l)
-					myTrack.Times.push_back((f32)readerSet.Animations[a].Keys[k].time[l]);
+				if (keyCount) 
+				{
+					for (l=0; l<keyCount; ++l)
+						myTrack.Times.push_back((f32)readerSet.Animations[a].Keys[k].time[l]);
 
-				if (myTrack.Times.getLast() > LastAnimationTime)
-					LastAnimationTime = myTrack.Times.getLast();
+					if (myTrack.Times.getLast() > LastAnimationTime)
+						LastAnimationTime = myTrack.Times.getLast();
+				}
 			}
 		}
 

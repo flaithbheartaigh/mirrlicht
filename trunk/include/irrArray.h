@@ -72,7 +72,7 @@ public:
 		data = allocator.allocate(new_size); //new T[new_size];
 		allocated = new_size;
 
-        // copy old data
+		// copy old data
 		s32 end = used < new_size ? used : new_size;
 		
 		for (s32 i=0; i<end; ++i)
@@ -80,8 +80,8 @@ public:
 			// data[i] = old_data[i];
 			allocator.construct(&data[i], old_data[i]);
 		}
-		
-        // destruct old data
+
+		// destruct old data
 		for (u32 j=0; j<used; ++j)
 			allocator.destruct(&old_data[j]);
 
@@ -350,25 +350,32 @@ public:
 	//! otherwise -1 is returned.
 	s32 binary_search(const T& element)
 	{
+		sort();
+		return binary_search(element, 0, used-1);
+	}
+
+	//! Performs a binary search for an element, returns -1 if not found.
+	//! The array must be sorted prior
+	//! \param element: Element to search for.
+	//! \return Returns position of the searched element if it was found,
+	//! otherwise -1 is returned.
+	s32 binary_search_const(const T& element) const
+	{
 		return binary_search(element, 0, used-1);
 	}
 
 
 
 	//! Performs a binary search for an element, returns -1 if not found.
-	//! The array will be sorted before the binary search if it is not
-	//! already sorted.
 	//! \param element: Element to search for.
 	//! \param left: First left index
 	//! \param right: Last right index.
 	//! \return Returns position of the searched element if it was found,
 	//! otherwise -1 is returned.
-	s32 binary_search(const T& element, s32 left, s32 right)
+	s32 binary_search(const T& element, s32 left, s32 right) const
 	{
 		if (!used)
 			return -1;
-
-		sort();
 
 		s32 m;
 

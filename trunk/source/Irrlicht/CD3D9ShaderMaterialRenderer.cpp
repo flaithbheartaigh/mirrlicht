@@ -27,7 +27,7 @@ CD3D9ShaderMaterialRenderer::CD3D9ShaderMaterialRenderer(IDirect3DDevice9* d3dde
 		s32& outMaterialTypeNr, const c8* vertexShaderProgram, const c8* pixelShaderProgram,
 		IShaderConstantSetCallBack* callback, IMaterialRenderer* baseMaterial, s32 userData)
 : pID3DDevice(d3ddev), Driver(driver), BaseMaterial(baseMaterial), CallBack(callback),
-	VertexShader(0), PixelShader(0), UserData(userData)
+	VertexShader(0), OldVertexShader(0), PixelShader(0), UserData(userData)
 {
 	if (BaseMaterial)
 		BaseMaterial->grab();
@@ -189,7 +189,10 @@ bool CD3D9ShaderMaterialRenderer::createPixelShader(const c8* pxsh)
 	{
 		// print out compilation errors.
 		os::Printer::log("Pixel shader compilation failed:");
-		os::Printer::log((c8*)errors->GetBufferPointer());			
+		os::Printer::log((c8*)errors->GetBufferPointer());
+
+		if (code)
+			code->Release();
 
 		errors->Release();
 		return false;
@@ -248,6 +251,9 @@ bool CD3D9ShaderMaterialRenderer::createVertexShader(const char* vtxsh)
 		// print out compilation errors.
 		os::Printer::log("Vertex shader compilation failed:");
 		os::Printer::log((c8*)errors->GetBufferPointer());
+
+		if (code)
+			code->Release();
 
 		errors->Release();
 		return false;

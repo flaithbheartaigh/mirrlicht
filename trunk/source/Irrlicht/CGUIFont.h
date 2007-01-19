@@ -5,17 +5,16 @@
 #ifndef __C_GUI_FONT_H_INCLUDED__
 #define __C_GUI_FONT_H_INCLUDED__
 
-#include "IGUIFont.h"
+#include "IGUIFontASCII.h"
 #include "irrString.h"
 #include "IVideoDriver.h"
-#include "irrArray.h"
 
 namespace irr
 {
 namespace gui
 {
 
-class CGUIFont : public IGUIFont
+class CGUIFont : public IGUIFontASCII
 {
 public:
 
@@ -40,6 +39,20 @@ public:
 	//! Calculates the index of the character in the text which is on a specific position.
 	virtual s32 getCharacterFromPos(const wchar_t* text, s32 pixel_x);
 
+	//! Returns the type of this font
+	virtual EGUI_FONT_TYPE getType() { return EGFT_BITMAP; }
+
+	//! set an Pixel Offset on Drawing ( scale position on width )
+	virtual void setKerning ( s32 kerning );
+
+	//! set an Pixel Offset on Drawing ( scale position on width )
+	virtual s32 getKerning ();
+
+	//! get the Font Texture
+	virtual video::ITexture* getTexture ();
+	//! returns the parsed Symbol Information
+	virtual const core::array< core::rect<s32> >& getPositions ();
+
 private:
 
 	//! load & prepare font from ITexture
@@ -54,6 +67,8 @@ private:
 	core::array< core::rect<s32> > Positions;
 	video::ITexture* Texture;
 	s32 WrongCharacter;
+
+	s32 GlobalKerningWidth;
 };
 
 } // end namespace gui

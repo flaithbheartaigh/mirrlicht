@@ -79,7 +79,7 @@ namespace video
 
 
 /*!
-	Surface Loader fow Windows bitmaps
+	Surface Loader for Windows bitmaps
 */
 class CImageLoaderBMP : public IImageLoader
 {
