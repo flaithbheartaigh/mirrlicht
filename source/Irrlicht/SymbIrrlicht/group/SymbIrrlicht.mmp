@@ -13,6 +13,9 @@ UID                                     0x0 0xebf1104c
 SECUREID                                0xebf1104c 
 EPOCSTACKSIZE                           0x5000 
 SOURCEPATH                              ..\.. 
+SOURCE                                  CGUIFontMultiTexture.cpp 
+SOURCE                                  CDefaultGUIElementFactory.cpp 
+SOURCE                                  CQuake3ShaderSceneNode.cpp 
 SOURCE                                  CAnimatedMeshB3d.cpp 
 SOURCE                                  CAnimatedMeshMD2.cpp 
 SOURCE                                  CAnimatedMeshMS3D.cpp 
@@ -204,6 +207,23 @@ SOURCE                                  wrppm.c
 SOURCE                                  wrrle.c 
 SOURCE                                  wrtarga.c 
 
+SOURCEPATH                              ..\..\libpng 
+/* [+] */ SOURCE                        pngerror.c 
+SOURCE                                  pngwtran.c 
+SOURCE                                  pngwrite.c 
+SOURCE                                  pngwio.c 
+SOURCE                                  pngtrans.c 
+SOURCE                                  pngset.c 
+SOURCE                                  pngrutil.c 
+SOURCE                                  pngrtran.c 
+SOURCE                                  pngrio.c 
+SOURCE                                  pngread.c 
+SOURCE                                  pngpread.c 
+SOURCE                                  pngmem.c 
+SOURCE                                  pngget.c 
+SOURCE                                  pngwutil.c 
+SOURCE                                  png.c 
+
 SOURCEPATH                              ..\data 
 START RESOURCE SymbIrrlicht.rss 
   TARGETPATH                              \resource\apps 
@@ -218,6 +238,7 @@ END
 SOURCEPATH                              ..\src 
 SOURCE                                  MainS60.cpp 
 
+USERINCLUDE                             ..\..\libpng 
 USERINCLUDE                             ..\..\..\..\include 
 USERINCLUDE                             ..\..\jpeglib 
 USERINCLUDE                             ..\inc 

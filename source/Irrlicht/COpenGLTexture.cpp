@@ -9,9 +9,10 @@
 #include "CColorConverter.h"
 
 #include "IrrCompileConfig.h"
+
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
-#include <string.h>
+#include "irrString.h"
 
 namespace irr
 {
@@ -122,11 +123,11 @@ COpenGLTexture::COpenGLTexture(const core::dimension2d<s32>& size,
 	// generate color texture
 	glGenTextures(1, &TextureName);
 	glBindTexture(GL_TEXTURE_2D, TextureName);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, ImageSize.Width,
 		ImageSize.Height, 0, GL_RGBA, GL_INT, 0);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 #ifdef GL_EXT_packed_depth_stencil
 	if (extPackedDepthStencilSupported)
@@ -134,11 +135,11 @@ COpenGLTexture::COpenGLTexture(const core::dimension2d<s32>& size,
 		// generate packed depth stencil texture
 		glGenTextures(1, &DepthRenderBuffer);
 		glBindTexture(GL_TEXTURE_2D, DepthRenderBuffer);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL_EXT, ImageSize.Width,
 			ImageSize.Height, 0, GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT, 0);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		StencilRenderBuffer = DepthRenderBuffer; // stencil is packed with depth
 	}
 	else // generate separate stencil and depth textures
@@ -147,11 +148,11 @@ COpenGLTexture::COpenGLTexture(const core::dimension2d<s32>& size,
 		// generate depth texture
 		glGenTextures(1, &DepthRenderBuffer);
 		glBindTexture(GL_TEXTURE_2D, DepthRenderBuffer);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, ImageSize.Width,
 			ImageSize.Height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         // we 're in trouble! the code below does not complete the FBO currently...
         // stencil buffer is only supported with EXT_packed_depth_stencil extension (above)
@@ -433,8 +434,8 @@ void COpenGLTexture::copyTexture(bool newTexture)
 	if (HasMipMaps) // might have changed in regenerateMipMapLevels
 	{
 		// enable bilinear mipmap filter
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST );
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 	else
 	#else
@@ -519,7 +520,7 @@ ECOLOR_FORMAT COpenGLTexture::getColorFormat() const
 
 
 //! returns pitch of texture (in bytes)
-s32 COpenGLTexture::getPitch()
+u32 COpenGLTexture::getPitch() const
 {
 	return Pitch;
 }

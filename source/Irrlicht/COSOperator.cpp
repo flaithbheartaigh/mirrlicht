@@ -11,10 +11,14 @@
 #include <string.h>
 #endif
 
-#ifdef MACOSX
-#include "OSXClipboard.h"
+#ifdef LINUX
+#include <unistd.h>
 #endif
 
+#ifdef MACOSX
+#include "OSXClipboard.h"
+#include <unistd.h>
+#endif
 
 namespace irr
 {
@@ -47,7 +51,7 @@ void COSOperator::copyToClipboard(const c8* text)
 		return;
 
 // Windows version
-#ifdef _IRR_WINDOWS_
+#if defined(_IRR_WINDOWS_)
 	if (!OpenClipboard(0) || text == 0)
 		return;
 
@@ -64,10 +68,13 @@ void COSOperator::copyToClipboard(const c8* text)
 	GlobalUnlock(clipbuffer);
 	SetClipboardData(CF_TEXT, clipbuffer);
 	CloseClipboard();
-#endif
 
-#ifdef MACOSX
+// MacOSX version
+#elif defined(MACOSX)
+
 	OSXCopyToClipboard(text);
+
+// todo: Linux version
 #endif
 }
 
@@ -76,7 +83,7 @@ void COSOperator::copyToClipboard(const c8* text)
 //! \return Returns 0 if no string is in there.
 c8* COSOperator::getTextFromClipboard()
 {
-#ifdef _IRR_WINDOWS_
+#if defined(_IRR_WINDOWS_)
 	if (!OpenClipboard(NULL))
 		return 0;
 	
@@ -87,15 +94,92 @@ c8* COSOperator::getTextFromClipboard()
 	GlobalUnlock( hData );
 	CloseClipboard();
 	return buffer;
-#else
-#ifdef MACOSX
+
+#elif defined(MACOSX)
 	return (OSXCopyFromClipboard());
 #else
+
+// todo: Linux version
+
 	return 0;
-#endif
 #endif
 }
 
+
+bool COSOperator::getProcessorSpeedMHz(irr::u32* MHz)
+{
+#if defined(_IRR_WINDOWS_)
+	LONG Error;
+	
+	HKEY Key;
+	Error = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+			"HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0",
+			0, KEY_READ, &Key);
+
+	if(Error != ERROR_SUCCESS)
+		return false;
+
+	DWORD Speed = 0;
+	DWORD Size = sizeof(Speed);
+	Error = RegQueryValueEx(Key, "~MHz", NULL, NULL, (LPBYTE)&Speed, &Size);
+
+	RegCloseKey(Key);
+
+	if (Error != ERROR_SUCCESS)
+		return false;
+	else if (MHz)
+		*MHz = Speed;
+	_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
+	return true;
+
+#elif defined(MACOSX)
+	struct clockinfo CpuClock;
+	size_t Size = sizeof(clockinfo);
+
+	if (!sysctlbyname("kern.clockrate", 2, &CpuClock, &Size, NULL, 0))
+		return false;
+	else if (MHz)
+		*MHz = CpuClock.hz;
+	return true;
+#else
+	// could probably be read from "/proc/cpuinfo" or "/proc/cpufreq"
+
+	return false;
+#endif
+}
+
+bool COSOperator::getSystemMemory(irr::u32* Total, irr::u32* Avail)
+{
+#if defined(_IRR_WINDOWS_)
+	MEMORYSTATUS MemoryStatus;
+	MemoryStatus.dwLength = sizeof(MEMORYSTATUS);
+
+	// cannot fail
+	GlobalMemoryStatus(&MemoryStatus);
+
+	if (Total)
+		*Total = (irr::u32)(MemoryStatus.dwTotalPhys>>10);
+	if (Avail)
+		*Avail = (irr::u32)(MemoryStatus.dwAvailPhys>>10);
+	
+	_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
+	return true;
+
+#elif defined(LINUX) || defined(MACOSX)
+        long ps = sysconf(_SC_PAGESIZE);
+        long pp = sysconf(_SC_PHYS_PAGES);
+        long ap = sysconf(_SC_AVPHYS_PAGES);
+ 
+	if ((ps==-1)||(pp==-1)||(ap==-1))
+		return false;
+
+	if (Total)
+		*Total = ((ps*(long long)pp)>>10);
+	if (Avail)
+		*Avail = ((ps*(long long)ap)>>10);
+	return true;
+#endif
+}
 
 
 } // end namespace

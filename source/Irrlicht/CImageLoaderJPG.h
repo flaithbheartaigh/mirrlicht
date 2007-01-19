@@ -28,7 +28,7 @@ namespace video
 {
 
 
-//! Surface Loader fow JPG images
+//! Surface Loader for JPG images
 class CImageLoaderJPG : public IImageLoader
 {
 public:

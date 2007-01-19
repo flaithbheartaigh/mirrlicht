@@ -73,7 +73,7 @@ void CGUIInOutFader::draw()
 //! Gets the color to fade out to or to fade in from.
 video::SColor CGUIInOutFader::getColor() const
 {
-	return Color;
+	return Color[1];
 }
 
 
@@ -81,9 +81,18 @@ video::SColor CGUIInOutFader::getColor() const
 //! Sets the color to fade out to or to fade in from.
 void CGUIInOutFader::setColor(video::SColor color)
 {
-	Color = color;
-	FullColor = Color;
-	TransColor = Color;
+	video::SColor s = color;
+	video::SColor d = color;
+
+	s.setAlpha ( 255 );
+	d.setAlpha ( 0 );
+	setColor ( s,d );
+
+/*
+	Color[0] = color;
+
+	FullColor = Color[0];
+	TransColor = Color[0];
 
 	if (Action == EFA_FADE_OUT)
 	{
@@ -93,9 +102,29 @@ void CGUIInOutFader::setColor(video::SColor color)
 	else
 	if (Action == EFA_FADE_IN)
 	{
-		FullColor.setAlpha(255);	
+		FullColor.setAlpha(255);
 		TransColor.setAlpha(0);
 	}
+*/
+}
+
+void CGUIInOutFader::setColor(video::SColor source, video::SColor dest)
+{
+	Color[0] = source;
+	Color[1] = dest;
+
+	if (Action == EFA_FADE_OUT)
+	{
+		FullColor = Color[1];
+		TransColor = Color[0];
+	}
+	else
+	if (Action == EFA_FADE_IN)
+	{
+		FullColor = Color[0];
+		TransColor = Color[1];
+	}
+
 }
 
 
@@ -116,7 +145,7 @@ void CGUIInOutFader::fadeIn(u32 time)
 	StartTime = os::Timer::getTime();
 	EndTime = StartTime + time;
 	Action = EFA_FADE_IN;
-	setColor(Color);
+	setColor(Color[0],Color[1]);
 }
 
 
@@ -126,7 +155,26 @@ void CGUIInOutFader::fadeOut(u32 time)
 	StartTime = os::Timer::getTime();
 	EndTime = StartTime + time;
 	Action = EFA_FADE_OUT;
-	setColor(Color);
+	setColor(Color[0],Color[1]);
+}
+
+//! Writes attributes of the element.
+void CGUIInOutFader::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0)
+{
+	IGUIInOutFader::serializeAttributes(out,options);
+
+	out->addColor	("FullColor",		FullColor);
+	out->addColor	("TransColor",		TransColor);
+
+}
+
+//! Reads attributes of the element
+void CGUIInOutFader::deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0)
+{
+	IGUIInOutFader::deserializeAttributes(in,options);
+
+	FullColor  = in->getAttributeAsColor("FullColor");
+	TransColor = in->getAttributeAsColor("TransColor");
 }
 
 

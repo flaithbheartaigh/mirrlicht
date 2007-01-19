@@ -28,10 +28,10 @@ SOURCE                                  MainS60.cpp
 
 SYSTEMINCLUDE                           \epoc32\include\libc 
 USERINCLUDE                             ..\..\..\..\..\include 
-USERINCLUDE                             ..\..\mirrlicht\inc 
+// [-]    USERINCLUDE                   ..\..\mirrlicht\inc 
 USERINCLUDE                             ..\inc 
 SYSTEMINCLUDE                           \epoc32\include 
-/* [+] */ LIBRARY                       estlib.lib 
+LIBRARY                                 estlib.lib 
 LIBRARY                                 mirrlicht.lib 
 LIBRARY                                 euser.lib 
 LIBRARY                                 apparc.lib 

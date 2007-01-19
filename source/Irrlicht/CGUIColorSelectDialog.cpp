@@ -16,74 +16,6 @@
 
 namespace irr
 {
-namespace video
-{
-	//! Class representing a color in HSV format
-	/**	The color values for hue, saturation, value
-	are stored in a 32 bit floating point variable.
-	*/
-	class SColorHSL
-	{
-	public:
-		void setfromRGB ( const SColor &color );
-		void settoRGB ( SColor &color );
-
-		f32 Hue;
-		f32 Saturation;
-		f32 Luminance;
-	private:
-		u32 toRGB1(f32 rm1, f32 rm2, f32 rh) const;
-	};
-
-	void SColorHSL::setfromRGB ( const SColor &color )
-	{
-	}
-
-	void SColorHSL::settoRGB ( SColor &color )
-	{
-		if ( Saturation == 0.0) // grey
-		{
-			u8 c = (u8) ( Luminance * 255.0 );
-			color.setRed ( c );
-			color.setGreen ( c );
-			color.setBlue ( c );
-			return;
-		}
-
-		f32 rm1, rm2;
-			
-		if ( Luminance <= 0.5f )
-		{
-			rm2 = Luminance + Luminance * Saturation;  
-		}
-		else
-		{
-			rm2 = Luminance + Saturation - Luminance * Saturation;
-		}
-
-		rm1 = 2.0f * Luminance - rm2;   
-
-		color.setRed ( toRGB1(rm1, rm2, Hue + (120.0f * core::DEGTORAD )) );
-		color.setGreen ( toRGB1(rm1, rm2, Hue) );
-		color.setBlue ( toRGB1(rm1, rm2, Hue - (120.0f * core::DEGTORAD) ) );
-	}
-
-
-	u32 SColorHSL::toRGB1(f32 rm1, f32 rm2, f32 rh) const
-	{
-		while ( rh > 2.f * core::PI )
-			rh -= 2.f * core::PI;
-
-		while ( rh < 0.f )
-			rh += 2.f * core::PI;
-
-		if      (rh <  60.0f * core::DEGTORAD ) rm1 = rm1 + (rm2 - rm1) * rh / (60.0f * core::DEGTORAD);
-		else if (rh < 180.0f * core::DEGTORAD ) rm1 = rm2;
-		else if (rh < 240.0f * core::DEGTORAD ) rm1 = rm1 + (rm2 - rm1) * ( ( 240.0f * core::DEGTORAD ) - rh) / (60.0f * core::DEGTORAD);
-		                
-		return (u32) (rm1 * 255.f);
-	}
-}
 namespace gui
 {
 
@@ -130,12 +62,15 @@ CGUIColorSelectDialog::CGUIColorSelectDialog( const wchar_t* title, IGUIEnvironm
 
 	CloseButton = Environment->addButton(core::rect<s32>(posx, 3, posx + buttonw, 3 + buttonw), this, -1, GUI_ICON_WINDOW_CLOSE);
 	CloseButton->setOverrideFont(Environment->getBuiltInFont());
+	CloseButton->setSubElement(true);
 	CloseButton->grab();
 
 	OKButton = Environment->addButton(core::rect<s32>(RelativeRect.getWidth()-80, 30, RelativeRect.getWidth()-10, 50), this, -1, L"OK");
+	OKButton->setSubElement(true);
 	OKButton->grab();
 
 	CancelButton = Environment->addButton(core::rect<s32>(RelativeRect.getWidth()-80, 55, RelativeRect.getWidth()-10, 75), this, -1, L"Cancel");
+	CancelButton->setSubElement(true);
 	CancelButton->grab();
 
 	core::rect<s32> r;
@@ -150,6 +85,7 @@ CGUIColorSelectDialog::CGUIColorSelectDialog( const wchar_t* title, IGUIEnvironm
 	r.UpperLeftCorner.X = 20;
 	r.UpperLeftCorner.Y = 20;
 	ColorRing.Control = Environment->addImage ( ColorRing.Texture, r.UpperLeftCorner, true, this );
+	ColorRing.Control->setSubElement(true);
 	ColorRing.Control->grab();
 
 	for ( u32 i = 0; i != sizeof (Template) / sizeof ( sTemplate ); ++i )
@@ -160,7 +96,8 @@ CGUIColorSelectDialog::CGUIColorSelectDialog( const wchar_t* title, IGUIEnvironm
 			r.UpperLeftCorner.Y = Template[i].y;
 			r.LowerRightCorner.X = r.UpperLeftCorner.X + 15;
 			r.LowerRightCorner.Y = r.UpperLeftCorner.Y + 20;
-			Environment->addStaticText( Template[i].pre, r, false, false, this);
+			IGUIElement *t = Environment->addStaticText( Template[i].pre, r, false, false, this);
+			t->setSubElement(true);
 		}
 
 		if ( Template[i].pos )
@@ -169,7 +106,8 @@ CGUIColorSelectDialog::CGUIColorSelectDialog( const wchar_t* title, IGUIEnvironm
 			r.UpperLeftCorner.Y = Template[i].y;
 			r.LowerRightCorner.X = r.UpperLeftCorner.X + 15;
 			r.LowerRightCorner.Y = r.UpperLeftCorner.Y + 20;
-			Environment->addStaticText( Template[i].pos, r, false, false, this);
+			IGUIElement *t = Environment->addStaticText( Template[i].pos, r, false, false, this);
+			t->setSubElement(true);
 		}
 
 		SBatteryItem item;
@@ -180,6 +118,7 @@ CGUIColorSelectDialog::CGUIColorSelectDialog( const wchar_t* title, IGUIEnvironm
 		r.LowerRightCorner.Y = r.UpperLeftCorner.Y + 20;
 
 		item.Edit = Environment->addEditBox( Template[i].init, r, true, this);
+		item.Edit->setSubElement(true);
 		item.Edit->grab();
 
 		r.UpperLeftCorner.X = Template[i].x + 70;
@@ -189,6 +128,7 @@ CGUIColorSelectDialog::CGUIColorSelectDialog( const wchar_t* title, IGUIEnvironm
 
 		item.Scrollbar = Environment->addScrollBar(true, r, this);
 		item.Scrollbar->grab ();
+		item.Scrollbar->setSubElement(true);
 		item.Scrollbar->setMax ( Template[i].range_up - Template[i].range_down );
 		item.Scrollbar->setSmallStep ( 1 );
 
