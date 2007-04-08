@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -8,7 +8,7 @@
 #include "IVideoDriver.h"
 #include "IGUIButton.h"
 #include "IGUIFont.h"
-#include "GUIIcons.h"
+#include "IGUIFontBitmap.h"
 
 namespace irr
 {
@@ -23,24 +23,58 @@ CGUIWindow::CGUIWindow(IGUIEnvironment* environment, IGUIElement* parent, s32 id
 	setDebugName("CGUIWindow");
 	#endif
 
-	s32 buttonw = environment->getSkin()->getSize(EGDS_WINDOW_BUTTON_WIDTH);
+	IGUISkin* skin = 0;
+	if (environment)
+		skin = environment->getSkin();
+
+	IGUISpriteBank* sprites = 0;
+	video::SColor color(255,255,255,255);
+	
+	s32 buttonw = 15;
+	if (skin)
+	{
+		buttonw = skin->getSize(EGDS_WINDOW_BUTTON_WIDTH);
+		sprites = skin->getSpriteBank();
+		color = skin->getColor(EGDC_WINDOW_SYMBOL);
+	}
 	s32 posx = RelativeRect.getWidth() - buttonw - 4;
 
-	CloseButton = Environment->addButton(core::rect<s32>(posx, 3, posx + buttonw, 3 + buttonw), this, -1, GUI_ICON_WINDOW_CLOSE);
-	CloseButton->setOverrideFont(Environment->getBuiltInFont());
+	CloseButton = Environment->addButton(core::rect<s32>(posx, 3, posx + buttonw, 3 + buttonw), this, -1, 
+		L"", skin ? skin->getDefaultText(EGDT_WINDOW_CLOSE) : L"Close" );
 	CloseButton->setSubElement(true);
+	CloseButton->setAlignment(EGUIA_LOWERRIGHT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_UPPERLEFT);
+	if (sprites)
+	{
+		CloseButton->setSpriteBank(sprites);
+		CloseButton->setSprite(EGBS_BUTTON_UP, skin->getIcon(EGDI_WINDOW_CLOSE), color);
+		CloseButton->setSprite(EGBS_BUTTON_DOWN, skin->getIcon(EGDI_WINDOW_CLOSE), color);
+	}
 	posx -= buttonw + 2;
 
-	RestoreButton = Environment->addButton(core::rect<s32>(posx, 3, posx + buttonw, 3 + buttonw), this, -1, GUI_ICON_WINDOW_RESTORE);
-	RestoreButton->setOverrideFont(Environment->getBuiltInFont());
+	RestoreButton = Environment->addButton(core::rect<s32>(posx, 3, posx + buttonw, 3 + buttonw), this, -1, 
+		L"", skin ? skin->getDefaultText(EGDT_WINDOW_RESTORE) : L"Restore" );
 	RestoreButton->setVisible(false);
 	RestoreButton->setSubElement(true);
+	RestoreButton->setAlignment(EGUIA_LOWERRIGHT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_UPPERLEFT);
+	if (sprites)
+	{
+		RestoreButton->setSpriteBank(sprites);
+		RestoreButton->setSprite(EGBS_BUTTON_UP, skin->getIcon(EGDI_WINDOW_RESTORE), color);
+		RestoreButton->setSprite(EGBS_BUTTON_DOWN, skin->getIcon(EGDI_WINDOW_RESTORE), color);
+	}
 	posx -= buttonw + 2;
 
-	MinButton = Environment->addButton(core::rect<s32>(posx, 3, posx + buttonw, 3 + buttonw), this, -1, GUI_ICON_WINDOW_MINIMIZE);
-	MinButton->setOverrideFont(Environment->getBuiltInFont());
+	MinButton = Environment->addButton(core::rect<s32>(posx, 3, posx + buttonw, 3 + buttonw), this, -1, 
+		L"", skin ? skin->getDefaultText(EGDT_WINDOW_MINIMIZE) : L"Minimize" );
 	MinButton->setVisible(false);
 	MinButton->setSubElement(true);
+	MinButton->setAlignment(EGUIA_LOWERRIGHT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_UPPERLEFT);
+	if (sprites)
+	{
+		MinButton->setSpriteBank(sprites);
+		MinButton->setSprite(EGBS_BUTTON_UP, skin->getIcon(EGDI_WINDOW_MINIMIZE), color);
+		MinButton->setSprite(EGBS_BUTTON_DOWN, skin->getIcon(EGDI_WINDOW_MINIMIZE), color);
+	}
 
 	MinButton->grab();
 	RestoreButton->grab();
@@ -72,7 +106,8 @@ bool CGUIWindow::OnEvent(SEvent event)
 	case EET_GUI_EVENT:
 		if (event.GUIEvent.EventType == EGET_ELEMENT_FOCUS_LOST)
 		{
-			Dragging = false;
+			if (event.GUIEvent.Caller == (IGUIElement*)this)
+				Dragging = false;
 			return true;
 		}
 		else
@@ -106,6 +141,16 @@ bool CGUIWindow::OnEvent(SEvent event)
 		case EMIE_MOUSE_MOVED:
 			if (Dragging)
 			{
+				// gui window should not be dragged outside its parent
+				if (Parent)
+					if (event.MouseInput.X < Parent->getAbsolutePosition().UpperLeftCorner.X +1 ||
+						event.MouseInput.Y < Parent->getAbsolutePosition().UpperLeftCorner.Y +1 ||
+						event.MouseInput.X > Parent->getAbsolutePosition().LowerRightCorner.X -1 ||
+						event.MouseInput.Y > Parent->getAbsolutePosition().LowerRightCorner.Y -1)
+
+						return true;
+					
+
 				move(core::position2d<s32>(event.MouseInput.X - DragStart.X, event.MouseInput.Y - DragStart.Y));
 				DragStart.X = event.MouseInput.X;
 				DragStart.Y = event.MouseInput.Y;
@@ -122,16 +167,6 @@ bool CGUIWindow::OnEvent(SEvent event)
 void CGUIWindow::updateAbsolutePosition()
 {
 	IGUIElement::updateAbsolutePosition();
-
-	s32 buttonw = Environment->getSkin()->getSize(EGDS_WINDOW_BUTTON_WIDTH);
-	s32 posx = RelativeRect.getWidth() - buttonw - 4;
-
-	CloseButton->setRelativePosition(core::rect<s32>(posx, 3, posx + buttonw, 3 + buttonw));
-	posx -= buttonw + 2;
-	RestoreButton->setRelativePosition(core::rect<s32>(posx, 3, posx + buttonw, 3 + buttonw));
-	posx -= buttonw + 2;
-	MinButton->setRelativePosition(core::rect<s32>(posx, 3, posx + buttonw, 3 + buttonw));
-
 }
 
 

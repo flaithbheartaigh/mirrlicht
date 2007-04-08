@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -36,6 +36,12 @@ public:
 	//! returns the current video driver
 	virtual video::IVideoDriver* getVideoDriver();
 
+	//! returns pointer to the filesystem
+	virtual io::IFileSystem* getFileSystem();
+
+	//! returns a pointer to the OS operator
+	virtual IOSOperator* getOSOperator();
+
 	//! posts an input event to the environment
 	virtual bool postEventFromUser(SEvent event);
 
@@ -63,6 +69,12 @@ public:
 
 	//! returns the font
 	virtual IGUIFont* getFont(const c8* filename);
+
+	//! returns the sprite bank
+	virtual IGUISpriteBank* getSpriteBank(const c8* filename);
+
+	//! returns the sprite bank
+	virtual IGUISpriteBank* addEmptySpriteBank(const c8* name);
 
 	//! adds an button. The returned pointer must not be dropped.
 	virtual IGUIButton* addButton(const core::rect<s32>& rectangle, IGUIElement* parent=0, s32 id=-1, const wchar_t* text=0,const wchar_t* tooltiptext = 0);
@@ -153,7 +165,7 @@ public:
 	virtual IGUIInOutFader* addInOutFader(const core::rect<s32>* rectangle=0, IGUIElement* parent=0, s32 id=-1);
 
 	//! Returns the root gui element. 
-    virtual IGUIElement* getRootGUIElement();
+	virtual IGUIElement* getRootGUIElement();
 
 	virtual void OnPostRender( u32 time );
 
@@ -171,20 +183,32 @@ public:
 	//! Returns a scene node factory by index
 	virtual IGUIElementFactory* getGUIElementFactory(s32 index);
 
+	//! Adds a GUI Element by its name
+	virtual IGUIElement* addGUIElement(const c8* elementName, IGUIElement* parent=0);
 
 	//! Saves the current gui into a file.
-	//! \param filename: Name of the file.
-	virtual bool saveGUI(const c8* filename);
+	/** \param filename: Name of the file.
+	\param start: The element to start saving from. 
+	if not specified, the root element will be used */ 
+	virtual bool saveGUI(const c8* filename, IGUIElement* start=0);
 
 	//! Saves the current gui into a file.
-	virtual bool saveGUI(io::IWriteFile* file);
+	/** \param file: The file to save the GUI to.
+	\param start: The element to start saving from. 
+	if not specified, the root element will be used */
+	virtual bool saveGUI(io::IWriteFile* file, IGUIElement* start=0);
 
 	//! Loads the gui. Note that the current gui is not cleared before.
-	//! \param filename: Name of the file .
-	virtual bool loadGUI(const c8* filename);
+	/** \param filename: Name of the file.
+	\param parent: The parent of all loaded GUI elements, 
+	if not specified, the root element will be used */
+	virtual bool loadGUI(const c8* filename, IGUIElement* parent=0);
 
 	//! Loads the gui. Note that the current gui is not cleared before.
-	virtual bool loadGUI(io::IReadFile* file);	
+	/** \param file: IReadFile to load the GUI from
+	\param parent: The parent of all loaded GUI elements, 
+	if not specified, the root element will be used */
+	virtual bool loadGUI(io::IReadFile* file, IGUIElement* parent=0);	
 
 	//! Writes attributes of the environment
 	virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0);
@@ -198,9 +222,6 @@ public:
 	//! reads an element
 	virtual void readGUIElement(io::IXMLReader* reader, IGUIElement* parent);
 
-	//! gets the type name from a gui element type id
-	virtual const c8* getGUIElementTypeName(EGUI_ELEMENT_TYPE type);
-
 
 private:
 
@@ -210,6 +231,17 @@ private:
 		IGUIFont* Font;
 
 		bool operator < (const SFont& other) const
+		{
+			return (Filename < other.Filename);
+		}
+	};
+
+	struct SSpriteBank
+	{
+		core::stringc Filename;
+		IGUISpriteBank* Bank;
+
+		bool operator < (const SSpriteBank& other) const
 		{
 			return (Filename < other.Filename);
 		}
@@ -229,6 +261,7 @@ private:
 	core::array<IGUIElementFactory*> GUIElementFactoryList;
 
 	core::array<SFont> Fonts;
+	core::array<SSpriteBank> Banks;
 	video::IVideoDriver* Driver;
 	IGUIElement* Hovered;
 	IGUIElement* Focus;

@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -168,9 +168,9 @@ public:
 			u32 r = D3DTOP_MODULATE;
 			switch ( func )
 			{
-				case EMF_MODULATE_1X: r = D3DTOP_MODULATE; break;
-				case EMF_MODULATE_2X: r = D3DTOP_MODULATE2X; break;
-				case EMF_MODULATE_4X: r = D3DTOP_MODULATE4X; break;
+				case EMFN_MODULATE_1X: r = D3DTOP_MODULATE; break;
+				case EMFN_MODULATE_2X: r = D3DTOP_MODULATE2X; break;
+				case EMFN_MODULATE_4X: r = D3DTOP_MODULATE4X; break;
 			}
 			return r;
 		}

@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -16,14 +16,14 @@ namespace scene
 
 //! constructor
 CXAnimationPlayer::CXAnimationPlayer(CXFileReader* reader,
-									 video::IVideoDriver* driver,
-									 IMeshManipulator* manip,
-									 const c8* filename)
+					 video::IVideoDriver* driver,
+					 IMeshManipulator* manip,
+					 const c8* filename)
 : Reader(reader), Driver(driver), AnimatedMesh(0),
-Manipulator(manip), CurrentAnimationTime(0.0f), LastAnimationTime(1.0f),
-	CurrentAnimationSet(0), IsAnimatedSkinnedMesh(false), DebugSkeletonCrossSize(1.0f)
+	FileName(filename), Manipulator(manip), IsAnimatedSkinnedMesh(false),
+	CurrentAnimationTime(0.0f), LastAnimationTime(1.0f),
+	CurrentAnimationSet(0), DebugSkeletonCrossSize(1.0f)
 {
-	FileName = filename;
 
 	if (!Reader)
 		return;
@@ -203,9 +203,9 @@ video::SMaterial CXAnimationPlayer::getMaterialFromXMaterial(const CXFileReader:
 	
 	if (xmat.TextureFileName.size() != 0)
 	{
-		mat.Texture1 = Driver->getTexture(getTextureFileName(xmat.TextureFileName).c_str());
-		if (mat.Texture1 == 0)
-			mat.Texture1 = Driver->getTexture(xmat.TextureFileName.c_str());
+		mat.Textures[0] = Driver->getTexture(getTextureFileName(xmat.TextureFileName).c_str());
+		if (mat.Textures[0] == 0)
+			mat.Textures[0] = Driver->getTexture(xmat.TextureFileName.c_str());
 	}
 
 	return mat;
@@ -219,7 +219,6 @@ void CXAnimationPlayer::addFacesToBuffer(s32 meshbuffernr, CXFileReader::SXMesh&
 
 	u32 tcnt = mesh.TextureCoords.size();
 	u32 ncnt = mesh.Normals.size();
-	u32 fcnt = mesh.Indices.size();
 	u32 ccnt = mesh.VertexColors.size();
 
 	// precompute which joint belongs to which weight array
@@ -322,7 +321,7 @@ void CXAnimationPlayer::addFacesToBuffer(s32 meshbuffernr, CXFileReader::SXMesh&
 		Manipulator->recalculateNormals ( buf, true );
 	}
 
-	// transform vertices and normals
+	/*// transform vertices and normals
 	core::matrix4 mat = frame.LocalMatrix;
 
 	s32 vcnt = buf->Vertices.size();
@@ -330,7 +329,7 @@ void CXAnimationPlayer::addFacesToBuffer(s32 meshbuffernr, CXFileReader::SXMesh&
 	{
 		mat.transformVect(buf->Vertices[u].Pos);
 		mat.rotateVect(buf->Vertices[u].Normal);
-	} 
+	}*/
 }
 
 
@@ -498,7 +497,7 @@ void CXAnimationPlayer::animateSkeleton()
 			Joints[jii].WasAnimatedThisFrame = false;
 		}
 
-		SXAnimationSet& currentSet = AnimationSets[CurrentAnimationSet];
+		const SXAnimationSet& currentSet = AnimationSets[CurrentAnimationSet];
 
 		// go through all animation tracks
 		for (u32 i=0; i<currentSet.Animations.size(); ++i)

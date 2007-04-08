@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -27,7 +27,7 @@ namespace video
 #ifdef _IRR_WINDOWS_
 //! Windows constructor and init code
 COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, HWND window, bool fullscreen, bool stencilBuffer, io::IFileSystem* io, bool antiAlias)
-: CNullDriver(io, screenSize), HDc(0), HRc(0), Window(window),
+: CNullDriver(io, screenSize),
 	CurrentRenderMode(ERM_NONE), ResetRenderStates(true), Transformation3DChanged(true),
 	StencilBuffer(stencilBuffer), AntiAlias(antiAlias),
 	MultiTextureExtension(false), MultiSamplingExtension(false), AnisotropyExtension(false),
@@ -44,8 +44,8 @@ COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, HWND wind
 	pGlCreateShaderObjectARB(0), pGlShaderSourceARB(0),
 	pGlCompileShaderARB(0), pGlCreateProgramObjectARB(0), pGlAttachObjectARB(0),
 	pGlLinkProgramARB(0), pGlUseProgramObjectARB(0), pGlDeleteObjectARB(0),
-	pGlGetObjectParameterivARB(0), pGlGetUniformLocationARB(0), pGlUniform4fvARB(0),
-	pGlUniform1ivARB(0), pGlUniform1fvARB(0), pGlUniform2fvARB(0), pGlUniform3fvARB(0), pGlUniformMatrix2fvARB(0),
+	pGlGetObjectParameterivARB(0), pGlGetUniformLocationARB(0),
+	pGlUniform1ivARB(0), pGlUniform1fvARB(0), pGlUniform2fvARB(0), pGlUniform3fvARB(0), pGlUniform4fvARB(0), pGlUniformMatrix2fvARB(0),
 	pGlUniformMatrix3fvARB(0), pGlUniformMatrix4fvARB(0), pGlGetActiveUniformARB(0), pGlPointParameterfARB(0), pGlPointParameterfvARB(0),
 	pGlStencilFuncSeparate(0), pGlStencilOpSeparate(0),
 	pGlStencilFuncSeparateATI(0), pGlStencilOpSeparateATI(0),
@@ -53,11 +53,12 @@ COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, HWND wind
 		pGlCompressedTexImage2D(0),
 	#endif // PFNGLCOMPRESSEDTEXIMAGE2DPROC
 #endif // _IRR_OPENGL_USE_EXTPOINTER_
-	wglSwapIntervalEXT(0)
-    ,pGlBindFramebufferEXT(0), pGlDeleteFramebuffersEXT(0), pGlGenFramebuffersEXT(0),
-    pGlCheckFramebufferStatusEXT(0), pGlFramebufferTexture2DEXT(0),
-    pGlBindRenderbufferEXT(0), pGlDeleteRenderbuffersEXT(0), pGlGenRenderbuffersEXT(0),
-    pGlRenderbufferStorageEXT(0), pGlFramebufferRenderbufferEXT(0)
+	wglSwapIntervalEXT(0),
+	pGlBindFramebufferEXT(0), pGlDeleteFramebuffersEXT(0), pGlGenFramebuffersEXT(0),
+	pGlCheckFramebufferStatusEXT(0), pGlFramebufferTexture2DEXT(0),
+	pGlBindRenderbufferEXT(0), pGlDeleteRenderbuffersEXT(0), pGlGenRenderbuffersEXT(0),
+	pGlRenderbufferStorageEXT(0), pGlFramebufferRenderbufferEXT(0),
+	HDc(0), Window(window), HRc(0)
 {
 	#ifdef _DEBUG
 	setDebugName("COpenGLDriver");
@@ -89,7 +90,7 @@ bool COpenGLDriver::initDriver(const core::dimension2d<s32>& screenSize,
 		0, 0, 0				// Layer Masks Ignored
 	};
 
-	for (int i=0; i<4; ++i)
+	for (int i=0; i<5; ++i)
 	{
 		if (i == 1)
 		{
@@ -101,10 +102,14 @@ bool COpenGLDriver::initDriver(const core::dimension2d<s32>& screenSize,
 		else
 		if (i == 2)
 		{
+			pfd.cDepthBits = 24;
+		}
+		if (i == 3) // might be checked twice, but shouldn't matter
+		{
 			pfd.cDepthBits = 16;
 		}
 		else
-		if (i == 3)
+		if (i == 4)
 		{
 			os::Printer::log("Cannot create a GL device context.", ELL_ERROR);
 			return false;
@@ -230,7 +235,7 @@ COpenGLDriver::~COpenGLDriver()
 // -----------------------------------------------------------------------
 #ifdef LINUX
 //! Linux constructor and init code
-COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool fullscreen, bool stencilBuffer, io::IFileSystem* io, bool antiAlias, bool vsync)
+COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool fullscreen, bool stencilBuffer, io::IFileSystem* io, bool vsync, bool antiAlias)
 : CNullDriver(io, screenSize),
 	CurrentRenderMode(ERM_NONE), ResetRenderStates(true), Transformation3DChanged(true),
 	StencilBuffer(stencilBuffer), AntiAlias(antiAlias),
@@ -262,7 +267,8 @@ COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool full
 	#endif
 	XWindow = glXGetCurrentDrawable();
 	XDisplay = glXGetCurrentDisplay();
-	ExposedData.OpenGLLinux.Window = XWindow;
+	ExposedData.OpenGLLinux.X11Display = XDisplay;
+	ExposedData.OpenGLLinux.X11Window = XWindow;
 	genericDriverInit(screenSize);
 
 	// set vsync
@@ -308,17 +314,16 @@ bool COpenGLDriver::genericDriverInit(const core::dimension2d<s32>& screenSize)
 		os::Printer::log((const c8*)renderer, (const c8*)vendor, ELL_INFORMATION);
 	}
 
-	CurrentTexture[0]=0;
-	CurrentTexture[1]=0;
-	CurrentTexture[2]=0;
-	CurrentTexture[3]=0;
+	for (u32 i=0; i<MATERIAL_MAX_TEXTURES; ++i)
+		CurrentTexture[i]=0;
 	// load extensions
 	loadExtensions();
 
 	glViewport(0, 0, screenSize.Width, screenSize.Height); // Reset The Current Viewport
 	setAmbientLight(SColorf(0.0f,0.0f,0.0f,0.0f));
 #ifdef GL_EXT_separate_specular_color
-	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
+	if (EXTSeparateSpecularColor)
+		glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 #endif
 	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, 1);
 	glClearDepth(1.0);
@@ -425,6 +430,7 @@ void COpenGLDriver::loadExtensions()
 		TextureNPOTExtension = gluCheckExtension((const GLubyte*)"GL_ARB_texture_non_power_of_two", t);
 		FramebufferObjectExtension = gluCheckExtension((const GLubyte*)"GL_EXT_framebuffer_object", t);
 		EXTPackedDepthStencil = gluCheckExtension((const GLubyte*)"GL_EXT_packed_depth_stencil", t);
+		EXTSeparateSpecularColor = gluCheckExtension((const GLubyte*)"GL_EXT_separate_specular_color", t);
 	}
 	else
 	#endif
@@ -478,6 +484,9 @@ void COpenGLDriver::loadExtensions()
 				else
 				if (strstr(p, "GL_EXT_packed_depth_stencil"))
 					EXTPackedDepthStencil = true;
+				else
+				if (strstr(p, "GL_EXT_separate_specular_color"))
+					EXTSeparateSpecularColor = true;
 
 				p = p + strlen(p) + 1;
 			}
@@ -743,7 +752,8 @@ void COpenGLDriver::loadExtensions()
 		MultiTextureExtension = false;
 		os::Printer::log("Warning: OpenGL device only has one texture unit. Disabling multitexturing.", ELL_WARNING);
 	}
-	MaxTextureUnits = core::min_((s32)MaxTextureUnits,MATERIAL_MAX_TEXTURES);
+	MaxTextureUnits = core::min_((u32)MaxTextureUnits,MATERIAL_MAX_TEXTURES);
+	glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &MaxIndices);
 }
 
 
@@ -831,12 +841,20 @@ void COpenGLDriver::setTransform(E_TRANSFORMATION_STATE state, const core::matri
 		break;
 	case ETS_TEXTURE_0:
 	case ETS_TEXTURE_1:
-		createGLTextureMatrix(glmat, mat );
+	case ETS_TEXTURE_2:
+	case ETS_TEXTURE_3:
+		if (mat.isIdentity())
+			return;
+
 		if (MultiTextureExtension)
 			extGlActiveTextureARB(GL_TEXTURE0_ARB + ( state - ETS_TEXTURE_0 ));
 
 		glMatrixMode(GL_TEXTURE);
+		createGLTextureMatrix(glmat, mat );
 		glLoadMatrixf(glmat);
+		break;
+	default:
+		break;
 	}
 }
 
@@ -1020,10 +1038,6 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture,
 	if (!sourceRect.isValid())
 		return;
 
-	disableTextures(1);
-	if (!setTexture(0, texture))
-		return;
-
 	core::position2d<s32> targetPos(pos);
 	core::position2d<s32> sourcePos(sourceRect.UpperLeftCorner);
 	core::dimension2d<s32> sourceSize(sourceRect.getSize());
@@ -1123,6 +1137,9 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture,
 	npos.LowerRightCorner.Y = 1.0f - ( poss.LowerRightCorner.Y * yFact );
 
 	setRenderStates2DMode(color.getAlpha()<255, true, useAlphaChannelOfTexture);
+	disableTextures(1);
+	if (!setTexture(0, texture))
+		return;
 
 	glColor4ub(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
 	glBegin(GL_QUADS);
@@ -1159,12 +1176,12 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture,
 	if (!texture)
 		return;
 
+	const core::dimension2d<s32>& renderTargetSize = getCurrentRenderTargetSize();
+	setRenderStates2DMode(color.getAlpha()<255, true, useAlphaChannelOfTexture);
 	disableTextures(1);
 	if (!setTexture(0, texture))
 		return;
 
-	const core::dimension2d<s32>& renderTargetSize = getCurrentRenderTargetSize();
-	setRenderStates2DMode(color.getAlpha()<255, true, useAlphaChannelOfTexture);
 	glColor4ub(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
 	if (clipRect)
 	{
@@ -1264,6 +1281,13 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture, const core::rect<s32>&
 	disableTextures(1);
 	setTexture(0, texture);
 
+	if (clipRect)
+	{
+		glEnable(GL_SCISSOR_TEST);
+		glScissor(clipRect->UpperLeftCorner.X,renderTargetSize.Height-clipRect->LowerRightCorner.Y,
+			clipRect->getWidth(),clipRect->getHeight());
+	}
+
 	glBegin(GL_QUADS);
 
 	glColor4ub(useColor[0].getRed(), useColor[0].getGreen(), useColor[0].getBlue(), useColor[0].getAlpha());
@@ -1283,6 +1307,9 @@ void COpenGLDriver::draw2DImage(video::ITexture* texture, const core::rect<s32>&
 	glVertex2f(npos.UpperLeftCorner.X, npos.LowerRightCorner.Y);
 
 	glEnd();
+
+	if (clipRect)
+		glDisable(GL_SCISSOR_TEST);
 }
 
 
@@ -1495,20 +1522,20 @@ bool COpenGLDriver::disableTextures(s32 fromStage)
 //! creates a matrix in supplied GLfloat array to pass to OpenGL
 inline void COpenGLDriver::createGLMatrix(GLfloat gl_matrix[16], const core::matrix4& m)
 {
-	memcpy ( gl_matrix, &m.M[0], 16 * sizeof(f32) );
+	memcpy ( gl_matrix, m.pointer(), 16 * sizeof(f32) );
 }
 
 
 //! creates a opengltexturematrix from a D3D style texture matrix
 inline void COpenGLDriver::createGLTextureMatrix(GLfloat *o, const core::matrix4& m)
 {
-	o[0] = m.M[0];
-	o[1] = m.M[1];
+	o[0] = m[0];
+	o[1] = m[1];
 	o[2] = 0.f;
 	o[3] = 0.f;
 
-	o[4] = m.M[4];
-	o[5] = m.M[5];
+	o[4] = m[4];
+	o[5] = m[5];
 	o[6] = 0.f;
 	o[7] = 0.f;
 
@@ -1517,8 +1544,8 @@ inline void COpenGLDriver::createGLTextureMatrix(GLfloat *o, const core::matrix4
 	o[10] = 1.f;
 	o[11] = 0.f;
 
-	o[12] = m.M[8];
-	o[13] = m.M[9];
+	o[12] = m[8];
+	o[13] = m[9];
 	o[14] = 0.f;
 	o[15] = 1.f;
 }
@@ -1538,6 +1565,12 @@ video::ITexture* COpenGLDriver::createDeviceDependentTexture(IImage* surface, co
 void COpenGLDriver::setMaterial(const SMaterial& material)
 {
 	Material = material;
+
+	for (s32 i = 0; i < MaxTextureUnits; ++i)
+	{
+		setTransform ((E_TRANSFORMATION_STATE) ( ETS_TEXTURE_0 + i ),
+				material.getTextureMatrix(i));
+	}
 }
 
 
@@ -1635,7 +1668,7 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 	{
 		GLfloat color[4];
 
-		f32 inv = 1.0f / 255.0f;
+		const f32 inv = 1.0f / 255.0f;
 
 		color[0] = material.AmbientColor.getRed() * inv;
 		color[1] = material.AmbientColor.getGreen() * inv;
@@ -1650,12 +1683,11 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, color);
 
 		// disable Specular colors if no shininess is set
-		if (material.Shininess == 0.0f)
-			glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SINGLE_COLOR);
-		else
+		if (material.Shininess != 0.0f)
 		{
 #ifdef GL_EXT_separate_specular_color
-			glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
+			if (EXTSeparateSpecularColor)
+				glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 #endif
 			glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, material.Shininess);
 			color[0] = material.SpecularColor.getRed() * inv;
@@ -1664,6 +1696,11 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 			color[3] = material.SpecularColor.getAlpha() * inv;
 			glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, color);
 		}
+#ifdef GL_EXT_separate_specular_color
+		else
+			if (EXTSeparateSpecularColor)
+				glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SINGLE_COLOR);
+#endif
 
 		color[0] = material.EmissiveColor.getRed() * inv;
 		color[1] = material.EmissiveColor.getGreen() * inv;
@@ -1675,13 +1712,14 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 	// Texture filter
 	// Has to be checked always because it depends on the textures
 	// Filtering has to be set for each texture layer
-
 	for (s32 i=0; i<MaxTextureUnits; ++i)
 	{
 		if (!material.Textures[i])
 			continue;
 		if (MultiTextureExtension)
 			extGlActiveTextureARB(GL_TEXTURE0_ARB + i);
+		else if (i>0)
+			break;
 
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
 			(material.BilinearFilter || material.TrilinearFilter) ? GL_LINEAR : GL_NEAREST);
@@ -1699,7 +1737,6 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 	}
 
 	// fillmode
-
 	if (resetAllRenderStates || lastmaterial.Wireframe != material.Wireframe || lastmaterial.PointCloud != material.PointCloud)
 		glPolygonMode(GL_FRONT_AND_BACK, material.Wireframe ? GL_LINE : material.PointCloud? GL_POINT : GL_FILL);
 
@@ -1718,21 +1755,9 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 	if (resetAllRenderStates || lastmaterial.Lighting != material.Lighting)
 	{
 		if (material.Lighting)
-		{
 			glEnable(GL_LIGHTING);
-#ifdef GL_EXT_separate_specular_color
-			// enable specular colors
-			glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
-#endif
-		}
 		else
-		{
 			glDisable(GL_LIGHTING);
-#ifdef GL_EXT_separate_specular_color
-			// disable specular colors
-			glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SINGLE_COLOR);
-#endif
-		}
 	}
 
 	// zbuffer
@@ -1753,8 +1778,6 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 				break;
 		}
 	}
-
-
 
 	// zwrite
 	if (resetAllRenderStates || lastmaterial.ZWriteEnable != material.ZWriteEnable)
@@ -1803,15 +1826,38 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 	}
 
 	// texture address mode
-	if (resetAllRenderStates || lastmaterial.TextureWrap != material.TextureWrap)
+	for (s32 u=0; u<MaxTextureUnits; ++u)
 	{
-		u32 mode = material.TextureWrap ? GL_REPEAT : GL_CLAMP;
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode);
+		if (resetAllRenderStates || lastmaterial.TextureWrap[u] != material.TextureWrap[u])
+		{
+			GLint mode=GL_REPEAT;
+			switch (material.TextureWrap[u])
+			{
+				case ETC_REPEAT:
+					mode=GL_REPEAT;
+					break;
+				case ETC_CLAMP:
+					mode=GL_CLAMP;
+					break;
+				case ETC_CLAMP_TO_EDGE:
+					mode=GL_CLAMP_TO_EDGE;
+					break;
+				case ETC_CLAMP_TO_BORDER:
+					mode=GL_CLAMP_TO_BORDER;
+					break;
+				case ETC_MIRROR:
+					mode=GL_MIRRORED_REPEAT;
+					break;
+			}
+	
+			if (MultiTextureExtension)
+				extGlActiveTextureARB(GL_TEXTURE0_ARB + u);
+			else if (u>0)
+				break;
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode);
+		}
 	}
-
-
 }
 
 
@@ -1859,8 +1905,17 @@ void COpenGLDriver::setRenderStates2DMode(bool alpha, bool texture, bool alphaCh
 
 		if (alphaChannel)
 		{
-			glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_REPLACE);
-			glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_TEXTURE);
+			if (alpha)
+			{
+				glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_MODULATE);
+				glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_TEXTURE);
+				glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, GL_PRIMARY_COLOR_EXT);
+			}
+			else
+			{
+				glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_REPLACE);
+				glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_TEXTURE);
+			}
 
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			glEnable(GL_BLEND);
@@ -2165,7 +2220,7 @@ void COpenGLDriver::setFog(SColor c, bool linearFog, f32 start,
 	CNullDriver::setFog(c, linearFog, start, end, density, pixelFog, rangeFog);
 
 	glFogi(GL_FOG_MODE, linearFog ? GL_LINEAR : GL_EXP);
-#ifdef GL_VERSION_1_4
+#ifdef GL_EXT_fog_coord
 	glFogi(GL_FOG_COORDINATE_SOURCE, GL_FRAGMENT_DEPTH);
 #endif
 
@@ -2822,6 +2877,17 @@ ITexture* COpenGLDriver::createRenderTargetTexture(const core::dimension2d<s32>&
 	return rtt;
 }
 
+
+//! Returns the maximum amount of primitives (mostly vertices) which
+//! the device is able to render with one drawIndexedTriangleList
+//! call.
+u32 COpenGLDriver::getMaximalPrimitiveCount()
+{
+	return 65535;// TODO: Fix all loaders to auto-split and then return the correct value: MaxIndices;
+}
+
+
+//! checks triangle count and print warning if wrong
 bool COpenGLDriver::setRenderTarget(video::ITexture* texture, bool clearBackBuffer,
 								 bool clearZBuffer, SColor color)
 {
@@ -3013,7 +3079,7 @@ IVideoDriver* createOpenGLDriver(const core::dimension2d<s32>& screenSize,
 {
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 	return new COpenGLDriver(screenSize, fullscreen, stencilBuffer,
-		io, antiAlias, vsync);
+		io, vsync, antiAlias);
 #else
 	return 0;
 #endif //  _IRR_COMPILE_WITH_OPENGL_

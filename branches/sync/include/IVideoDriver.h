@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -14,12 +14,10 @@
 #include "position2d.h"
 #include "IReadFile.h"
 #include "SMaterial.h"
-#include "SLight.h"
 #include "IImageLoader.h"
 #include "IImageWriter.h"
 #include "IMeshBuffer.h"
 #include "triangle3d.h"
-#include "SExposedVideoData.h"
 #include "IMaterialRenderer.h"
 #include "EDriverTypes.h"
 #include "IGPUProgrammingServices.h"
@@ -29,17 +27,19 @@ namespace irr
 namespace io
 {
 	class IAttributes;
-}
+} // end namespace io
 namespace scene
 {
 	class IMeshBuffer;
-}
+} // end namespace scene
 
 namespace video
 {
 	struct S3DVertex;
 	struct S3DVertex2TCoords;
 	struct S3DVertexTangents;
+	struct SLight;
+	struct SExposedVideoData;
 
 	//! enumeration for querying features of the video driver.
 	enum E_VIDEO_DRIVER_FEATURE
@@ -124,6 +124,10 @@ namespace video
 		ETS_TEXTURE_0,
 		//! Texture transformation
 		ETS_TEXTURE_1,
+		//! Texture transformation
+		ETS_TEXTURE_2,
+		//! Texture transformation
+		ETS_TEXTURE_3,
 		//! Not used
 		ETS_COUNT
 	};
@@ -146,11 +150,12 @@ namespace video
 
 		//! Applications must call this method before performing any rendering.
 		/** \param backBuffer: Specifies if the back buffer should be cleared, which
-		means that the screen is filled with a color specified with the parameter color.
+		means that the screen is filled with the color specified.
 		If this parameter is false, the back buffer will not be cleared and the color
 		parameter is ignored.
 		\param zBuffer: Specifies if the depth or z buffer should be cleared. It is
-		not nesesarry to do so, if only 2d drawing is used.
+		not nesesarry to do so if only 2d drawing is used.
+		\param color: The color used for back buffer clearing
 		\return Returns false if failed. Begin Scene can clear the back- and the z-buffer. */
 		virtual bool beginScene(bool backBuffer, bool zBuffer, SColor color) = 0;
 
@@ -187,45 +192,43 @@ namespace video
 
 		//! Returns a pointer to a texture.
 		/** Loads the texture if it is not
-		already loaded, and generates mipmap levels if wished.
+		already loaded, and generates mipmap levels if desired.
 		You can influence how the texture is loaded using the setTextureCreationFlag()
 		method.
-		The texture can be in BMP, JPG, TGA, PCX, PNG and PSD format.
-		For loading BMP, TGA, PCX, and PSD files, the engine uses its own methods.
-		PCX loading is based on some code by Dean P. Macri, who sent
-		it in for free use by the engine, PGN loading is done using a loader
-		by rt who allowed it to be used by Irrlicht.
+		The texture can be in BMP, JPG, TGA, PCX, PNG, and PSD format.
+		For loading BMP, TGA, PCX, and PSD files the engine uses its own methods.
+		PCX loading is based on some code by Dean P. Macri, PNG loading
+		is done using a loader by rt.
 		For loading JPG-Files the JPEG LIB 6b, written by
-		The Independent JPEG Group is used by the engine. For PNG loading,
+		The Independent JPEG Group is used. For PNG loading,
 		libPNG is used. Thanx for such great libraries!
 		\param filename: Filename of the texture to be loaded.
-		\return Returns a pointer to the texture and NULL if the texture
+		\return Returns a pointer to the texture and 0 if the texture
 		could not be loaded.
 		This pointer should not be dropped. See IUnknown::drop() for more information.*/
 		virtual ITexture* getTexture(const c8* filename) = 0;
 
 		//! Returns a pointer to a texture.
 		/** Loads the texture if it is not
-		already loaded, and generates mipmap levels if wished.
+		already loaded, and generates mipmap levels if desired.
 		You can influence how the texture is loaded using the setTextureCreationFlag()
 		method.
-		The texture can be in BMP, JPG, TGA, PCX, PNG and PSD format.
-		For loading BMP, TGA, PCX, and PSD files, the engine uses its own methods.
-		PCX loading is based on some code by Dean P. Macri, who sent
-		it in for free use by the engine, PGN loading is done using a loader
-		by rt who allowed it to be used by Irrlicht.
+		The texture can be in BMP, JPG, TGA, PCX, PNG, and PSD format.
+		For loading BMP, TGA, PCX, and PSD files the engine uses its own methods.
+		PCX loading is based on some code by Dean P. Macri, PNG loading
+		is done using a loader by rt.
 		For loading JPG-Files the JPEG LIB 6b, written by
-		The Independent JPEG Group is used by the engine. For PNG loading,
+		The Independent JPEG Group is used. For PNG loading,
 		libPNG is used. Thanx for such great libraries!
 		\param file: Pointer to an already opened file.
-		\return Returns a pointer to the texture and NULL if the texture
+		\return Returns a pointer to the texture and 0 if the texture
 		could not be loaded.
 		This pointer should not be dropped. See IUnknown::drop() for more information.*/
 		virtual ITexture* getTexture(io::IReadFile* file) = 0;
 
 		//! Returns a texture by index
 		/** \param index: Index of the texture, must be smaller than getTextureCount()
-		Please note that this index would change when adding or removing textures
+		Please note that this index might change when adding or removing textures
 		*/
 		virtual ITexture* getTextureByIndex(u32 index) = 0;
 
@@ -234,23 +237,21 @@ namespace video
 
 		//! Creates an empty Texture of specified size.
 		/** \param size: Size of the texture.
-		\param name: A name for the texture. Later calls of getTexture() with this name
+		\param name: A name for the texture. Later calls to getTexture() with this name
 		will return this texture
 		\param format: Desired color format of the texture. Please note that
 		the driver may choose to create the texture in another color format.
 		\return Returns a pointer to the new created Texture.
-		This pointer should not be dropped. See IUnknown::drop() for more information.
-		The format of the new texture will be chosen by the driver. */
+		This pointer should not be dropped. See IUnknown::drop() for more information. */
 		virtual ITexture* addTexture(const core::dimension2d<s32>& size,
 			const c8* name, ECOLOR_FORMAT format = ECF_A8R8G8B8) = 0;
 
 		//! Creates a texture from a loaded IImage.
 		/** \param name: A name for the texture. Later calls of getTexture() with this name
 		 will return this texture
-		\param image: Image from which the texture is created from.
-		\return Returns a pointer to the new created Texture.
-		This pointer should not be dropped. See IUnknown::drop() for more information.
-		The format of the new texture will be chosen by the driver. */
+		\param image: Image the texture is created from.
+		\return Returns a pointer to the newly created Texture.
+		This pointer should not be dropped. See IUnknown::drop() for more information. */
 		virtual ITexture* addTexture(const c8* name, IImage* image) = 0;
 
 		//! Creates a render target texture.
@@ -339,6 +340,7 @@ namespace video
 		\param clearZBuffer: Clears the zBuffer of the rendertarget. Note that, because the frame
 		buffer shares the zbuffer with the rendertarget, its zbuffer will be partially cleared
 		too with this.
+		\param color: The background color for the render target.
 		\return Returns true if sucessful and false if not. */
 		virtual bool setRenderTarget(video::ITexture* texture,
 			bool clearBackBuffer=true, bool clearZBuffer=true,
@@ -346,7 +348,7 @@ namespace video
 
 		//! Sets a new viewport.
 		/** Every rendering operation is done into this	new area.
-		\param Rectangle defining the new area of rendering operations. */
+		\param area: Rectangle defining the new area of rendering operations. */
 		virtual void setViewPort(const core::rect<s32>& area) = 0;
 
 		//! Gets the area of the current viewport.
@@ -467,7 +469,7 @@ namespace video
 		hence is not very fast but it might be useful for further development.
 		\param box: The axis aligned box to draw
 		\param color: Color to use while drawing the box. */
-		virtual void draw3DBox(const core::aabbox3d<f32> box,
+		virtual void draw3DBox(const core::aabbox3d<f32>& box,
 			SColor color = SColor(255,255,255,255)) = 0;
 
 		//! Simply draws a 2d image without any special effects
@@ -514,9 +516,10 @@ namespace video
 				const core::position2d<s32>& pos,
 				const core::array<core::rect<s32> >& sourceRects,
 				const core::array<s32>& indices,
-				s32 kerningWidth,
-				const core::rect<s32>* clipRect, SColor color,
-				bool useAlphaChannelOfTexture) = 0;
+				s32 kerningWidth=0,
+				const core::rect<s32>* clipRect=0,
+				SColor color=SColor(255,255,255,255),
+				bool useAlphaChannelOfTexture=false) = 0;
 
 		//! Draws a part of the texture into the rectangle.
 		/** Suggested and first implemented by zola.
@@ -644,7 +647,7 @@ namespace video
 		//! Returns amount of primitives (mostly triangles) which were drawn in the last frame.
 		/** Together with getFPS() very useful method for statistics.
 		\return Amount of primitives drawn in the last frame. */
-		virtual u32 getPrimitiveCountDrawn() = 0;
+		virtual u32 getPrimitiveCountDrawn( u32 param = 0 ) = 0;
 
 		//! Deletes all dynamic lights which were previously added with addDynamicLight().
 		virtual void deleteAllDynamicLights() = 0;
@@ -700,7 +703,7 @@ namespace video
 		/** (mostly vertices) which
 		the device is able to render with one drawIndexedTriangleList
 		call. */
-		virtual s32 getMaximalPrimitiveCount() = 0;
+		virtual u32 getMaximalPrimitiveCount() = 0;
 
 		//! Enables or disables a texture creation flag.
 		/** This flag defines how
@@ -710,7 +713,7 @@ namespace video
 		enable the ETCM_ALWAYS_16_BIT mode, but the driver creates 32 bit
 		textures.
 		\param flag: Texture creation flag.
-		\param enbabled: Specifies if the given flag should be enabled or disabled.*/
+		\param enabled: Specifies if the given flag should be enabled or disabled.*/
 		virtual void setTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag, bool enabled) = 0;
 
 		//! Returns if a texture creation flag is enabled or disabled.
@@ -744,20 +747,21 @@ namespace video
 		registered for writing the image to disk
 		\param image: Image to write to disk
 		\param filename: name of the file to write
+		\param param: control parameter for the backend ( eq. compression level )
 		\return Returns true on success */
-		virtual bool writeImageToFile(IImage* image, const c8* filename) = 0;
+		virtual bool writeImageToFile(IImage* image, const c8* filename, u32 param = 0) = 0;
 
 		//! Creates a software image from a byte array.
 		/** No hardware texture will
 		be created for this image. This method is useful for example if
 		you want to read a heightmap for a terrain renderer.
 		\param format: Desired color format of the texture
-		\param size: Desired the size of the image
-		\param data: a byte array with pixelcolor information
-		\param useForeignMemory: If true, the image will use the data pointer
-		directly and own it from now on, which means it will also try to delete [] the
-		data when the image will be destructed.
-		If false, the memory will by copied internally.
+		\param size: Desired size of the image
+		\param data: A byte array with pixel color information
+		\param ownForeignMemory: If true, the image will use the data pointer
+		directly and own it afterwards.
+		If false the memory will by copied internally.
+		\param deleteMemory: Whether the memory is deallocated upon destruction
 		\return Returns the created image.
 		If you no longer need the image, you should call IImage::drop().
 		See IUnknown::drop() for more information. */
@@ -777,13 +781,14 @@ namespace video
 		Derive a class from IMaterialRenderer and override the methods you need. For
 		setting the right renderstates, you can try to get a pointer to the real rendering device
 		using IVideoDriver::getExposedVideoData(). Add your class with
-		IVideoDriver::addMaterialRenderer() and if you want an object in the engine to be displayed
-		with your new material, set the MaterialType member of the SMaterial struct to the
+		IVideoDriver::addMaterialRenderer(). To use an object being displayed
+		with your new material set the MaterialType member of the SMaterial struct to the
 		value returned by this method.
-		If you simply want to create a new material using vertex and/or pixel shaders, it would
+		If you simply want to create a new material using vertex and/or pixel shaders it would
 		be easier to use the video::IGPUProgrammingServices interface which you can get using
 		the getGPUProgrammingServices() method.
-		\param name: name for this registered material renderer entry.
+		\param renderer: A pointer to the new renderer.
+		\param name: Optional name for this registered material renderer entry.
 		\return Returns the number of the
 		material type which can be set in SMaterial::MaterialType to use the renderer.
 		-1 is returned if an error occured. (For example if you tried to add
@@ -810,13 +815,14 @@ namespace video
 		//! Sets the name of a material renderer.
 		/** Will have no effect on built-in material renderers.
 		\param idx: Id of the material renderer. Can be a value of the E_MATERIAL_TYPE enum or a
-		value which was returned by addMaterialRenderer(). */
+		value which was returned by addMaterialRenderer().
+		\param name: New name of the material renderer. */
 		virtual void setMaterialRendererName(s32 idx, const c8* name) = 0;
 
 		//! Creates material attributes list from a material, usable for serialization and more.
 		/** Please note that the videodriver will use the material renderer names from
 		getMaterialRendererName() to write out the material type name, so they should be set before. */
-		virtual io::IAttributes* createAttributesFromMaterial(video::SMaterial& material) = 0;
+		virtual io::IAttributes* createAttributesFromMaterial(const video::SMaterial& material) = 0;
 
 		//! Fills an SMaterial structure from attributes.
 		/** Please note that for setting material types of the material, the video driver
@@ -827,7 +833,7 @@ namespace video
 		//! Returns driver and operating system specific data about the IVideoDriver.
 		/** This method should only be used if the engine should be extended without having
 		to modify the source of the engine. */
-		virtual SExposedVideoData getExposedVideoData() = 0;
+		virtual const SExposedVideoData& getExposedVideoData() = 0;
 
 		//! Returns type of video driver
 		virtual E_DRIVER_TYPE getDriverType() = 0;

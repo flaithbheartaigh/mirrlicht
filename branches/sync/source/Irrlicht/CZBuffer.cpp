@@ -1,9 +1,12 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
+#include "IrrCompileConfig.h"
 #include "CZBuffer.h"
 #include "irrString.h"
+
+#ifdef _IRR_COMPILE_WITH_SOFTWARE_
 
 namespace irr
 {
@@ -81,16 +84,29 @@ void CZBuffer::unlock()
 {
 }
 
+} // end namespace video
+} // end namespace irr
 
+#endif // _IRR_COMPILE_WITH_SOFTWARE_
+
+namespace irr
+{
+namespace video
+{
 
 //! creates a ZBuffer
 IZBuffer* createZBuffer(const core::dimension2d<s32>& size)
 {
+	#ifdef _IRR_COMPILE_WITH_SOFTWARE_
 	return new CZBuffer(size);
+	#else
+	return 0;
+	#endif // _IRR_COMPILE_WITH_SOFTWARE_
 }
 
 	
 } // end namespace video
 } // end namespace irr
+
 
 

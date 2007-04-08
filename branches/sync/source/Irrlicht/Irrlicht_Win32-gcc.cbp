@@ -250,7 +250,7 @@
 			<Option link="0"/>
 			<Option target="default"/>
 		</Unit>
-		<Unit filename="..\..\include\IGUIFontASCII.h">
+		<Unit filename="..\..\include\IGUIFontBitmap.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
@@ -288,6 +288,12 @@
 		</Unit>
 		<Unit filename="..\..\include\IGUISkin.h">
 			<Option compilerVar="CPP"/>
+			<Option compile="0"/>
+			<Option link="0"/>
+			<Option target="default"/>
+		</Unit>
+		<Unit filename="..\..\include\IGUISpriteBank.h">
+			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
 			<Option target="default"/>
@@ -737,7 +743,7 @@
 			<Option target="default"/>
 		</Unit>
 		<Unit filename="..\..\include\irrString.h">
-			<Option compilerVar=""/>
+			<Option compilerVar="CPP"/>
 			<Option compile="0"/>
 			<Option link="0"/>
 			<Option target="default"/>
@@ -755,12 +761,6 @@
 			<Option target="default"/>
 		</Unit>
 		<Unit filename="..\..\include\irrlicht.h">
-			<Option compilerVar="CPP"/>
-			<Option compile="0"/>
-			<Option link="0"/>
-			<Option target="default"/>
-		</Unit>
-		<Unit filename="..\..\include\irrString.h">
 			<Option compilerVar="CPP"/>
 			<Option compile="0"/>
 			<Option link="0"/>
@@ -864,6 +864,16 @@
 		</Unit>
 		<Unit filename="CAnimatedMeshMD2.h">
 			<Option compilerVar="CPP"/>
+			<Option compile="0"/>
+			<Option link="0"/>
+			<Option target="default"/>
+		</Unit>
+		<Unit filename="CAnimatedMeshMD3.cpp">
+			<Option compilerVar="CPP"/>
+			<Option target="default"/>
+		</Unit>
+		<Unit filename="CAnimatedMeshMD3.h">
+			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
 			<Option target="default"/>
@@ -1306,16 +1316,6 @@
 			<Option link="0"/>
 			<Option target="default"/>
 		</Unit>
-		<Unit filename="CGUIFontMultiTexture.cpp">
-			<Option compilerVar="CPP"/>
-			<Option target="default"/>
-		</Unit>
-		<Unit filename="CGUIFontMultiTexture.h">
-			<Option compilerVar=""/>
-			<Option compile="0"/>
-			<Option link="0"/>
-			<Option target="default"/>
-		</Unit>
 		<Unit filename="CGUIImage.H">
 			<Option compilerVar="CPP"/>
 			<Option compile="0"/>
@@ -1408,6 +1408,16 @@
 		</Unit>
 		<Unit filename="CGUISkin.h">
 			<Option compilerVar="CPP"/>
+			<Option compile="0"/>
+			<Option link="0"/>
+			<Option target="default"/>
+		</Unit>
+		<Unit filename="CGUISpriteBank.cpp">
+			<Option compilerVar="CPP"/>
+			<Option target="default"/>
+		</Unit>
+		<Unit filename="CGUISpriteBank.h">
+			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
 			<Option target="default"/>
@@ -1668,6 +1678,16 @@
 		</Unit>
 		<Unit filename="CLogger.h">
 			<Option compilerVar="CPP"/>
+			<Option compile="0"/>
+			<Option link="0"/>
+			<Option target="default"/>
+		</Unit>
+		<Unit filename="CMD3MeshFileLoader.cpp">
+			<Option compilerVar="CPP"/>
+			<Option target="default"/>
+		</Unit>
+		<Unit filename="CMD3MeshFileLoader.h">
+			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
 			<Option target="default"/>

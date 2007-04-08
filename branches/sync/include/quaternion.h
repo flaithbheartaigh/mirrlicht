@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -27,6 +27,9 @@ class quaternion
 
 		//! Constructor which converts euler angles to a quaternion
 		quaternion(f32 x, f32 y, f32 z);
+
+		//! Constructor which converts euler angles to a quaternion
+		quaternion(const vector3df& vec);
 
 		//! Constructor which converts a matrix to a quaternion
 		quaternion(const matrix4& mat);
@@ -74,13 +77,16 @@ class quaternion
 		matrix4 getMatrix() const;
 
 		//! Creates a matrix from this quaternion
-		matrix4 getMatrix_transposed() const;
+		void getMatrix( matrix4 &dest ) const;
+
+		//! Creates a matrix from this quaternion
+		void getMatrix_transposed( matrix4 &dest ) const;
 
 		//! Inverts this quaternion
 		void makeInverse();
 
-		//! Interpolates the quaternion between to quaternions based on time
-		quaternion slerp(quaternion q1, quaternion q2, f32 time);
+		//! set this quaternion to the result of the interpolation between two quaternions
+		void slerp( quaternion q1, quaternion q2, f32 interpolate );
 
 		//! axis must be unit length
 		//! The quaternion representing the rotation is
@@ -112,6 +118,13 @@ inline quaternion::quaternion(f32 x, f32 y, f32 z, f32 w)
 inline quaternion::quaternion(f32 x, f32 y, f32 z)
 {
 	set(x,y,z);
+}
+
+
+//! Constructor which converts euler angles to a quaternion
+inline quaternion::quaternion(const vector3df& vec)
+{
+	set(vec.X,vec.Y,vec.Z);
 }
 
 
@@ -279,33 +292,55 @@ inline matrix4 quaternion::getMatrix() const
 	return m;
 }
 
+
 //! Creates a matrix from this quaternion
-inline matrix4 quaternion::getMatrix_transposed() const
+inline void quaternion::getMatrix( matrix4 &dest ) const
 {
-	core::matrix4 m;
+	dest[0] = 1.0f - 2.0f*Y*Y - 2.0f*Z*Z;
+	dest[1] = 2.0f*X*Y + 2.0f*Z*W;
+	dest[2] = 2.0f*X*Z - 2.0f*Y*W;
+	dest[3] = 0.0f;
 
-	m.M[0] = 1.0f - 2.0f*Y*Y - 2.0f*Z*Z;
-	m.M[1] = 2.0f*X*Y + 2.0f*Z*W;
-	m.M[2] = 2.0f*X*Z - 2.0f*Y*W;
-	m.M[3] = 0.0f;
+	dest[4] = 2.0f*X*Y - 2.0f*Z*W;
+	dest[5] = 1.0f - 2.0f*X*X - 2.0f*Z*Z;
+	dest[6] = 2.0f*Z*Y + 2.0f*X*W;
+	dest[7] = 0.0f;
 
-	m.M[4] = 2.0f*X*Y - 2.0f*Z*W;
-	m.M[5] = 1.0f - 2.0f*X*X - 2.0f*Z*Z;
-	m.M[6] = 2.0f*Z*Y + 2.0f*X*W;
-	m.M[7] = 0.0f;
+	dest[8] = 2.0f*X*Z + 2.0f*Y*W;
+	dest[9] = 2.0f*Z*Y - 2.0f*X*W;
+	dest[10] = 1.0f - 2.0f*X*X - 2.0f*Y*Y;
+	dest[11] = 0.0f;
 
-	m.M[8] = 2.0f*X*Z + 2.0f*Y*W;
-	m.M[9] = 2.0f*Z*Y - 2.0f*X*W;
-	m.M[10] = 1.0f - 2.0f*X*X - 2.0f*Y*Y;
-	m.M[11] = 0.0f;
-
-	m.M[12] = 0.0f;
-	m.M[13] = 0.0f;
-	m.M[14] = 0.0f;
-	m.M[15] = 1.0f;
-
-	return m;
+	dest[12] = 0.f;
+	dest[13] = 0.f;
+	dest[14] = 0.f;
+	dest[15] = 1.f;
 }
+
+//! Creates a matrix from this quaternion
+inline void quaternion::getMatrix_transposed( matrix4 &dest ) const
+{
+	dest[0] = 1.0f - 2.0f*Y*Y - 2.0f*Z*Z;
+	dest[4] = 2.0f*X*Y + 2.0f*Z*W;
+	dest[8] = 2.0f*X*Z - 2.0f*Y*W;
+	dest[12] = 0.0f;
+
+	dest[1] = 2.0f*X*Y - 2.0f*Z*W;
+	dest[5] = 1.0f - 2.0f*X*X - 2.0f*Z*Z;
+	dest[9] = 2.0f*Z*Y + 2.0f*X*W;
+	dest[13] = 0.0f;
+
+	dest[2] = 2.0f*X*Z + 2.0f*Y*W;
+	dest[6] = 2.0f*Z*Y - 2.0f*X*W;
+	dest[10] = 1.0f - 2.0f*X*X - 2.0f*Y*Y;
+	dest[14] = 0.0f;
+
+	dest[3] = 0.f;
+	dest[7] = 0.f;
+	dest[11] = 0.f;
+	dest[15] = 1.f;
+}
+
 
 
 //! Inverts this quaternion
@@ -322,6 +357,7 @@ inline void quaternion::set(f32 x, f32 y, f32 z, f32 w)
 	Z = z;
 	W = w;
 }
+
 
 //! sets new quaternion based on euler angles
 inline void quaternion::set(f32 x, f32 y, f32 z)
@@ -372,8 +408,8 @@ inline quaternion& quaternion::normalize()
 }
 
 
-// Interpolates the quaternion between to quaternions based on time
-inline quaternion quaternion::slerp(quaternion q1, quaternion q2, f32 time)
+// set this quaternion to the result of the interpolation between two quaternions
+inline void quaternion::slerp( quaternion q1, quaternion q2, f32 time)
 {
 	f32 angle = q1.getDotProduct(q2);
 
@@ -403,13 +439,12 @@ inline quaternion quaternion::slerp(quaternion q1, quaternion q2, f32 time)
 	}
 	else
 	{
-		q2 = quaternion(-q1.Y, q1.X, -q1.W, q1.Z);
+		q2.set(-q1.Y, q1.X, -q1.W, q1.Z);
 		scale = (f32)sin(PI * (0.5f - time));
 		invscale = (f32)sin(PI * time);
 	}
 
 	*this = (q1*scale) + (q2*invscale);
-	return *this;
 }
 
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt / Thomas Alten
+// Copyright (C) 2002-2007 Nikolaus Gebhardt / Thomas Alten
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -7,6 +7,9 @@
 
 #include "irrArray.h"
 #include "fast_atof.h"
+#include "IFileSystem.h"
+#include "IVideoDriver.h"
+#include "coreutil.h"
 
 namespace irr
 {
@@ -27,7 +30,7 @@ namespace quake3
 	// we are not using gamma, so quake3 is very dark.
 	// define the standard multiplication for lightmaps and vertex colors
 	const video::E_MATERIAL_TYPE defaultLightMap = video::EMT_LIGHTMAP_M2;
-	const video::E_MODULATE_FUNC defaultModulate = video::EMF_MODULATE_2X;
+	const video::E_MODULATE_FUNC defaultModulate = video::EMFN_MODULATE_2X;
 
 	// some useful typedefs
 	typedef core::array< core::stringc > tStringList;
@@ -41,8 +44,8 @@ namespace quake3
 
 		void clear ()
 		{
-			name = core::IrrEmptyStringc;
-			content = core::IrrEmptyStringc;
+			name = core::irrEmtpyStringc;
+			content = core::irrEmtpyStringc;
 		}
 
 		s32 isValid () const
@@ -63,7 +66,11 @@ namespace quake3
 
 		for ( u32 i = 0; i != listSize; ++i )
 		{
+			if (string.size() < pos)
+				return -2;
 			u32 len = (u32) strlen ( list[i] );
+			if (string.size() < pos+len)
+				continue;
 			if ( in [len] != 0 && in [len] != ' ' )
 				continue;
 			if ( strncmp ( in, list[i], len ) )
@@ -176,7 +183,7 @@ namespace quake3
 
 
 	// parses the content of Variable blendfunc,alphafunc
-	inline void getBlendFunc ( const core::stringc &string, SBlendFunc &blendfunc )
+	inline static void getBlendFunc ( const core::stringc &string, SBlendFunc &blendfunc )
 	{
 		if ( string.size() == 0 )
 			return;
@@ -251,7 +258,7 @@ namespace quake3
 			case 12:
 				// filter = gl_dst_color gl_zero
 				blendfunc.type = video::EMT_ONETEXTURE_BLEND;
-				blendfunc.param = pack_texureBlendFunc ( video::EBF_DST_COLOR, video::EBF_ZERO, defaultModulate );
+				blendfunc.param = video::pack_texureBlendFunc ( video::EBF_DST_COLOR, video::EBF_ZERO, defaultModulate );
 				resolved = 1;
 				break;
 			case 13:
@@ -278,7 +285,7 @@ namespace quake3
 		if ( 0 == resolved )
 		{
 			blendfunc.type = video::EMT_ONETEXTURE_BLEND;
-			blendfunc.param = pack_texureBlendFunc (
+			blendfunc.param = video::pack_texureBlendFunc (
 					(video::E_BLEND_FACTOR) srcFact,
 					(video::E_BLEND_FACTOR) dstFact,
 					defaultModulate);
@@ -289,7 +296,7 @@ namespace quake3
 	{
 		SModifierFunction ()
 			: masterfunc0 ( 0 ), masterfunc1(0), func ( 0 ),
-			base ( 0 ), phase ( 0 ), freq ( 1 ), amp ( 1 ), wave(1), tcgen(8) {}
+			tcgen( 8 ), base ( 0 ), amp ( 1 ), phase ( 0 ), freq ( 1 ), wave(1) {}
 
 		// "tcmod","deformvertexes","rgbgen", "tcgen"
 		s32 masterfunc0;
@@ -402,7 +409,7 @@ namespace quake3
 		{
 			s32 index = getIndex ( name );
 			if ( index < 0 )
-				return irr::core::IrrEmptyStringc;
+				return core::irrEmtpyStringc;
 
 			return Variable [ index ].content;
 		}
@@ -532,6 +539,53 @@ namespace quake3
 		dest.append ( "}\n" );
 		return dest;
 	}
+
+
+
+	/*
+		quake3 doesn't care much about tga & jpg
+		load one or multiple files stored in name started at startPos to the texture array textures
+		if texture is not loaded 0 will be added ( to find missing textures easier)
+	*/
+	inline void getTextures (	tTexArray &textures ,
+						const core::stringc &name, u32 &startPos,
+						io::IFileSystem *fileSystem,
+						video::IVideoDriver* driver
+					)
+	{
+		static const char * extension[2] = 
+		{
+			".jpg",
+			".tga"
+		};
+
+		tStringList stringList;
+		getAsStringList ( stringList, -1, name, startPos );
+
+		textures.clear();
+
+		core::stringc loadFile;
+		for ( u32 i = 0; i!= stringList.size (); ++i )
+		{
+			video::ITexture* texture = 0;
+			for ( u32 g = 0; g != 2 ; ++g )
+			{
+				irr::core::cutFilenameExtension ( loadFile, stringList[i] ).append ( extension[g] );
+
+				if ( fileSystem->existFile ( loadFile.c_str() ) )
+				{
+					texture = driver->getTexture( loadFile.c_str () );
+					if ( texture )
+					{
+						break;
+					}
+				}
+			}
+			// take 0 Texture
+			textures.push_back(texture);
+		}
+	}
+
 
 	/*!
 		Manages various Quake3 Shader Styles

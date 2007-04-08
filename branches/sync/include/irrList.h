@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -88,7 +88,7 @@ public:
 
 
 	//! copy constructor
-	list(const list<T>& other)
+	list(const list<T>& other) : root(0), last(0), size(0)
 	{
 		*this = other;
 	}
@@ -225,7 +225,7 @@ public:
 	//! Inserts an element after an element.
 	//! \param it: Iterator pointing to element after which the new element
 	//! should be inserted.
-	//! \param element: The new element to be insterted into the list.
+	//! \param element: The new element to be inserted into the list.
 	void insert_after(Iterator& it, const T& element)
 	{
 		SKListNode* node = new SKListNode;
@@ -248,7 +248,7 @@ public:
 	//! Inserts an element before an element.
 	//! \param it: Iterator pointing to element before which the new element
 	//! should be inserted.
-	//! \param element: The new element to be insterted into the list.
+	//! \param element: The new element to be inserted into the list.
 	void insert_before(Iterator& it, const T& element)
 	{
 		SKListNode* node = new SKListNode;
@@ -269,7 +269,7 @@ public:
 
 
 	//! Erases an element
-	//! \param it: Iterator pointing to the element which should be erased.
+	//! \param it: Iterator pointing to the element which shall be erased.
 	//! \return Returns iterator pointing to next element.
 	Iterator erase(Iterator& it)
 	{

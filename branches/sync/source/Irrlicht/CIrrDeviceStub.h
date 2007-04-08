@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -105,7 +105,6 @@ namespace irr
 		//! checks version of sdk and prints warning if there might be a problem
 		bool checkVersion(const char* version);
 
-		io::IFileSystem* FileSystem;
 		video::IVideoDriver* VideoDriver;
 		gui::IGUIEnvironment* GUIEnvironment;
 		scene::ISceneManager* SceneManager;
@@ -115,8 +114,8 @@ namespace irr
 		IEventReceiver* UserReceiver;
 		CLogger* Logger;
 		IOSOperator* Operator;
+		io::IFileSystem* FileSystem;
 	};
-
 
 } // end namespace irr
 

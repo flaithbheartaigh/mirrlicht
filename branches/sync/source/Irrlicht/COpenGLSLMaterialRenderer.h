@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -107,12 +107,12 @@ protected:
 	IShaderConstantSetCallBack* CallBack;
 	IMaterialRenderer* BaseMaterial;
 
-	struct SUniformInfo 
+	struct SUniformInfo
 	{
 		core::stringc name;
 		GLenum type;
 	};
-	
+
 	GLhandleARB Program;
 	core::array<SUniformInfo> UniformInfo;
 	s32 UserData;
@@ -122,6 +122,6 @@ protected:
 } // end namespace video
 } // end namespace irr
 
-#endif
-#endif
+#endif // compile with OpenGL
+#endif // if included
 

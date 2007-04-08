@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -6,6 +6,7 @@
 #define __C_IMAGE_H_INCLUDED__
 
 #include "IImage.h"
+#include "rect.h"
 
 namespace irr
 {
@@ -119,8 +120,9 @@ private:
 	//! assumes format and size has been set and creates the rest
 	void initData();
 
-
 	s32 getBitsPerPixelFromFormat();
+
+	inline SColor getPixelBox ( s32 x, s32 y, s32 fx, s32 fy, s32 bias );
 
 	void* Data;
 	core::dimension2d<s32> Size;
@@ -129,14 +131,12 @@ private:
 	u32 Pitch;
 	ECOLOR_FORMAT Format;
 
+	bool DeleteMemory;
+
 	u32 RedMask;
 	u32 GreenMask;
 	u32 BlueMask;
 	u32 AlphaMask;
-
-	inline SColor getPixelBox ( s32 x, s32 y, s32 fx, s32 fy, s32 bias );
-
-	u32 DeleteMemory;
 };
 
 } // end namespace video

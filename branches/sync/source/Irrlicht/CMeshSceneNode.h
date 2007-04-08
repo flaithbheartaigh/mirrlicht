@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -27,7 +27,7 @@ namespace scene
 		virtual ~CMeshSceneNode();
 
 		//! frame
-		virtual void OnPreRender();
+		virtual void OnRegisterSceneNode();
 
 		//! renders the node.
 		virtual void render();
@@ -52,7 +52,7 @@ namespace scene
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0);
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_MESH; }
+		virtual ESCENE_NODE_TYPE getType() const { return ESNT_MESH; }
 
 		//! Sets a new mesh
 		virtual void setMesh(IMesh* mesh);
@@ -62,7 +62,7 @@ namespace scene
 
 		//! Sets if the scene node should not copy the materials of the mesh but use them in a read only style.
 		/* In this way it is possible to change the materials a mesh causing all mesh scene nodes 
-	    referencing this mesh to change too. */
+		referencing this mesh to change too. */
 		virtual void setReadOnlyMaterials(bool readonly);
 
 		//! Returns if the scene node should not copy the materials of the mesh but use them in a read only style

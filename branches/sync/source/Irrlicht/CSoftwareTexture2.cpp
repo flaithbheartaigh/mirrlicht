@@ -1,6 +1,9 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt / Thomas Alten
+// Copyright (C) 2002-2007 Nikolaus Gebhardt / Thomas Alten
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
+
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_BURNINGSVIDEO_
 
 #include "SoftwareDriver2_compile_config.h"
 #include "SoftwareDriver2_helper.h"
@@ -14,7 +17,7 @@ namespace video
 
 //! constructor
 CSoftwareTexture2::CSoftwareTexture2(IImage* image, const char* name, bool generateMipLevels)
-: ITexture(name), HasMipMaps(generateMipLevels),MipMapLOD(0)
+: ITexture(name), MipMapLOD(0), HasMipMaps(generateMipLevels)
 {
 	#ifndef SOFTWARE_DRIVER_2_MIPMAPPING
 		HasMipMaps = 0;
@@ -106,8 +109,8 @@ void CSoftwareTexture2::regenerateMipMapLevels()
 	while ( i < SOFTWARE_DRIVER_2_MIPMAPPING_MAX )
 	{
 		currentSize = c->getDimension();
-		newSize.Width = s32_max ( 1, currentSize.Width >> 1 );
-		newSize.Height = s32_max ( 1, currentSize.Height >> 1 );
+		newSize.Width = core::s32_max ( 1, currentSize.Width >> 1 );
+		newSize.Height = core::s32_max ( 1, currentSize.Height >> 1 );
 
 		MipMap[i] = new CImage(ECF_SOFTWARE2, newSize);
 		MipMap[0]->copyToScalingBoxFilter ( MipMap[i], 0 );
@@ -119,3 +122,5 @@ void CSoftwareTexture2::regenerateMipMapLevels()
 
 } // end namespace video
 } // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_BURNINGSVIDEO_

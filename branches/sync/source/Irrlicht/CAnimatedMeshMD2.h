@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -6,6 +6,7 @@
 #define __C_ANIMATED_MESH_MD2_H_INCLUDED__
 
 #include "IAnimatedMeshMD2.h"
+#include "IMesh.h"
 #include "IReadFile.h"
 #include "S3DVertex.h"
 #include "irrArray.h"
@@ -41,6 +42,12 @@ namespace scene
 		//! returns pointer to a mesh buffer
 		virtual IMeshBuffer* getMeshBuffer(u32 nr) const;
 
+		//! Returns pointer to a mesh buffer which fits a material
+ 		/** \param material: material to search for
+		\return Returns the pointer to the mesh buffer or 
+		NULL if there is no such mesh buffer. */
+		virtual IMeshBuffer* getMeshBuffer( const video::SMaterial &material) const;
+
 		//! returns the material of this meshbuffer
 		virtual const video::SMaterial& getMaterial() const;
 
@@ -74,8 +81,8 @@ namespace scene
 		//! returns an axis aligned bounding box
 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
 
-		//! returns an axis aligned bounding box
-		virtual core::aabbox3d<f32>& getBoundingBox();
+		//! set user axis aligned bounding box
+		virtual void setBoundingBox( const core::aabbox3df& box);
 
 		//! sets a flag of all contained materials to a new value
 		virtual void setMaterialFlag(video::E_MATERIAL_FLAG flag, bool newvalue);

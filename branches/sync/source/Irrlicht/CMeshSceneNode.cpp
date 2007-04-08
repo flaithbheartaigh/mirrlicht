@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -43,7 +43,7 @@ CMeshSceneNode::~CMeshSceneNode()
 
 
 //! frame
-void CMeshSceneNode::OnPreRender()
+void CMeshSceneNode::OnRegisterSceneNode()
 {
 	if (IsVisible)
 	{
@@ -104,7 +104,7 @@ void CMeshSceneNode::OnPreRender()
 		if (transparentCount)
 			SceneManager->registerNodeForRendering(this, scene::ESNRP_TRANSPARENT);
 
-		ISceneNode::OnPreRender();
+		ISceneNode::OnRegisterSceneNode();
 	}
 }
 

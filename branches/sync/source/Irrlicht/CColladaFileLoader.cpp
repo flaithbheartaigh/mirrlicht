@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -100,7 +100,7 @@ namespace scene
 			#endif
 		}
 
-		video::SLight LightData; // public accessible
+		video::SLight LightData; // publically accessible
 
 		//! creates an instance of this prefab
 		virtual scene::ISceneNode* addInstance(scene::ISceneNode* parent,
@@ -180,7 +180,7 @@ namespace scene
 CColladaFileLoader::CColladaFileLoader(video::IVideoDriver* driver,
 		scene::ISceneManager* smgr, io::IFileSystem* fs)
 : Driver(driver), SceneManager(smgr), FileSystem(fs), DummyMesh(0),
-	CreateInstances(false), FirstLoadedMesh(0), LoadedMeshCount(0)
+	FirstLoadedMesh(0), LoadedMeshCount(0), CreateInstances(false)
 {
 	
 }
@@ -545,7 +545,7 @@ core::matrix4 CColladaFileLoader::readMatrixNode(io::IXMLReaderUTF8* reader)
 	if (reader->isEmptyElement())
 		return mat;
 
-	readFloatsInsideElement(reader, mat.M, 16);
+	readFloatsInsideElement(reader, mat.pointer(), 16);
 
 	return mat;
 }
@@ -1291,6 +1291,8 @@ void CColladaFileLoader::readColladaParameters(io::IXMLReaderUTF8* reader,
 					break;
 
 				// TODO: other types of data (ints, bools or whatever)
+				default:
+					break;
 			}
 
 			// add param

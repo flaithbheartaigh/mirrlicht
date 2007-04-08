@@ -1,6 +1,9 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
+
+#include "IrrCompileConfig.h"
+#ifdef _IRR_WINDOWS_
 
 #define _IRR_DONT_DO_MEMORY_DEBUGGING_HERE
 #include "CD3D9Driver.h"
@@ -9,9 +12,6 @@
 #include "CD3D9Texture.h"
 #include "CImage.h"
 
-#include "IrrCompileConfig.h"
-#ifdef _IRR_WINDOWS_
-
 #ifdef _IRR_COMPILE_WITH_DIRECT3D_9_
 
 #include "CD3D9MaterialRenderer.h"
@@ -19,6 +19,7 @@
 #include "CD3D9NormalMapRenderer.h"
 #include "CD3D9ParallaxMapRenderer.h"
 #include "CD3D9HLSLMaterialRenderer.h"
+#include <float.h>
 
 namespace irr
 {
@@ -30,10 +31,12 @@ namespace video
 CD3D9Driver::CD3D9Driver(const core::dimension2d<s32>& screenSize, HWND window,
 				bool fullscreen, bool stencilbuffer,
 				io::IFileSystem* io, bool pureSoftware)
-: CNullDriver(io, screenSize), D3DLibrary(0), CurrentRenderMode(ERM_NONE), pID3DDevice(0),
- LastVertexType((video::E_VERTEX_TYPE)-1), ResetRenderStates(true), pID3D(0),
- LastSetLight(-1), Transformation3DChanged(0), StencilBuffer(stencilbuffer),
- DeviceLost(false), Fullscreen(fullscreen), PrevRenderTarget(0), CurrentRendertargetSize(0,0)
+: CNullDriver(io, screenSize), CurrentRenderMode(ERM_NONE),
+	ResetRenderStates(true), Transformation3DChanged(false), StencilBuffer(stencilbuffer),
+	D3DLibrary(0), pID3D(0), pID3DDevice(0), PrevRenderTarget(0),
+	LastVertexType((video::E_VERTEX_TYPE)-1), MaxTextureUnits(0),
+	MaxLightDistance(sqrtf(FLT_MAX)), LastSetLight(-1), DeviceLost(false),
+	Fullscreen(fullscreen)
 {
 	#ifdef _DEBUG
 	setDebugName("CD3D9Driver");
@@ -41,7 +44,7 @@ CD3D9Driver::CD3D9Driver(const core::dimension2d<s32>& screenSize, HWND window,
 
 	printVersion();
 
-	for (s32 i=0; i<MATERIAL_MAX_TEXTURES; ++i)
+	for (u32 i=0; i<MATERIAL_MAX_TEXTURES; ++i)
 	{
 		CurrentTexture[i] = 0;
 		LastTextureMipMapsAvailable[i] = false;
@@ -59,11 +62,9 @@ CD3D9Driver::CD3D9Driver(const core::dimension2d<s32>& screenSize, HWND window,
 	SphereMapMatrixD3D9._43 = 0.0f; SphereMapMatrixD3D9._44 = 1.0f;
 
 	core::matrix4 mat;
-	UnitMatrixD3D9 = *(D3DMATRIX*)((void*)&mat);
+	UnitMatrixD3D9 = *(D3DMATRIX*)((void*)mat.pointer());
 
 	// init direct 3d is done in the factory function
-
-	MaxLightDistance = sqrtf(FLT_MAX);
 }
 
 
@@ -73,7 +74,7 @@ CD3D9Driver::~CD3D9Driver()
 {
 	deleteMaterialRenders();
 
-	for (s32 i=0; i<MATERIAL_MAX_TEXTURES; ++i)
+	for (u32 i=0; i<MATERIAL_MAX_TEXTURES; ++i)
 		if (CurrentTexture[i])
 			CurrentTexture[i]->drop();
 
@@ -260,6 +261,16 @@ bool CD3D9Driver::initDriver(const core::dimension2d<s32>& screenSize, HWND hwnd
 
 		if (SUCCEEDED(pID3D->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT,
 		           devtype, present.BackBufferFormat, !fullScreen,
+		           D3DMULTISAMPLE_4_SAMPLES, &qualityLevels)))
+		{
+			// enable multi sampling
+			present.MultiSampleType    = D3DMULTISAMPLE_4_SAMPLES;
+			present.MultiSampleQuality = qualityLevels-1;
+			present.SwapEffect         = D3DSWAPEFFECT_DISCARD;
+		}
+		else
+		if (SUCCEEDED(pID3D->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT,
+		           devtype, present.BackBufferFormat, !fullScreen,
 		           D3DMULTISAMPLE_2_SAMPLES, &qualityLevels)))
 		{
 			// enable multi sampling
@@ -406,6 +417,8 @@ bool CD3D9Driver::initDriver(const core::dimension2d<s32>& screenSize, HWND hwnd
 
 	// create materials
 	createMaterialRenderers();
+
+	MaxTextureUnits = core::min_((u32)Caps.MaxSimultaneousTextures, MATERIAL_MAX_TEXTURES);
 
 	// set the renderstates
 	setRenderStates3DMode();
@@ -569,19 +582,25 @@ void CD3D9Driver::setTransform(E_TRANSFORMATION_STATE state, const core::matrix4
 	switch(state)
 	{
 	case ETS_VIEW:
-		pID3DDevice->SetTransform(D3DTS_VIEW, (D3DMATRIX*)((void*)&mat));
+		pID3DDevice->SetTransform(D3DTS_VIEW, (D3DMATRIX*)((void*)mat.pointer()));
 		break;
 	case ETS_WORLD:
-		pID3DDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)((void*)&mat));
+		pID3DDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)((void*)mat.pointer()));
 		break;
 	case ETS_PROJECTION:
-		pID3DDevice->SetTransform( D3DTS_PROJECTION, (D3DMATRIX*)((void*)&mat));
+		pID3DDevice->SetTransform( D3DTS_PROJECTION, (D3DMATRIX*)((void*)mat.pointer()));
 		break;
 	case ETS_TEXTURE_0:
 	case ETS_TEXTURE_1:
+	case ETS_TEXTURE_2:
+	case ETS_TEXTURE_3:
+		if (mat.isIdentity())
+			break;
 		pID3DDevice->SetTextureStageState( state - ETS_TEXTURE_0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT2 );
 		pID3DDevice->SetTransform((D3DTRANSFORMSTATETYPE)(D3DTS_TEXTURE0+ ( state - ETS_TEXTURE_0 )),
-			(D3DMATRIX*)((void*)&mat));
+			(D3DMATRIX*)((void*)mat.pointer()));
+		break;
+	case ETS_COUNT:
 		break;
 	}
 
@@ -628,8 +647,12 @@ void CD3D9Driver::setMaterial(const SMaterial& material)
 {
 	Material = material;
 
-	for (s32 i=0; i<MATERIAL_MAX_TEXTURES; ++i)
+	for (u32 i=0; i<MaxTextureUnits; ++i)
+	{
 		setTexture(i, Material.Textures[i]);
+		setTransform((E_TRANSFORMATION_STATE) ( ETS_TEXTURE_0 + i ),
+				material.getTextureMatrix(i));
+	}
 }
 
 
@@ -1007,7 +1030,6 @@ void CD3D9Driver::draw2DImage(video::ITexture* texture,
 	f32 yPlus = renderTargetSize.Height-(renderTargetSize.Height / 2.f);
 	f32 yFact = 1.0f / (renderTargetSize.Height / 2.f);
 
-	const core::dimension2d<s32>& sourceSurfaceSize = texture->getOriginalSize();
 	core::rect<f32> tcoords;
 	tcoords.UpperLeftCorner.X = (((f32)sourcePos.X)+0.5f) / texture->getOriginalSize().Width ;
 	tcoords.UpperLeftCorner.Y = (((f32)sourcePos.Y)+0.5f) / texture->getOriginalSize().Height;
@@ -1235,47 +1257,29 @@ void CD3D9Driver::setBasicRenderStates(const SMaterial& material, const SMateria
 	{
 		if (material.BilinearFilter || material.TrilinearFilter || material.AnisotropicFilter)
 		{
-			D3DTEXTUREFILTERTYPE tftMagAniso = (Caps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC) ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR;
-			D3DTEXTUREFILTERTYPE tftMinAniso = (Caps.TextureFilterCaps & D3DPTFILTERCAPS_MINFANISOTROPIC) ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR;
+			D3DTEXTUREFILTERTYPE tftMag = ((Caps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC) && material.AnisotropicFilter) ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR;
+			D3DTEXTUREFILTERTYPE tftMin = ((Caps.TextureFilterCaps & D3DPTFILTERCAPS_MINFANISOTROPIC) && material.AnisotropicFilter) ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR;
+			D3DTEXTUREFILTERTYPE tftMip = material.TrilinearFilter ? D3DTEXF_LINEAR : D3DTEXF_POINT;
 
-			pID3DDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, material.AnisotropicFilter ? tftMagAniso : D3DTEXF_LINEAR);
-			pID3DDevice->SetSamplerState(0, D3DSAMP_MINFILTER, material.AnisotropicFilter ? tftMinAniso : D3DTEXF_LINEAR);
-			pID3DDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, material.TrilinearFilter ? D3DTEXF_LINEAR : D3DTEXF_POINT);
-
-			pID3DDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, material.AnisotropicFilter ? tftMagAniso : D3DTEXF_LINEAR);
-			pID3DDevice->SetSamplerState(1, D3DSAMP_MINFILTER, material.AnisotropicFilter ? tftMinAniso : D3DTEXF_LINEAR);
-			pID3DDevice->SetSamplerState(1, D3DSAMP_MIPFILTER, material.TrilinearFilter ? D3DTEXF_LINEAR : D3DTEXF_POINT);
-
-			pID3DDevice->SetSamplerState(2, D3DSAMP_MAGFILTER, material.AnisotropicFilter ? tftMagAniso : D3DTEXF_LINEAR);
-			pID3DDevice->SetSamplerState(2, D3DSAMP_MINFILTER, material.AnisotropicFilter ? tftMinAniso : D3DTEXF_LINEAR);
-			pID3DDevice->SetSamplerState(2, D3DSAMP_MIPFILTER, material.TrilinearFilter ? D3DTEXF_LINEAR : D3DTEXF_POINT);
-
-			pID3DDevice->SetSamplerState(3, D3DSAMP_MAGFILTER, material.AnisotropicFilter ? tftMagAniso : D3DTEXF_LINEAR);
-			pID3DDevice->SetSamplerState(3, D3DSAMP_MINFILTER, material.AnisotropicFilter ? tftMinAniso : D3DTEXF_LINEAR);
-			pID3DDevice->SetSamplerState(3, D3DSAMP_MIPFILTER, material.TrilinearFilter ? D3DTEXF_LINEAR : D3DTEXF_POINT);
+			for (u32 st=0; st<MaxTextureUnits; ++st)
+			{
+				pID3DDevice->SetSamplerState(st, D3DSAMP_MAGFILTER, tftMag);
+				pID3DDevice->SetSamplerState(st, D3DSAMP_MINFILTER, tftMin);
+				pID3DDevice->SetSamplerState(st, D3DSAMP_MIPFILTER, tftMip);
+			}
 		}
 		else
 		{
-			pID3DDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-			pID3DDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
-			pID3DDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-
-			pID3DDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-			pID3DDevice->SetSamplerState(1, D3DSAMP_MIPFILTER,  D3DTEXF_NONE);
-			pID3DDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-
-			pID3DDevice->SetSamplerState(2, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-			pID3DDevice->SetSamplerState(2, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
-			pID3DDevice->SetSamplerState(2, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-
-			pID3DDevice->SetSamplerState(3, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-			pID3DDevice->SetSamplerState(3, D3DSAMP_MIPFILTER,  D3DTEXF_NONE);
-			pID3DDevice->SetSamplerState(3, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+			for (u32 st=0; st<MaxTextureUnits; ++st)
+			{
+				pID3DDevice->SetSamplerState(st, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+				pID3DDevice->SetSamplerState(st, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
+				pID3DDevice->SetSamplerState(st, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+			}
 		}
 	}
 
 	// fillmode
-
 	if (resetAllRenderstates || lastmaterial.Wireframe != material.Wireframe || lastmaterial.PointCloud != material.PointCloud)
 	{
 		if (material.Wireframe)
@@ -1368,16 +1372,31 @@ void CD3D9Driver::setBasicRenderStates(const SMaterial& material, const SMateria
 	}
 
 	// texture address mode
-	if (resetAllRenderstates || lastmaterial.TextureWrap != material.TextureWrap)
+	for (u32 st=0; st<MaxTextureUnits; ++st)
 	{
-		u32 mode = material.TextureWrap ? D3DTADDRESS_WRAP : D3DTADDRESS_CLAMP;
-
-		pID3DDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, mode );
-		pID3DDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, mode );
-
-		pID3DDevice->SetSamplerState(1, D3DSAMP_ADDRESSU, mode );
-		pID3DDevice->SetSamplerState(1, D3DSAMP_ADDRESSV, mode );
-
+		if (resetAllRenderstates || lastmaterial.TextureWrap[st] != material.TextureWrap[st])
+		{
+			u32 mode = D3DTADDRESS_WRAP;
+			switch (material.TextureWrap[st])
+			{
+				case ETC_REPEAT:
+					mode=D3DTADDRESS_WRAP;
+					break;
+				case ETC_CLAMP:
+				case ETC_CLAMP_TO_EDGE:
+					mode=D3DTADDRESS_CLAMP;
+					break;
+				case ETC_MIRROR:
+					mode=D3DTADDRESS_MIRROR;
+					break;
+				case ETC_CLAMP_TO_BORDER:
+					mode=D3DTADDRESS_BORDER;
+					break;
+			}
+	
+			pID3DDevice->SetSamplerState(st, D3DSAMP_ADDRESSU, mode );
+			pID3DDevice->SetSamplerState(st, D3DSAMP_ADDRESSV, mode );
+		}
 	}
 
 
@@ -1475,9 +1494,9 @@ void CD3D9Driver::setRenderStatesStencilFillMode(bool alpha)
 	if (CurrentRenderMode != ERM_STENCIL_FILL || Transformation3DChanged)
 	{
 		core::matrix4 mat;
-		pID3DDevice->SetTransform(D3DTS_VIEW, (D3DMATRIX*)((void*)&mat));
-		pID3DDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)((void*)&mat));
-		pID3DDevice->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)((void*)&mat));
+		pID3DDevice->SetTransform(D3DTS_VIEW, (D3DMATRIX*)((void*)mat.pointer()));
+		pID3DDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)((void*)mat.pointer()));
+		pID3DDevice->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)((void*)mat.pointer()));
 
 		pID3DDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
 		pID3DDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
@@ -1490,15 +1509,15 @@ void CD3D9Driver::setRenderStatesStencilFillMode(bool alpha)
 		pID3DDevice->SetTextureStageState(3, D3DTSS_COLOROP, D3DTOP_DISABLE);
 		pID3DDevice->SetTextureStageState(3, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 
-		pID3DDevice->SetRenderState( D3DRS_STENCILREF, 0x1);
+		pID3DDevice->SetRenderState(D3DRS_STENCILREF, 0x1);
 		pID3DDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_LESSEQUAL);
 		//pID3DDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_GREATEREQUAL);
 		pID3DDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP );
-		pID3DDevice->SetRenderState( D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP );
-		pID3DDevice->SetRenderState( D3DRS_STENCILMASK,      0xffffffff );
-		pID3DDevice->SetRenderState( D3DRS_STENCILWRITEMASK, 0xffffffff );
+		pID3DDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP );
+		pID3DDevice->SetRenderState(D3DRS_STENCILMASK,      0xffffffff );
+		pID3DDevice->SetRenderState(D3DRS_STENCILWRITEMASK, 0xffffffff );
 
-		pID3DDevice->SetRenderState( D3DRS_CULLMODE, D3DCULL_CCW);
+		pID3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 		Transformation3DChanged = false;
 
@@ -1537,9 +1556,9 @@ void CD3D9Driver::setRenderStates2DMode(bool alpha, bool texture, bool alphaChan
 	if (CurrentRenderMode != ERM_2D || Transformation3DChanged)
 	{
 		core::matrix4 mat;
-		pID3DDevice->SetTransform(D3DTS_VIEW, (D3DMATRIX*)((void*)&mat));
-		pID3DDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)((void*)&mat));
-		pID3DDevice->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)((void*)&mat));
+		pID3DDevice->SetTransform(D3DTS_VIEW, (D3DMATRIX*)((void*)mat.pointer()));
+		pID3DDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)((void*)mat.pointer()));
+		pID3DDevice->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)((void*)mat.pointer()));
 
 		pID3DDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
 		//pID3DDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
@@ -1815,7 +1834,7 @@ void CD3D9Driver::drawStencilShadow(bool clearStencilBuffer, video::SColor leftU
 //! Returns the maximum amount of primitives (mostly vertices) which
 //! the device is able to render with one drawIndexedTriangleList
 //! call.
-s32 CD3D9Driver::getMaximalPrimitiveCount()
+u32 CD3D9Driver::getMaximalPrimitiveCount()
 {
 	return Caps.MaxPrimitiveCount;
 }
@@ -1890,7 +1909,7 @@ bool CD3D9Driver::reset()
 	ResetRenderStates = true;
 	LastVertexType = (E_VERTEX_TYPE)-1;
 
-	for (s32 i=0; i<MATERIAL_MAX_TEXTURES; ++i)
+	for (u32 i=0; i<MATERIAL_MAX_TEXTURES; ++i)
 	{
 		if (CurrentTexture[i])
 			CurrentTexture[i]->drop();

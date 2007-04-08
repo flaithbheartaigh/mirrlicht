@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -36,22 +36,34 @@ namespace scene
 		//! for changing their position, look at target or whatever. 
 		virtual bool OnEvent(SEvent event);
 
-		//! onPostRender is called just after rendering the whole scene.
+		//! OnAnimate() is called just before rendering the whole scene.
 		//! nodes may calculate or store animations here, and may do other useful things,
 		//! dependent on what they are.
-		virtual void OnPostRender(u32 timeMs);
+		virtual void OnAnimate(u32 timeMs);
 
 		//! sets the look at target of the camera
 		//! \param pos: Look at target of the camera.
 		virtual void setTarget(const core::vector3df& pos);
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_CAMERA_FPS; }
+		virtual ESCENE_NODE_TYPE getType() const { return ESNT_CAMERA_FPS; }
 
 		//! Disables or enables the camera to get key or mouse inputs.
 		//! If this is set to true, the camera will respond to key inputs
 		//! otherwise not.
 		virtual void setInputReceiverEnabled(bool enabled);
+
+		//! Sets the speed that this camera rotates
+		virtual void setRotateSpeed(const f32 speed);
+
+		//! Sets the speed that this camera moves
+		virtual void setMoveSpeed(const f32 speed);
+
+		//! Gets the rotation speed
+		virtual f32 getRotateSpeed();
+
+		// Gets the movement speed
+		virtual f32 getMoveSpeed();
 
 	private:
 
@@ -69,12 +81,11 @@ namespace scene
 
 		bool CursorKeys[6];
 
+		gui::ICursorControl* CursorControl;
+
 		f32 MoveSpeed;
 		f32 RotateSpeed;
 		f32 JumpSpeed;
-
-
-		gui::ICursorControl* CursorControl;
 
 		bool firstUpdate;
 		s32 LastAnimationTime;

@@ -50,11 +50,10 @@ public:
 		color.Luminance = 0.5f;
 		color.settoRGB ( rgb );
 
-		video::SLight light;
-		l->getLightData ( light );
+		video::SLight light = l->getLightData();
 		light.DiffuseColor = rgb;
 		light.Position = now;
-		l->setLightData ( light );
+		l->setLightData(light);
 	}
 
 
@@ -80,7 +79,7 @@ CMainMenu::CMainMenu()
 bool CMainMenu::run(bool& outFullscreen, bool& outMusic, bool& outShadows,
 					bool& outAdditive, bool &outVSync, video::E_DRIVER_TYPE& outDriver)
 {
-	device = createDevice( video::EDT_SOFTWARE2,
+	device = createDevice( video::EDT_BURNINGSVIDEO,
 		core::dimension2d<s32>(512, 384), 16, false, false, false, this);
 
 	device->getFileSystem()->addZipFileArchive("irrlicht.dat");
@@ -94,9 +93,13 @@ bool CMainMenu::run(bool& outFullscreen, bool& outMusic, bool& outShadows,
 	str += device->getVersion();
 	device->setWindowCaption(str.c_str());
 
-	// load font
+	// set new Skin
+	gui::IGUISkin* newskin = guienv->createSkin( gui::EGST_BURNING_SKIN);
+	guienv->setSkin(newskin);
+	newskin->drop();
 
-	gui::IGUIFont* font = guienv->getFont("../../media/fontlucida.png");
+	// load font
+	gui::IGUIFont* font = guienv->getFont("../../media/fonthaettenschweiler.bmp");
 	if (font)
 		guienv->getSkin()->setFont(font);
 
@@ -306,7 +309,7 @@ bool CMainMenu::run(bool& outFullscreen, bool& outMusic, bool& outShadows,
 	case 0:	outDriver = video::EDT_OPENGL; break;
 	case 1:	outDriver = video::EDT_DIRECT3D8; break;
 	case 2:	outDriver = video::EDT_DIRECT3D9; break;
-	case 3:	outDriver = video::EDT_SOFTWARE2; break;
+	case 3:	outDriver = video::EDT_BURNINGSVIDEO; break;
 	case 4:	outDriver = video::EDT_SOFTWARE; break;
 	}
 
@@ -324,7 +327,7 @@ bool CMainMenu::OnEvent(SEvent event)
 		video::IImage* image = device->getVideoDriver()->createScreenShot();
 		if (image)
 		{
-			device->getVideoDriver()->writeImageToFile(image, "\\screenshot.bmp");
+			device->getVideoDriver()->writeImageToFile(image, "screenshot_main.jpg");
 			image->drop();
 		}
 	}

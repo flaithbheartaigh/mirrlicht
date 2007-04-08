@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -45,7 +45,7 @@ COctTreeSceneNode::~COctTreeSceneNode()
 
 
 
-void COctTreeSceneNode::OnPreRender()
+void COctTreeSceneNode::OnRegisterSceneNode()
 {
 	if (IsVisible)
 	{
@@ -83,7 +83,7 @@ void COctTreeSceneNode::OnPreRender()
 		if (transparentCount)
 			SceneManager->registerNodeForRendering(this, scene::ESNRP_TRANSPARENT);
 
-		ISceneNode::OnPreRender();
+		ISceneNode::OnRegisterSceneNode();
 	}
 }
 

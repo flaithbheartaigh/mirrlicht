@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -17,7 +17,7 @@ namespace gui
 	public:
 
 		//! constructor
-		CGUIStaticText(const wchar_t* text, bool border, IGUIEnvironment* environment, 
+		CGUIStaticText(const wchar_t* text, bool border, IGUIEnvironment* environment,
 			IGUIElement* parent, s32 id, const core::rect<s32>& rectangle,
 			bool background = false);
 
@@ -30,22 +30,37 @@ namespace gui
 		//! Sets another skin independent font.
 		virtual void setOverrideFont(IGUIFont* font=0);
 
+		//! Gets the override font (if any)
+		virtual IGUIFont * getOverrideFont(void);
+
 		//! Sets another color for the text.
 		virtual void setOverrideColor(video::SColor color);
+
+		//! Gets the override color
+		virtual video::SColor const & getOverrideColor(void);
 
 		//! Sets if the static text should use the overide color or the
 		//! color in the gui skin.
 		virtual void enableOverrideColor(bool enable);
 
+		//! Checks if an override color is enabled
+		virtual bool isOverrideColorEnabled(void);
+
 		//! Enables or disables word wrap for using the static text as
 		//! multiline text control.
 		virtual void setWordWrap(bool enable);
+
+		//! Checks if word wrap is enabled
+		virtual bool isWordWrapEnabled(void);
 
 		//! Sets the new caption of this element.
 		virtual void setText(const wchar_t* text);
 
 		//! Returns the height of the text in pixels when it is drawn.
 		virtual s32 getTextHeight();
+
+		//! Returns the width of the current text, in the current font
+		virtual s32 getTextWidth(void);
 
 		//! Writes attributes of the element.
 		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options);
@@ -74,4 +89,5 @@ namespace gui
 } // end namespace irr
 
 #endif
+
 

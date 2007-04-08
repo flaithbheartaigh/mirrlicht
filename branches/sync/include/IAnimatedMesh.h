@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -6,13 +6,14 @@
 #define __I_ANIMATED_MESH_H_INCLUDED__
 
 #include "IUnknown.h"
-#include "IMesh.h"
-#include "matrix4.h"
+#include "aabbox3d.h"
 
 namespace irr
 {
 namespace scene
 {
+	class IMesh;
+
 	enum E_ANIMATED_MESH_TYPE
 	{
 		//! Unknown animated mesh type.
@@ -20,6 +21,9 @@ namespace scene
 
 		//! Quake 2 MD2 model file
 		EAMT_MD2, 
+
+		//! Quake 3 MD3 model file
+		EAMT_MD3, 
 
 		//! Milkshape 3d skeletal animation file
 		EAMT_MS3D,

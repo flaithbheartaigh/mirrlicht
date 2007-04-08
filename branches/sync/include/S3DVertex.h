@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -101,6 +101,10 @@ struct S3DVertex2TCoords
 	S3DVertex2TCoords(const core::vector3df& pos, const core::vector3df& normal,
 		SColor color, const core::vector2d<f32>& tcoords)
 		: Pos(pos), Normal(normal), Color(color), TCoords(tcoords), TCoords2(tcoords) {}
+
+	//! constructor from S3DVertex
+	S3DVertex2TCoords(S3DVertex& o)
+		: Pos(o.Pos), Normal(o.Normal), Color(o.Color), TCoords(o.TCoords) {}
 
 	//! Position
 	core::vector3df Pos;

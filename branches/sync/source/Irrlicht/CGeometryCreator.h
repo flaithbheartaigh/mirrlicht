@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -15,6 +15,7 @@ namespace irr
 namespace video
 {
 	class IVideoDriver;
+	class SMaterial;
 }
 
 namespace scene
@@ -36,7 +37,16 @@ public:
 		const core::dimension2d<s32> defaultVertexBlockSize,
 		bool debugBorders=false);
 
-	static IAnimatedMesh* createArrowMesh( u32 tesselation, f32 width, f32 height, video::SColor vtxColor);
+	static IAnimatedMesh* createArrowMesh (	const u32 tesselationCylinder, 
+											const u32 tesselationCone, 
+											const f32 height,
+											const f32 cylinderHeight,
+											const f32 width0,
+											const f32 width1,
+											const video::SColor vtxColor0,
+											const video::SColor vtxColor1
+										);
+
 
 };
 

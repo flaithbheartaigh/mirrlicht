@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -10,8 +10,9 @@
 #ifdef _IRR_WINDOWS_
 #define WIN32_LEAN_AND_MEAN
 #include "CNullDriver.h"
-#include <windows.h>
 #include "IMaterialRendererServices.h"
+#include <windows.h>
+#endif
 
 #ifdef _IRR_COMPILE_WITH_DIRECT3D_9_
 #include <d3d9.h>
@@ -124,7 +125,7 @@ namespace video
 		//! Returns the maximum amount of primitives (mostly vertices) which
 		//! the device is able to render with one drawIndexedTriangleList
 		//! call.
-		virtual s32 getMaximalPrimitiveCount();
+		virtual u32 getMaximalPrimitiveCount();
 
 		//! Enables or disables a texture creation flag.
 		virtual void setTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag, bool enabled);
@@ -248,18 +249,16 @@ namespace video
 			return v;
 		}
 
-
 		E_RENDER_MODE CurrentRenderMode;
 		D3DPRESENT_PARAMETERS present;
-
-		core::matrix4 Matrices[ETS_COUNT]; // matrizes of the 3d mode we need to restore when we switch back from the 2d mode.
 
 		SMaterial Material, LastMaterial;
 		bool ResetRenderStates; // bool to make all renderstates be reseted if set.
 		bool Transformation3DChanged;
 		bool StencilBuffer;
-		bool LastTextureMipMapsAvailable[MATERIAL_MAX_TEXTURES];
 		ITexture* CurrentTexture[MATERIAL_MAX_TEXTURES];
+		bool LastTextureMipMapsAvailable[MATERIAL_MAX_TEXTURES];
+		core::matrix4 Matrices[ETS_COUNT]; // matrizes of the 3d mode we need to restore when we switch back from the 2d mode.
 
 		HINSTANCE D3DLibrary;
 		IDirect3D9* pID3D;
@@ -272,6 +271,7 @@ namespace video
 
 		E_VERTEX_TYPE LastVertexType;
 
+		u32 MaxTextureUnits;
 		f32 MaxLightDistance;
 		s32 LastSetLight;
 		bool DeviceLost;
@@ -286,6 +286,5 @@ namespace video
 
 
 #endif // _IRR_COMPILE_WITH_DIRECT3D_9_
-#endif // _IRR_WINDOWS_
 #endif // __C_VIDEO_DIRECTX_8_H_INCLUDED__
 

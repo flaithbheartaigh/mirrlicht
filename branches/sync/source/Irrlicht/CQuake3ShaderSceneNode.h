@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt / Thomas Alten
+// Copyright (C) 2002-2007 Nikolaus Gebhardt / Thomas Alten
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -28,9 +28,9 @@ public:
 
 	virtual ~CQuake3ShaderSceneNode ();
 
-	virtual void OnPreRender();
+	virtual void OnRegisterSceneNode();
 	virtual void render();
-	virtual void OnPostRender(u32 timeMs);
+	virtual void OnAnimate(u32 timeMs);
 	virtual const core::aabbox3d<f32>& getBoundingBox() const;
 
 	virtual u32 getMaterialCount();
@@ -43,13 +43,16 @@ private:
 
 	struct SQ3Texture
 	{
-		SQ3Texture () : TextureIndex ( 0 ),TextureFrequency(0.f),TextureAddressMode(1) {}
+		SQ3Texture () :
+			TextureIndex ( 0 ),
+			TextureFrequency(0.f),
+			TextureAddressMode( video::ETC_REPEAT ) {}
 
 		quake3::tTexArray Texture;
 
 		u32 TextureIndex;
 		f32 TextureFrequency;
-		u32 TextureAddressMode;	// Wrapping/Clamping
+		video::E_TEXTURE_CLAMP TextureAddressMode;	// Wrapping/Clamping
 	};
 
 	core::array< SQ3Texture > Q3Texture;

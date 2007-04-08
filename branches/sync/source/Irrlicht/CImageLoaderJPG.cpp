@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -105,7 +105,7 @@ void CImageLoaderJPG::output_message(j_common_ptr cinfo)
 	(*cinfo->err->format_message)(cinfo, temp1);
 	os::Printer::log("JPEG FATAL ERROR",temp1, ELL_ERROR);
 }
-#endif
+#endif // _IRR_COMPILE_WITH_LIBJPEG_
 
 //! returns true if the file maybe is able to be loaded by this class
 bool CImageLoaderJPG::isALoadableFileFormat(irr::io::IReadFile* file)

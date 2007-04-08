@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -92,6 +92,18 @@ namespace core
 			return *this;
 		}
 
+		// compares size of rectangles
+		bool operator < (const rect<T>& other) const
+		{
+			return getArea() < other.getArea();
+		}
+
+		//! Returns size of rectangle
+		T getArea() const
+		{
+			return getWidth() * getHeight();
+		}
+
 		//! Returns if a 2d point is within this rectangle.
 		//! \param pos: Position to test if it lies within this rectangle.
 		//! \return Returns true if the position is within the rectangle, false if not.
@@ -173,7 +185,7 @@ namespace core
 			T xd = LowerRightCorner.X - UpperLeftCorner.X;
 			T yd = LowerRightCorner.Y - UpperLeftCorner.Y;
 
-			return !(xd < 0 || yd < 0 || (xd == 0 && yd == 0));
+			return !(xd <= 0 || yd <= 0 || (xd == 0 && yd == 0));
 		}
 
 		//! Returns the center of the rectangle

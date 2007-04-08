@@ -1,16 +1,16 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
+
+#include "IrrCompileConfig.h"
+
+#ifdef _IRR_COMPILE_WITH_OPENGL_
 
 #include "irrTypes.h"
 #include "COpenGLTexture.h"
 #include "COpenGLDriver.h"
 #include "os.h"
 #include "CColorConverter.h"
-
-#include "IrrCompileConfig.h"
-
-#ifdef _IRR_COMPILE_WITH_OPENGL_
 
 #include "irrString.h"
 
@@ -99,7 +99,7 @@ COpenGLTexture::COpenGLTexture(const core::dimension2d<s32>& size,
                                 bool extPackedDepthStencilSupported,
                                 const char* name,
                                 COpenGLDriver* driver)
- : ITexture(name), Pitch(0), ImageSize(size), SurfaceHasSameSize(false),
+ : ITexture(name), ImageSize(size), Pitch(0), SurfaceHasSameSize(false),
   ImageData(0), ColorFormat(ECF_A8R8G8B8), Driver(driver), TextureName(0),
   InternalFormat(GL_RGBA), PixelFormat(GL_BGRA_EXT),
   PixelType(GL_UNSIGNED_BYTE), HasMipMaps(false),

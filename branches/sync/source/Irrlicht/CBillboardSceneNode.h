@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -22,12 +22,12 @@ public:
 	//! constructor
 	CBillboardSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id,	
 		const core::vector3df& position, const core::dimension2d<f32>& size,
-		video::SColor shade_top,video::SColor shade_down );
+		video::SColor shade_top=video::SColor(0xFFFFFFFF),video::SColor shade_down=video::SColor(0xFFFFFFFF));
 
 	virtual ~CBillboardSceneNode();
 
 	//! pre render event
-	virtual void OnPreRender();
+	virtual void OnRegisterSceneNode();
 
 	//! render
 	virtual void render();
@@ -46,6 +46,20 @@ public:
 	//! returns amount of materials used by this scene node.
 	virtual u32 getMaterialCount();
 	
+	//! Set the color of all vertices of the billboard
+	//! \param overallColor: the color to set
+	virtual void setColor(const video::SColor & overallColor);
+
+	//! Set the color of the top and bottom vertices of the billboard
+	//! \param topColor: the color to set the top vertices
+	//! \param bottomColor: the color to set the bottom vertices
+	virtual void setColor(const video::SColor & topColor, const video::SColor & bottomColor);
+
+	//! Gets the color of the top and bottom vertices of the billboard
+	//! \param[out] topColor: stores the color of the top vertices
+	//! \param[out] bottomColor: stores the color of the bottom vertices
+	virtual void getColor(video::SColor & topColor, video::SColor & bottomColor);
+
 	//! Writes attributes of the scene node.
 	virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0);
 
@@ -53,7 +67,7 @@ public:
 	virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0);
 
 	//! Returns type of the scene node
-	virtual ESCENE_NODE_TYPE getType() { return ESNT_BILLBOARD; }
+	virtual ESCENE_NODE_TYPE getType() const { return ESNT_BILLBOARD; }
 	
 private:
 

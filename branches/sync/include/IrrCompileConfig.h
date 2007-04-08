@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -6,7 +6,7 @@
 #define __IRR_COMPILE_CONFIG_H_INCLUDED__
 
 //! Irrlicht SDK Version
-#define IRRLICHT_SDK_VERSION "1.2b"
+#define IRRLICHT_SDK_VERSION "1.3"
 
 //! The defines for different operating system are:
 //! _XBOX for XBox
@@ -29,6 +29,7 @@
 #define __BIG_ENDIAN__
 #endif
 
+#include <stdio.h> // TODO: Although included elsewhere this is required at least for mingw
 //! Define _IRR_COMPILE_WITH_DIRECT3D_8_ and _IRR_COMPILE_WITH_DIRECT3D_9_ to compile 
 //! the Irrlicht engine with Direct3D8 and/or DIRECT3D9.
 /** If you only want to use the software device or opengl this can be useful.
@@ -55,6 +56,14 @@ define out. */
 
 #endif // ! _XBOX
 
+//! Define _IRR_COMPILE_WITH_SOFTWARE_ to compile the Irrlicht engine with software driver
+/** If you do not need the software driver, or want to use Burning's Video instead, 
+comment this define out */
+#define _IRR_COMPILE_WITH_SOFTWARE_
+
+//! Define _IRR_COMPILE_WITH_BURNINGSVIDEO_ to compile the Irrlicht engine with Burning's video driver
+/** If you do not need this software driver, you can comment this define out. */
+#define _IRR_COMPILE_WITH_BURNINGSVIDEO_
 
 //! Define _IRR_COMPILE_WITH_X11_ to compile the Irrlicht engine with X11 support.
 /** If you do not wish the engine to be compiled with X11, comment this
@@ -130,16 +139,21 @@ Note that the engine will run in D3D REF for this, which is a lot slower than HA
 
 #ifdef _IRR_WINDOWS_
 
+#ifndef _IRR_STATIC_LIB_
 #ifdef IRRLICHT_EXPORTS
 #define IRRLICHT_API __declspec(dllexport)
 #else
 #define IRRLICHT_API __declspec(dllimport)
 #endif // IRRLICHT_EXPORT
-
-#if defined(_STDCALL_SUPPORTED)
-#define IRRCALLCONV __stdcall  // Declare the calling convention.
 #else
-#define IRRCALLCONV	__cdecl
+#define IRRLICHT_API
+#endif // _IRR_STATIC_LIB_
+
+// Declare the calling convention.
+#if defined(_STDCALL_SUPPORTED)
+#define IRRCALLCONV __stdcall
+#else
+#define IRRCALLCONV __cdecl
 #endif // STDCALL_SUPPORTED
 
 #else
@@ -165,15 +179,15 @@ Note that the engine will run in D3D REF for this, which is a lot slower than HA
 		16 Bit/32 Bit can be adjusted on a global flag.
 
 		BURNINGVIDEO_RENDERER_BEAUTIFUL 
-			Vertexcolor + Lighting + Per Pixel Perspective Correct + SubPixel/SubTexel Correct + 
+			32 Bit + Vertexcolor + Lighting + Per Pixel Perspective Correct + SubPixel/SubTexel Correct + 
 			Bilinear Texturefiltering + WBuffer
 
 		BURNINGVIDEO_RENDERER_FAST
-			Per Pixel Perspective Correct + SubPixel/SubTexel Correct + WBuffer +
+			32 Bit + Per Pixel Perspective Correct + SubPixel/SubTexel Correct + WBuffer +
 			Bilinear Dithering TextureFilterung + WBuffer
 
 		BURNINGVIDEO_RENDERER_ULTRA_FAST
-			SubPixel/SubTexel Correct + ZBuffer
+			16Bit + SubPixel/SubTexel Correct + ZBuffer
 */
 
 #define BURNINGVIDEO_RENDERER_BEAUTIFUL
@@ -189,4 +203,4 @@ precision will be lower but speed higher. currently X86 only
 	//#define IRRLICHT_FAST_MATH
 #endif
 
-#endif
+#endif // __IRR_COMPILE_CONFIG_H_INCLUDED__

@@ -1,6 +1,9 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt / Thomas Alten
+// Copyright (C) 2002-2007 Nikolaus Gebhardt / Thomas Alten
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
+
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_BURNINGSVIDEO_
 
 #include "SoftwareDriver2_compile_config.h"
 #include "IBurningShader.h"
@@ -48,7 +51,7 @@ namespace video
 
 		if ( IT[1].Texture )
 			IT[1].Texture->drop();
-	};
+	}
 
 	//! sets a render target
 	void IBurningShader::setRenderTarget(video::IImage* surface, const core::rect<s32>& viewPort)
@@ -84,7 +87,7 @@ namespace video
 			//SOFTWARE_DRIVER_2_MIPMAPPING_LOD_BIAS
 			it->lodLevel = lodLevel;
 			it->Texture->setCurrentMipMapLOD (
-				s32_clamp ( lodLevel + SOFTWARE_DRIVER_2_MIPMAPPING_LOD_BIAS, 0, SOFTWARE_DRIVER_2_MIPMAPPING_MAX - 1 )
+				core::s32_clamp ( lodLevel + SOFTWARE_DRIVER_2_MIPMAPPING_LOD_BIAS, 0, SOFTWARE_DRIVER_2_MIPMAPPING_MAX - 1 )
 				);
 
 			// prepare for optimal fixpoint
@@ -99,4 +102,4 @@ namespace video
 } // end namespace video
 } // end namespace irr
 
-
+#endif // _IRR_COMPILE_WITH_BURNINGSVIDEO_

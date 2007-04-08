@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -7,30 +7,34 @@
 
 #include "rect.h"
 #include "IUnknown.h"
-#include "IEventReceiver.h"
 #include "irrTypes.h"
 #include "IGUIWindow.h"
 #include "IGUISkin.h"
+#include "IFileSystem.h"
 
 namespace irr
 {
+	class IOSOperator;
+	class IEventReceiver;
+
 	namespace io
 	{
 		class IXMLWriter;
 		class IReadFile;
 		class IWriteFile;
-	}
+	} // end namespace io
 	namespace video
 	{
 		class IVideoDriver;
 		class ITexture;
-	}
+	} // end namespace video
 
 namespace gui
 {
 
 class IGUIElement;
 class IGUIFont;
+class IGUISpriteBank;
 class IGUIScrollBar;
 class IGUIImage;
 class IGUIMeshViewer;
@@ -73,6 +77,12 @@ public:
 
 	//! Returns the current video driver.
 	virtual video::IVideoDriver* getVideoDriver() = 0;
+
+	//! Returns the file system.
+	virtual io::IFileSystem* getFileSystem() = 0;
+
+	//! returns a pointer to the OS operator
+	virtual IOSOperator* getOSOperator() = 0;
 
 	//! removes all elements from the environment.
 	virtual void clear() = 0;
@@ -119,6 +129,16 @@ public:
 
 	//! Returns the default built-in font.
 	virtual IGUIFont* getBuiltInFont() = 0;
+
+	//! Returns pointer to the sprite bank with the specified file name. 
+	/** Loads the bank if it was not loaded before. Returns 0 if it could not be loaded.
+	\return
+	returns a pointer to the sprite bank.
+	This pointer should not be dropped. See IUnknown::drop() for more information. */
+	virtual IGUISpriteBank* getSpriteBank(const c8* filename) = 0;
+
+	//! adds an empty sprite bank to the manager
+	virtual IGUISpriteBank* addEmptySpriteBank(const c8 *name) = 0;
 
 	//! Returns the root gui element. 
 	/** This is the first gui element, parent of all other
@@ -240,7 +260,7 @@ public:
 	 \param text is the text to be displayed. Can be altered after creation with SetText().
 	 \param rectangle is the position of the static text.
 	 \param border has to be set to true if the static text should have a 3d border.
-	 \param wordWrap specifyes, if the text should be wrapped into multiple lines.
+	 \param wordWrap specifies, if the text should be wrapped into multiple lines.
 	 \param parent is the parent item of the element. E.g. a window. Set it to 0 to place the fader directly in the environment.
 	 \param id is a s32 to identify the static text element.
 	 \param fillBackground specifies if the background will be filled. Default: false.
@@ -341,19 +361,22 @@ public:
 	//! Returns a scene node factory by index
 	virtual IGUIElementFactory* getGUIElementFactory(s32 index) = 0;
 
-	//! Saves the current gui into a file.
-	//! \param filename: Name of the file.
-	virtual bool saveGUI(const c8* filename)=0;
+	//! Adds a GUI Element by its name
+	virtual IGUIElement* addGUIElement(const c8* elementName, IGUIElement* parent=0) = 0;
 
 	//! Saves the current gui into a file.
-	virtual bool saveGUI(io::IWriteFile* file)=0;
+	//! \param filename: Name of the file.
+	virtual bool saveGUI(const c8* filename, IGUIElement* start=0) = 0;
+
+	//! Saves the current gui into a file.
+	virtual bool saveGUI(io::IWriteFile* file, IGUIElement* start=0) = 0;
 
 	//! Loads the gui. Note that the current gui is not cleared before.
 	//! \param filename: Name of the file .
-	virtual bool loadGUI(const c8* filename)=0;
+	virtual bool loadGUI(const c8* filename, IGUIElement* parent=0) = 0;
 
 	//! Loads the gui. Note that the current gui is not cleared before.
-	virtual bool loadGUI(io::IReadFile* file)=0;	
+	virtual bool loadGUI(io::IReadFile* file, IGUIElement* parent=0) = 0;	
 
 	//! Writes attributes of the gui environment
 	virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0)=0;
@@ -366,8 +389,6 @@ public:
 
 	//! reads an element
 	virtual void readGUIElement(io::IXMLReader* reader, IGUIElement* parent) =0;
-
-	virtual const c8* getGUIElementTypeName(EGUI_ELEMENT_TYPE type) =0;
 
 };
 

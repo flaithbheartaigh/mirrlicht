@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -7,7 +7,7 @@
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
 #include "IGUIFont.h"
-#include "GUIIcons.h"
+#include "os.h"
 
 namespace irr
 {
@@ -16,7 +16,7 @@ namespace gui
 
 //! constructor
 CGUICheckBox::CGUICheckBox(bool checked, IGUIEnvironment* environment, IGUIElement* parent, s32 id, core::rect<s32> rectangle)
-: IGUICheckBox(environment, parent, id, rectangle), Pressed(false), Checked(checked)
+: IGUICheckBox(environment, parent, id, rectangle), Pressed(false), Checked(checked), checkTime(0)
 {
 	#ifdef _DEBUG
 	setDebugName("CGUICheckBox");
@@ -40,14 +40,15 @@ bool CGUICheckBox::OnEvent(SEvent event)
 	case EET_GUI_EVENT:
 		if (event.GUIEvent.EventType == EGET_ELEMENT_FOCUS_LOST)
 		{
-			Pressed = false;
-			return true;
+			if (event.GUIEvent.Caller == (IGUIElement*)this)
+				Pressed = false;
 		}
 		break;
 	case EET_MOUSE_INPUT_EVENT:
 		if (event.MouseInput.Event == EMIE_LMOUSE_PRESSED_DOWN)
 		{
 			Pressed = true;
+			checkTime = os::Timer::getTime();
 			Environment->setFocus(this);
 			return true;
 		}
@@ -60,6 +61,12 @@ bool CGUICheckBox::OnEvent(SEvent event)
 
 			if (wasPressed && Parent)
 			{
+				if ( !AbsoluteClippingRect.isPointInside( core::position2d<s32>(event.MouseInput.X, event.MouseInput.Y) ) )
+				{
+					Pressed = false;
+					return true;
+				}
+
 				SEvent newEvent;
 				newEvent.EventType = EET_GUI_EVENT;
 				newEvent.GUIEvent.Caller = this;
@@ -100,9 +107,9 @@ void CGUICheckBox::draw()
 	skin->draw3DSunkenPane(this, skin->getColor(Pressed ? EGDC_3D_FACE : EGDC_ACTIVE_CAPTION),
 		false, true, checkRect, &AbsoluteClippingRect);
 
-	if (Checked && Environment->getBuiltInFont())
-		Environment->getBuiltInFont()->draw(GUI_ICON_CHECK_BOX_CHECKED, 
-			checkRect, skin->getColor(EGDC_BUTTON_TEXT), true, true, &AbsoluteClippingRect);
+	if (Checked && Environment->getSkin())
+		Environment->getSkin()->drawIcon(this, EGDI_CHECK_BOX_CHECKED, checkRect.getCenter(), 
+			checkTime, os::Timer::getTime(), false, &AbsoluteClippingRect);
 
 	if (Text.size())
 	{

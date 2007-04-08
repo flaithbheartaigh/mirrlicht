@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -13,12 +13,13 @@ namespace irr
 namespace io
 {
 
-c8		CAttributes::tmpBuffer [1024];
-wchar_t CAttributes::tmpBufferW[1024];
-
 CAttributes::CAttributes(video::IVideoDriver* driver)
 : Driver(driver)
 {
+	#ifdef _DEBUG
+	setDebugName("CAttributes");
+	#endif
+
 	if (Driver)
 		Driver->grab();
 }
@@ -77,12 +78,9 @@ core::stringc CAttributes::getAttributeAsString(const c8* attributeName)
 
 	IAttribute* att = getAttributeP(attributeName);
 	if (att)
-	{
-		att->getString(tmpBuffer);
-		str = tmpBuffer;
-	}
-
-	return str;
+		return att->getString();
+	else
+		return str;
 }
 
 //! Gets a string attribute.
@@ -92,7 +90,10 @@ void CAttributes::getAttributeAsString(const c8* attributeName, char* target)
 {
 	IAttribute* att = getAttributeP(attributeName);
 	if (att)
-		att->getString(target);
+	{
+		core::stringc str = att->getString();
+		strcpy(target,str.c_str());
+	}
 	else
 		target[0] = 0;
 }
@@ -104,10 +105,7 @@ core::stringc CAttributes::getAttributeAsString(s32 index)
 	core::stringc str;
 
 	if (index >= 0 && index < (int)Attributes.size())
-	{
-		Attributes[index]->getString(tmpBuffer);
-		str = tmpBuffer;
-	}
+		return Attributes[index]->getString();
 
 	return str;
 }
@@ -148,10 +146,7 @@ core::stringw CAttributes::getAttributeAsStringW(const c8* attributeName)
 
 	IAttribute* att = getAttributeP(attributeName);
 	if (att)
-	{
-		att->getString(tmpBufferW);
-		str = tmpBufferW;
-	}
+		str = att->getStringW();
 
 	return str;
 }
@@ -163,7 +158,10 @@ void CAttributes::getAttributeAsStringW(const c8* attributeName, wchar_t* target
 {
 	IAttribute* att = getAttributeP(attributeName);
 	if (att)
-		att->getString(target);
+	{
+		core::stringw str = att->getStringW();
+		wcscpy(target,str.c_str());
+	}
 	else
 		target[0] = 0;
 }
@@ -176,8 +174,7 @@ core::stringw CAttributes::getAttributeAsStringW(s32 index)
 
 	if (index >= 0 && index < (int)Attributes.size())
 	{
-		Attributes[index]->getString(tmpBufferW);
-		str = tmpBufferW;
+		str = Attributes[index]->getStringW();
 	}
 
 	return str;
@@ -623,6 +620,28 @@ E_ATTRIBUTE_TYPE CAttributes::getAttributeType(s32 index)
 	return Attributes[index]->getType();
 }
 
+//! Returns the type of an attribute
+const wchar_t* CAttributes::getAttributeTypeString(const c8* attributeName)
+{
+	const wchar_t* ret = L"unknown";
+
+	IAttribute* att = getAttributeP(attributeName);
+	if (att)
+		ret = att->getTypeString();
+
+	return ret;
+}
+
+//! Returns attribute type string by index.
+//! \param index: Index value, must be between 0 and getAttributeCount()-1.
+const wchar_t* CAttributes::getAttributeTypeString(s32 index)
+{
+	if (index < 0 || index >= (int)Attributes.size())
+		return L"unknown";
+
+	return Attributes[index]->getTypeString();
+}
+
 //! Gets an attribute as boolean value
 //! \param index: Index value, must be between 0 and getAttributeCount()-1.
 bool CAttributes::getAttributeAsBool(s32 index)
@@ -959,6 +978,355 @@ void CAttributes::setAttribute(s32 index, video::ITexture* texture)
 }
 
 
+
+//! Adds an attribute as matrix
+void CAttributes::addMatrix(const c8* attributeName, core::matrix4 v)
+{
+	Attributes.push_back(new CMatrixAttribute(attributeName, v));
+}
+
+
+//! Sets an attribute as matrix
+void CAttributes::setAttribute(const c8* attributeName, core::matrix4 v)
+{
+	IAttribute* att = getAttributeP(attributeName);
+	if (att)
+		att->setMatrix(v);
+	else
+	{
+		Attributes.push_back(new CMatrixAttribute(attributeName, v));
+	}
+}
+
+//! Gets an attribute as a matrix4
+core::matrix4 CAttributes::getAttributeAsMatrix(const c8* attributeName)
+{
+	core::matrix4 ret;
+	ret.makeIdentity();
+
+	IAttribute* att = getAttributeP(attributeName);
+	if (att)
+		ret = att->getMatrix();
+
+	return ret;
+}
+
+//! Gets an attribute as matrix
+core::matrix4 CAttributes::getAttributeAsMatrix(s32 index)
+{
+	core::matrix4 ret;
+	ret.makeIdentity();
+
+	if (index >= 0 && index < (s32)Attributes.size())
+		ret = Attributes[index]->getMatrix();
+
+	return ret;
+}
+
+//! Sets an attribute as matrix
+void CAttributes::setAttribute(s32 index, core::matrix4 v)
+{
+	if (index >= 0 && index < (s32)Attributes.size() )
+		Attributes[index]->setMatrix(v);
+}
+
+
+//! Adds an attribute as quaternion
+void CAttributes::addQuaternion(const c8* attributeName, core::quaternion v)
+{
+	Attributes.push_back(new CQuaternionAttribute(attributeName, v));
+}
+
+
+//! Sets an attribute as quaternion
+void CAttributes::setAttribute(const c8* attributeName, core::quaternion v)
+{
+	IAttribute* att = getAttributeP(attributeName);
+	if (att)
+		att->setQuaternion(v);
+	else
+	{
+		Attributes.push_back(new CQuaternionAttribute(attributeName, v));
+	}
+}
+
+//! Gets an attribute as a quaternion
+core::quaternion CAttributes::getAttributeAsQuaternion(const c8* attributeName)
+{
+	core::quaternion ret(0,1,0, 0);
+
+	IAttribute* att = getAttributeP(attributeName);
+	if (att)
+		ret = att->getQuaternion();
+
+	return ret;
+}
+
+//! Gets an attribute as quaternion
+core::quaternion CAttributes::getAttributeAsQuaternion(s32 index)
+{
+	core::quaternion ret(0,1,0, 0);
+
+	if (index >= 0 && index < (s32)Attributes.size())
+		ret = Attributes[index]->getQuaternion();
+
+	return ret;
+}
+
+//! Sets an attribute as quaternion
+void CAttributes::setAttribute(s32 index, core::quaternion v)
+{
+if (index >= 0 && index < (s32)Attributes.size() )
+		Attributes[index]->setQuaternion(v);
+}
+
+//! Adds an attribute as axis aligned bounding box
+void CAttributes::addBox3d(const c8* attributeName, core::aabbox3df v)
+{
+	Attributes.push_back(new CBBoxAttribute(attributeName, v));
+}
+
+//! Sets an attribute as axis aligned bounding box
+void CAttributes::setAttribute(const c8* attributeName, core::aabbox3df v)
+{
+	IAttribute* att = getAttributeP(attributeName);
+	if (att)
+		att->setBBox(v);
+	else
+	{
+		Attributes.push_back(new CBBoxAttribute(attributeName, v));
+	}
+}
+
+//! Gets an attribute as a axis aligned bounding box
+core::aabbox3df CAttributes::getAttributeAsBox3d(const c8* attributeName)
+{
+	core::aabbox3df ret(0,0,0, 0,0,0);
+
+	IAttribute* att = getAttributeP(attributeName);
+	if (att)
+		ret = att->getBBox();
+
+	return ret;
+}
+
+//! Gets an attribute as axis aligned bounding box
+core::aabbox3df CAttributes::getAttributeAsBox3d(s32 index)
+{
+	core::aabbox3df ret(0,0,0, 0,0,0);
+
+	if (index >= 0 && index < (s32)Attributes.size())
+		ret = Attributes[index]->getBBox();
+
+	return ret;
+}
+
+//! Sets an attribute as axis aligned bounding box
+void CAttributes::setAttribute(s32 index, core::aabbox3df v)
+{
+if (index >= 0 && index < (s32)Attributes.size() )
+		Attributes[index]->setBBox(v);
+}
+
+//! Adds an attribute as 3d plane
+void CAttributes::addPlane3d(const c8* attributeName, core::plane3df v)
+{
+	Attributes.push_back(new CPlaneAttribute(attributeName, v));
+}
+
+//! Sets an attribute as 3d plane
+void CAttributes::setAttribute(const c8* attributeName, core::plane3df v)
+{
+	IAttribute* att = getAttributeP(attributeName);
+	if (att)
+		att->setPlane(v);
+	else
+	{
+		Attributes.push_back(new CPlaneAttribute(attributeName, v));
+	}
+}
+
+//! Gets an attribute as a 3d plane
+core::plane3df CAttributes::getAttributeAsPlane3d(const c8* attributeName)
+{
+	core::plane3df ret(0,0,0, 0,1,0);
+
+	IAttribute* att = getAttributeP(attributeName);
+	if (att)
+		ret = att->getPlane();
+
+	return ret;
+}
+
+//! Gets an attribute as 3d plane
+core::plane3df CAttributes::getAttributeAsPlane3d(s32 index)
+{
+	core::plane3df ret(0,0,0, 0,1,0);
+
+	if (index >= 0 && index < (s32)Attributes.size())
+		ret = Attributes[index]->getPlane();
+
+	return ret;
+}
+
+//! Sets an attribute as 3d plane
+void CAttributes::setAttribute(s32 index, core::plane3df v)
+{
+	if (index >= 0 && index < (s32)Attributes.size() )
+		Attributes[index]->setPlane(v);
+}
+
+//! Adds an attribute as 3d triangle
+void CAttributes::addTriangle3d(const c8* attributeName, core::triangle3df v)
+{
+	Attributes.push_back(new CTriangleAttribute(attributeName, v));
+}
+
+//! Sets an attribute as 3d triangle
+void CAttributes::setAttribute(const c8* attributeName, core::triangle3df v)
+{
+	IAttribute* att = getAttributeP(attributeName);
+	if (att)
+		att->setTriangle(v);
+	else
+	{
+		Attributes.push_back(new CTriangleAttribute(attributeName, v));
+	}
+}
+
+//! Gets an attribute as a 3d triangle
+core::triangle3df CAttributes::getAttributeAsTriangle3d(const c8* attributeName)
+{
+	core::triangle3df ret;
+	ret.pointA = ret.pointB = ret.pointC = core::vector3df(0,0,0);
+
+	IAttribute* att = getAttributeP(attributeName);
+	if (att)
+		ret = att->getTriangle();
+
+	return ret;
+}
+
+//! Gets an attribute as 3d triangle
+core::triangle3df CAttributes::getAttributeAsTriangle3d(s32 index)
+{
+	core::triangle3df ret;
+	ret.pointA = ret.pointB = ret.pointC = core::vector3df(0,0,0);
+
+	if (index >= 0 && index < (s32)Attributes.size())
+		ret = Attributes[index]->getTriangle();
+
+	return ret;
+}
+
+//! Sets an attribute as 3d triangle
+void CAttributes::setAttribute(s32 index, core::triangle3df v)
+{
+	if (index >= 0 && index < (s32)Attributes.size() )
+		Attributes[index]->setTriangle(v);
+}
+
+//! Adds an attribute as a 2d line
+void CAttributes::addLine2d(const c8* attributeName, core::line2df v)
+{
+	Attributes.push_back(new CLine2dAttribute(attributeName, v));
+}
+
+//! Sets an attribute as a 2d line
+void CAttributes::setAttribute(const c8* attributeName, core::line2df v)
+{
+	IAttribute* att = getAttributeP(attributeName);
+	if (att)
+		att->setLine2d(v);
+	else
+	{
+		Attributes.push_back(new CLine2dAttribute(attributeName, v));
+	}
+}
+
+//! Gets an attribute as a 2d line
+core::line2df CAttributes::getAttributeAsLine2d(const c8* attributeName)
+{
+	core::line2df ret(0,0, 0,0);
+
+	IAttribute* att = getAttributeP(attributeName);
+	if (att)
+		ret = att->getLine2d();
+
+	return ret;
+}
+
+//! Gets an attribute as a 2d line
+core::line2df CAttributes::getAttributeAsLine2d(s32 index)
+{
+	core::line2df ret(0,0, 0,0);
+
+	if (index >= 0 && index < (s32)Attributes.size())
+		ret = Attributes[index]->getLine2d();
+
+	return ret;
+}
+
+//! Sets an attribute as a 2d line
+void CAttributes::setAttribute(s32 index, core::line2df v)
+{
+	if (index >= 0 && index < (s32)Attributes.size() )
+		Attributes[index]->setLine2d(v);
+}
+
+//! Adds an attribute as a 3d line
+void CAttributes::addLine3d(const c8* attributeName, core::line3df v)
+{
+	Attributes.push_back(new CLine3dAttribute(attributeName, v));
+}
+
+//! Sets an attribute as a 3d line
+void CAttributes::setAttribute(const c8* attributeName, core::line3df v)
+{
+	IAttribute* att = getAttributeP(attributeName);
+	if (att)
+		att->setLine3d(v);
+	else
+	{
+		Attributes.push_back(new CLine3dAttribute(attributeName, v));
+	}
+}
+
+//! Gets an attribute as a 3d line
+core::line3df CAttributes::getAttributeAsLine3d(const c8* attributeName)
+{
+	core::line3df ret(0,0,0, 0,0,0);
+
+	IAttribute* att = getAttributeP(attributeName);
+	if (att)
+		ret = att->getLine3d();
+
+	return ret;
+}
+
+//! Gets an attribute as a 3d line
+core::line3df CAttributes::getAttributeAsLine3d(s32 index)
+{
+	core::line3df ret(0,0,0, 0,0,0);
+
+	if (index >= 0 && index < (s32)Attributes.size())
+		ret = Attributes[index]->getLine3d();
+
+	return ret;
+}
+
+//! Sets an attribute as a 3d line
+void CAttributes::setAttribute(s32 index, core::line3df v)
+{
+	if (index >= 0 && index < (s32)Attributes.size() )
+		Attributes[index]->setLine3d(v);
+
+}
+
+
+
+
+
 //! Reads attributes from a xml file.
 //! \param readCurrentElementOnly: If set to true, reading only works if current element has the name 'attributes'.
 //! IF set to false, the first appearing list attributes are read.
@@ -987,6 +1355,8 @@ bool CAttributes::read(irr::io::IXMLReader* reader, bool readCurrentElementOnly)
 		case io::EXN_ELEMENT_END:
 			if (elementName == reader->getNodeName())
 				return true;
+			break;
+		default:
 			break;
 		}
 	}
@@ -1030,6 +1400,12 @@ void CAttributes::readAttributeFromXML(io::IXMLReader* reader)
 		Attributes.getLast()->setString(reader->getAttributeValue(L"value"));
 	}
 	else
+	if (element == L"bool")
+	{
+		addBool(name.c_str(), 0);
+		Attributes.getLast()->setString(reader->getAttributeValue(L"value"));
+	}
+	else
 	if (element == L"string")
 	{
 		addString(name.c_str(), "");
@@ -1060,33 +1436,71 @@ void CAttributes::readAttributeFromXML(io::IXMLReader* reader)
 		Attributes.getLast()->setString(reader->getAttributeValue(L"value"));
 	}
 	else
-	if (element == L"bool")
+	if (element == L"matrix")
 	{
-		addBool(name.c_str(), 0);
+		addMatrix(name.c_str(), core::matrix4());
 		Attributes.getLast()->setString(reader->getAttributeValue(L"value"));
 	}
 	else
-	if (element == L"array")
+	if (element == L"quaternion")
 	{
-		wchar_t tmpName[20];
+		addQuaternion(name.c_str(), core::quaternion());
+		Attributes.getLast()->setString(reader->getAttributeValue(L"value"));
+	}
+	else
+	if (element == L"box3d")
+	{
+		addBox3d(name.c_str(), core::aabbox3df());
+		Attributes.getLast()->setString(reader->getAttributeValue(L"value"));
+	}
+	else
+	if (element == L"plane")
+	{
+		addPlane3d(name.c_str(), core::plane3df());
+		Attributes.getLast()->setString(reader->getAttributeValue(L"value"));
+	}
+	else
+	if (element == L"triangle")
+	{
+		addTriangle3d(name.c_str(), core::triangle3df());
+		Attributes.getLast()->setString(reader->getAttributeValue(L"value"));
+	}
+	else
+	if (element == L"line2d")
+	{
+		addLine2d(name.c_str(), core::line2df());
+		Attributes.getLast()->setString(reader->getAttributeValue(L"value"));
+	}
+	else
+	if (element == L"line3d")
+	{
+		addLine3d(name.c_str(), core::line3df());
+		Attributes.getLast()->setString(reader->getAttributeValue(L"value"));
+	}
+	else
+	if (element == L"stringwarray")
+	{
 		core::array<core::stringw> tmpArray;
 
 		s32 count = reader->getAttributeValueAsInt(L"count");
 		s32 n=0;
+		const core::stringw tmpName(L"value");
 		for (; n<count; ++n)
 		{
-			swprintf(tmpName,20,L"value%d",n);
-			tmpArray.push_back(reader->getAttributeValue(tmpName));
+			tmpArray.push_back(reader->getAttributeValue((tmpName+n).c_str()));
 		}
 		addArray(name.c_str(),tmpArray);
 	}
 }
 
 //! Write these attributes into a xml file
-bool CAttributes::write(io::IXMLWriter* writer)
+bool CAttributes::write(io::IXMLWriter* writer, bool writeXMLHeader)
 {
 	if (!writer)
 		return false;
+
+	if (writeXMLHeader)
+		writer->writeXMLHeader();
 
 	writer->writeElement(L"attributes", false);
 	writer->writeLineBreak();
@@ -1094,10 +1508,8 @@ bool CAttributes::write(io::IXMLWriter* writer)
 	s32 i=0;
 	for (; i<(s32)Attributes.size(); ++i)
 	{
-		// Special case for writing arrays
-		if ( Attributes[i]->getType() == EAT_ARRAY )
+		if ( Attributes[i]->getType() == EAT_STRINGWARRAY )
 		{
-			wchar_t tmpName[20];
 			core::array<core::stringw> arraynames, arrayvalues;
 			core::array<core::stringw> arrayinput = Attributes[i]->getArray();
 
@@ -1113,10 +1525,10 @@ bool CAttributes::write(io::IXMLWriter* writer)
 
 			// array...
 			u32 n=0;
+			const core::stringw tmpName(L"value");
 			for (; n < arrayinput.size(); ++n)
 			{
-				swprintf(tmpName,20,L"value%d",n);
-				arraynames.push_back(core::stringw(tmpName));
+				arraynames.push_back((tmpName+n).c_str());
 				arrayvalues.push_back(arrayinput[n]);
 			}
 
@@ -1125,12 +1537,10 @@ bool CAttributes::write(io::IXMLWriter* writer)
 		}
 		else
 		{
-			Attributes[i]->getString(tmpBuffer);
-
 			writer->writeElement(
 				Attributes[i]->getTypeString(), true,
 				L"name", core::stringw(Attributes[i]->Name.c_str()).c_str(),
-				L"value", core::stringw(tmpBuffer).c_str() );
+				L"value", Attributes[i]->getStringW().c_str() );
 		}
 
 		writer->writeLineBreak();

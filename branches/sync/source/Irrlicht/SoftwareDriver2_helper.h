@@ -1,10 +1,10 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt / Thomas Alten
+// Copyright (C) 2002-2007 Nikolaus Gebhardt / Thomas Alten
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 /*
 	History:
-	- changed behaviour for log2 textures ( replaced multiplys by shift )
+	- changed behaviour for log2 textures ( replaced multiplies by shift )
 */
 
 #ifndef __S_VIDEO_2_SOFTWARE_HELPER_H_INCLUDED__
@@ -71,7 +71,7 @@ inline void memset32 ( void * dest, const u32 value, u32 bytesize )
 	u32 * d = (u32*) dest;
 
 	u32 i;
-	
+
 	i = bytesize >> ( 2 + 3 );
 	while( i )
 	{
@@ -135,47 +135,10 @@ static inline s32 s32_abs(s32 x)
 	return (x ^ b ) - b;
 }
 
-// swap integer with xor
-inline void swap_xor ( s32 &a, s32 &b )
-{
-	a ^= b;
-	b ^= a;
-	a ^= b;
-}
-
-
-inline s32 s32_min ( s32 a, s32 b)
-{
-	s32 mask = (a - b) >> 31;
-	return (a & mask) | (b & ~mask);
-}
-
-inline s32 s32_max ( s32 a, s32 b)
-{
-	s32 mask = (a - b) >> 31;
-	return (b & mask) | (a & ~mask);
-}
-
-inline s32 s32_clamp (s32 value, s32 low, s32 high) 
-{
-	return s32_min (s32_max(value,low), high);
-}
 
 // TODO: don't stick on 32 Bit Pointer
 #define PointerAsValue(x) ( (u32) (u32*) (x) ) 
 
-
-//! conditional set based on mask and arithmetic shift
-REALINLINE u32 if_c_a_else_b ( const s32 condition, const u32 a, const u32 b )
-{
-	return ( ( -condition >> 31 ) & ( a ^ b ) ) ^ b;
-}
-
-//! conditional set based on mask and arithmetic shift
-REALINLINE u32 if_c_a_else_0 ( const s32 condition, const u32 a )
-{
-	return ( -condition >> 31 ) & a;
-}
 
 //! conditional set based on mask and arithmetic shift
 REALINLINE u32 if_mask_a_else_b ( const u32 mask, const u32 a, const u32 b )
@@ -285,10 +248,10 @@ inline u32 extractAlpha ( const u32 c )
 */
 inline u16 PixelMul16 ( const u16 c0, const u16 c1)
 {
-	return	( ( (c0 & 0x7C00) * (c1 & 0x7C00) ) & 0x3E000000 ) >> 15 |
-			( ( (c0 & 0x03E0) * (c1 & 0x03E0) ) & 0x000F8000 ) >> 10 |
-			( ( (c0 & 0x001F) * (c1 & 0x001F) ) & 0x000003E0 ) >> 5  |
-			c0 & 0x8000;
+	return ((( ( (c0 & 0x7C00) * (c1 & 0x7C00) ) & 0x3E000000 ) >> 15 ) |
+			(( ( (c0 & 0x03E0) * (c1 & 0x03E0) ) & 0x000F8000 ) >> 10 ) |
+			(( ( (c0 & 0x001F) * (c1 & 0x001F) ) & 0x000003E0 ) >> 5 ) |
+			(c0 & 0x8000));
 }
 
 /*
@@ -307,10 +270,10 @@ inline u16 PixelMul16_2 ( u16 c0, u16 c1)
 */
 REALINLINE u32 PixelMul32 ( const u32 c0, const u32 c1)
 {
-	return	c0 & 0xFF000000 |
-			( ( (c0 & 0x00FF0000) >> 12 ) * ( (c1 & 0x00FF0000) >> 12 ) ) & 0x00FF0000 |
-			( ( (c0 & 0x0000FF00) * (c1 & 0x0000FF00) ) >> 16 ) & 0x0000FF00 |
-			( ( (c0 & 0x000000FF) * (c1 & 0x000000FF) ) >> 8  ) & 0x000000FF;
+	return	(c0 & 0xFF000000) |
+			(( ( (c0 & 0x00FF0000) >> 12 ) * ( (c1 & 0x00FF0000) >> 12 ) ) & 0x00FF0000 ) |
+			(( ( (c0 & 0x0000FF00) * (c1 & 0x0000FF00) ) >> 16 ) & 0x0000FF00 ) |
+			(( ( (c0 & 0x000000FF) * (c1 & 0x000000FF) ) >> 8  ) & 0x000000FF);
 }
 
 /*
@@ -318,10 +281,10 @@ REALINLINE u32 PixelMul32 ( const u32 c0, const u32 c1)
 */
 REALINLINE u32 PixelMul32_2 ( const u32 c0, const u32 c1)
 {
-	return	( ( (c0 & 0xFF000000) >> 16 ) * ( (c1 & 0xFF000000) >> 16 ) ) & 0xFF000000 |
-			( ( (c0 & 0x00FF0000) >> 12 ) * ( (c1 & 0x00FF0000) >> 12 ) ) & 0x00FF0000 |
-			( ( (c0 & 0x0000FF00) * (c1 & 0x0000FF00) ) >> 16 ) & 0x0000FF00 |
-			( ( (c0 & 0x000000FF) * (c1 & 0x000000FF) ) >> 8  ) & 0x000000FF;
+	return	(( ( (c0 & 0xFF000000) >> 16 ) * ( (c1 & 0xFF000000) >> 16 ) ) & 0xFF000000 ) |
+			(( ( (c0 & 0x00FF0000) >> 12 ) * ( (c1 & 0x00FF0000) >> 12 ) ) & 0x00FF0000 ) |
+			(( ( (c0 & 0x0000FF00) * (c1 & 0x0000FF00) ) >> 16 ) & 0x0000FF00 ) |
+			(( ( (c0 & 0x000000FF) * (c1 & 0x000000FF) ) >> 8  ) & 0x000000FF);
 }
 
 /*
@@ -894,10 +857,10 @@ struct AbsRectangle
 
 inline void intersect ( AbsRectangle &dest, const AbsRectangle& a, const AbsRectangle& b)
 {
-	dest.x0 = s32_max( a.x0, b.x0 );
-	dest.y0 = s32_max( a.y0, b.y0 );
-	dest.x1 = s32_min( a.x1, b.x1 );
-	dest.y1 = s32_min( a.y1, b.y1 );
+	dest.x0 = core::s32_max( a.x0, b.x0 );
+	dest.y0 = core::s32_max( a.y0, b.y0 );
+	dest.x1 = core::s32_min( a.x1, b.x1 );
+	dest.y1 = core::s32_min( a.y1, b.y1 );
 }
 
 inline bool isValid (const AbsRectangle& a)
@@ -915,7 +878,7 @@ struct sIntervall
 // returning intersection width
 inline s32 intervall_intersect_test( const sIntervall& a, const sIntervall& b)
 {
-	return s32_min( a.end, b.end ) - s32_max( a.start, b.start );
+	return core::s32_min( a.end, b.end ) - core::s32_max( a.start, b.start );
 }
 
 

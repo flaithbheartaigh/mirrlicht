@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -37,12 +37,8 @@ CCameraSceneNode::CCameraSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 i
 
 	video::IVideoDriver* d = mgr->getVideoDriver();
 	if (d)
-	{
-		core::dimension2d<f32> screenDim;
-		screenDim.Width = (f32)d->getCurrentRenderTargetSize().Width;
-		screenDim.Height = (f32)d->getCurrentRenderTargetSize().Height;
-		Aspect = screenDim.Width / screenDim.Height;
-	}
+		Aspect = (f32)d->getCurrentRenderTargetSize().Width /
+			(f32)d->getCurrentRenderTargetSize().Height;
 
 	recalculateProjectionMatrix();
 	recalculateViewArea();
@@ -199,7 +195,7 @@ void CCameraSceneNode::recalculateProjectionMatrix()
 
 
 //! prerender
-void CCameraSceneNode::OnPreRender()
+void CCameraSceneNode::OnRegisterSceneNode()
 {
 	// if upvector and vector to the target are the same, we have a
 	// problem. so solve this problem:
@@ -226,7 +222,7 @@ void CCameraSceneNode::OnPreRender()
 		SceneManager->registerNodeForRendering(this, ESNRP_CAMERA);
 
 	if (IsVisible)
-		ISceneNode::OnPreRender();
+		ISceneNode::OnRegisterSceneNode();
 }
 
 

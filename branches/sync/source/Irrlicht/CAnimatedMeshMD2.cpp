@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -13,7 +13,7 @@ namespace irr
 namespace scene
 {
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) ||  defined(__BORLANDC__) || defined (__BCPLUSPLUS__) 
 #	pragma pack( push, packing )
 #	pragma pack( 1 )
 #	define PACK_STRUCT
@@ -31,6 +31,7 @@ namespace scene
 
 	// TA: private
 	const s32 MD2_FRAME_SHIFT	= 2;
+	const f32 MD2_FRAME_SHIFT_RECIPROCAL = 1.f / ( 1 << MD2_FRAME_SHIFT );
 
 	struct SMD2Header
 	{
@@ -86,7 +87,7 @@ namespace scene
 	} PACK_STRUCT;
 
 // Default alignment
-#ifdef _MSC_VER
+#if defined(_MSC_VER) ||  defined(__BORLANDC__) || defined (__BCPLUSPLUS__) 
 #	pragma pack( pop, packing )
 #endif
 
@@ -96,168 +97,168 @@ namespace scene
 const s32 Q2_VERTEX_NORMAL_TABLE_SIZE = 162;
 
 static const f32 Q2_VERTEX_NORMAL_TABLE[Q2_VERTEX_NORMAL_TABLE_SIZE][3] = {
-	{-0.525731f, 0.000000f, 0.850651f}, 
-	{-0.442863f, 0.238856f, 0.864188f}, 
-	{-0.295242f, 0.000000f, 0.955423f}, 
-	{-0.309017f, 0.500000f, 0.809017f}, 
-	{-0.162460f, 0.262866f, 0.951056f}, 
-	{0.000000f, 0.000000f, 1.000000f}, 
-	{0.000000f, 0.850651f, 0.525731f}, 
-	{-0.147621f, 0.716567f, 0.681718f}, 
-	{0.147621f, 0.716567f, 0.681718f}, 
-	{0.000000f, 0.525731f, 0.850651f}, 
-	{0.309017f, 0.500000f, 0.809017f}, 
-	{0.525731f, 0.000000f, 0.850651f}, 
-	{0.295242f, 0.000000f, 0.955423f}, 
-	{0.442863f, 0.238856f, 0.864188f}, 
-	{0.162460f, 0.262866f, 0.951056f}, 
-	{-0.681718f, 0.147621f, 0.716567f}, 
-	{-0.809017f, 0.309017f, 0.500000f}, 
-	{-0.587785f, 0.425325f, 0.688191f}, 
-	{-0.850651f, 0.525731f, 0.000000f}, 
-	{-0.864188f, 0.442863f, 0.238856f}, 
-	{-0.716567f, 0.681718f, 0.147621f}, 
-	{-0.688191f, 0.587785f, 0.425325f}, 
-	{-0.500000f, 0.809017f, 0.309017f}, 
-	{-0.238856f, 0.864188f, 0.442863f}, 
-	{-0.425325f, 0.688191f, 0.587785f}, 
-	{-0.716567f, 0.681718f, -0.147621f}, 
-	{-0.500000f, 0.809017f, -0.309017f}, 
-	{-0.525731f, 0.850651f, 0.000000f}, 
-	{0.000000f, 0.850651f, -0.525731f}, 
-	{-0.238856f, 0.864188f, -0.442863f}, 
-	{0.000000f, 0.955423f, -0.295242f}, 
-	{-0.262866f, 0.951056f, -0.162460f}, 
-	{0.000000f, 1.000000f, 0.000000f}, 
-	{0.000000f, 0.955423f, 0.295242f}, 
-	{-0.262866f, 0.951056f, 0.162460f}, 
-	{0.238856f, 0.864188f, 0.442863f}, 
-	{0.262866f, 0.951056f, 0.162460f}, 
-	{0.500000f, 0.809017f, 0.309017f}, 
-	{0.238856f, 0.864188f, -0.442863f}, 
-	{0.262866f, 0.951056f, -0.162460f}, 
-	{0.500000f, 0.809017f, -0.309017f}, 
-	{0.850651f, 0.525731f, 0.000000f}, 
-	{0.716567f, 0.681718f, 0.147621f}, 
-	{0.716567f, 0.681718f, -0.147621f}, 
-	{0.525731f, 0.850651f, 0.000000f}, 
-	{0.425325f, 0.688191f, 0.587785f}, 
-	{0.864188f, 0.442863f, 0.238856f}, 
-	{0.688191f, 0.587785f, 0.425325f}, 
-	{0.809017f, 0.309017f, 0.500000f}, 
-	{0.681718f, 0.147621f, 0.716567f}, 
-	{0.587785f, 0.425325f, 0.688191f}, 
-	{0.955423f, 0.295242f, 0.000000f}, 
-	{1.000000f, 0.000000f, 0.000000f}, 
-	{0.951056f, 0.162460f, 0.262866f}, 
-	{0.850651f, -0.525731f, 0.000000f}, 
-	{0.955423f, -0.295242f, 0.000000f}, 
-	{0.864188f, -0.442863f, 0.238856f}, 
-	{0.951056f, -0.162460f, 0.262866f}, 
-	{0.809017f, -0.309017f, 0.500000f}, 
-	{0.681718f, -0.147621f, 0.716567f}, 
-	{0.850651f, 0.000000f, 0.525731f}, 
-	{0.864188f, 0.442863f, -0.238856f}, 
-	{0.809017f, 0.309017f, -0.500000f}, 
-	{0.951056f, 0.162460f, -0.262866f}, 
-	{0.525731f, 0.000000f, -0.850651f}, 
-	{0.681718f, 0.147621f, -0.716567f}, 
-	{0.681718f, -0.147621f, -0.716567f}, 
-	{0.850651f, 0.000000f, -0.525731f}, 
-	{0.809017f, -0.309017f, -0.500000f}, 
-	{0.864188f, -0.442863f, -0.238856f}, 
-	{0.951056f, -0.162460f, -0.262866f}, 
-	{0.147621f, 0.716567f, -0.681718f}, 
-	{0.309017f, 0.500000f, -0.809017f}, 
-	{0.425325f, 0.688191f, -0.587785f}, 
-	{0.442863f, 0.238856f, -0.864188f}, 
-	{0.587785f, 0.425325f, -0.688191f}, 
-	{0.688191f, 0.587785f, -0.425325f}, 
-	{-0.147621f, 0.716567f, -0.681718f}, 
-	{-0.309017f, 0.500000f, -0.809017f}, 
-	{0.000000f, 0.525731f, -0.850651f}, 
-	{-0.525731f, 0.000000f, -0.850651f}, 
-	{-0.442863f, 0.238856f, -0.864188f}, 
-	{-0.295242f, 0.000000f, -0.955423f}, 
-	{-0.162460f, 0.262866f, -0.951056f}, 
-	{0.000000f, 0.000000f, -1.000000f}, 
-	{0.295242f, 0.000000f, -0.955423f}, 
-	{0.162460f, 0.262866f, -0.951056f}, 
-	{-0.442863f, -0.238856f, -0.864188f}, 
-	{-0.309017f, -0.500000f, -0.809017f}, 
-	{-0.162460f, -0.262866f, -0.951056f}, 
-	{0.000000f, -0.850651f, -0.525731f}, 
-	{-0.147621f, -0.716567f, -0.681718f}, 
-	{0.147621f, -0.716567f, -0.681718f}, 
-	{0.000000f, -0.525731f, -0.850651f}, 
-	{0.309017f, -0.500000f, -0.809017f}, 
-	{0.442863f, -0.238856f, -0.864188f}, 
-	{0.162460f, -0.262866f, -0.951056f}, 
-	{0.238856f, -0.864188f, -0.442863f}, 
-	{0.500000f, -0.809017f, -0.309017f}, 
-	{0.425325f, -0.688191f, -0.587785f}, 
-	{0.716567f, -0.681718f, -0.147621f}, 
-	{0.688191f, -0.587785f, -0.425325f}, 
-	{0.587785f, -0.425325f, -0.688191f}, 
-	{0.000000f, -0.955423f, -0.295242f}, 
-	{0.000000f, -1.000000f, 0.000000f}, 
-	{0.262866f, -0.951056f, -0.162460f}, 
-	{0.000000f, -0.850651f, 0.525731f}, 
-	{0.000000f, -0.955423f, 0.295242f}, 
-	{0.238856f, -0.864188f, 0.442863f}, 
-	{0.262866f, -0.951056f, 0.162460f}, 
-	{0.500000f, -0.809017f, 0.309017f}, 
-	{0.716567f, -0.681718f, 0.147621f}, 
-	{0.525731f, -0.850651f, 0.000000f}, 
-	{-0.238856f, -0.864188f, -0.442863f}, 
-	{-0.500000f, -0.809017f, -0.309017f}, 
-	{-0.262866f, -0.951056f, -0.162460f}, 
-	{-0.850651f, -0.525731f, 0.000000f}, 
-	{-0.716567f, -0.681718f, -0.147621f}, 
-	{-0.716567f, -0.681718f, 0.147621f}, 
-	{-0.525731f, -0.850651f, 0.000000f}, 
-	{-0.500000f, -0.809017f, 0.309017f}, 
-	{-0.238856f, -0.864188f, 0.442863f}, 
-	{-0.262866f, -0.951056f, 0.162460f}, 
-	{-0.864188f, -0.442863f, 0.238856f}, 
-	{-0.809017f, -0.309017f, 0.500000f}, 
-	{-0.688191f, -0.587785f, 0.425325f}, 
-	{-0.681718f, -0.147621f, 0.716567f}, 
-	{-0.442863f, -0.238856f, 0.864188f}, 
-	{-0.587785f, -0.425325f, 0.688191f}, 
-	{-0.309017f, -0.500000f, 0.809017f}, 
-	{-0.147621f, -0.716567f, 0.681718f}, 
-	{-0.425325f, -0.688191f, 0.587785f}, 
-	{-0.162460f, -0.262866f, 0.951056f}, 
-	{0.442863f, -0.238856f, 0.864188f}, 
-	{0.162460f, -0.262866f, 0.951056f}, 
-	{0.309017f, -0.500000f, 0.809017f}, 
-	{0.147621f, -0.716567f, 0.681718f}, 
-	{0.000000f, -0.525731f, 0.850651f}, 
-	{0.425325f, -0.688191f, 0.587785f}, 
-	{0.587785f, -0.425325f, 0.688191f}, 
-	{0.688191f, -0.587785f, 0.425325f}, 
-	{-0.955423f, 0.295242f, 0.000000f}, 
-	{-0.951056f, 0.162460f, 0.262866f}, 
-	{-1.000000f, 0.000000f, 0.000000f}, 
-	{-0.850651f, 0.000000f, 0.525731f}, 
-	{-0.955423f, -0.295242f, 0.000000f}, 
-	{-0.951056f, -0.162460f, 0.262866f}, 
-	{-0.864188f, 0.442863f, -0.238856f}, 
-	{-0.951056f, 0.162460f, -0.262866f}, 
-	{-0.809017f, 0.309017f, -0.500000f}, 
-	{-0.864188f, -0.442863f, -0.238856f}, 
-	{-0.951056f, -0.162460f, -0.262866f}, 
-	{-0.809017f, -0.309017f, -0.500000f}, 
-	{-0.681718f, 0.147621f, -0.716567f}, 
-	{-0.681718f, -0.147621f, -0.716567f}, 
-	{-0.850651f, 0.000000f, -0.525731f}, 
-	{-0.688191f, 0.587785f, -0.425325f}, 
-	{-0.587785f, 0.425325f, -0.688191f}, 
-	{-0.425325f, 0.688191f, -0.587785f}, 
-	{-0.425325f, -0.688191f, -0.587785f}, 
-	{-0.587785f, -0.425325f, -0.688191f}, 
-	{-0.688191f, -0.587785f, -0.425325f}, 
+	{-0.525731f, 0.000000f, 0.850651f},
+	{-0.442863f, 0.238856f, 0.864188f},
+	{-0.295242f, 0.000000f, 0.955423f},
+	{-0.309017f, 0.500000f, 0.809017f},
+	{-0.162460f, 0.262866f, 0.951056f},
+	{0.000000f, 0.000000f, 1.000000f},
+	{0.000000f, 0.850651f, 0.525731f},
+	{-0.147621f, 0.716567f, 0.681718f},
+	{0.147621f, 0.716567f, 0.681718f},
+	{0.000000f, 0.525731f, 0.850651f},
+	{0.309017f, 0.500000f, 0.809017f},
+	{0.525731f, 0.000000f, 0.850651f},
+	{0.295242f, 0.000000f, 0.955423f},
+	{0.442863f, 0.238856f, 0.864188f},
+	{0.162460f, 0.262866f, 0.951056f},
+	{-0.681718f, 0.147621f, 0.716567f},
+	{-0.809017f, 0.309017f, 0.500000f},
+	{-0.587785f, 0.425325f, 0.688191f},
+	{-0.850651f, 0.525731f, 0.000000f},
+	{-0.864188f, 0.442863f, 0.238856f},
+	{-0.716567f, 0.681718f, 0.147621f},
+	{-0.688191f, 0.587785f, 0.425325f},
+	{-0.500000f, 0.809017f, 0.309017f},
+	{-0.238856f, 0.864188f, 0.442863f},
+	{-0.425325f, 0.688191f, 0.587785f},
+	{-0.716567f, 0.681718f, -0.147621f},
+	{-0.500000f, 0.809017f, -0.309017f},
+	{-0.525731f, 0.850651f, 0.000000f},
+	{0.000000f, 0.850651f, -0.525731f},
+	{-0.238856f, 0.864188f, -0.442863f},
+	{0.000000f, 0.955423f, -0.295242f},
+	{-0.262866f, 0.951056f, -0.162460f},
+	{0.000000f, 1.000000f, 0.000000f},
+	{0.000000f, 0.955423f, 0.295242f},
+	{-0.262866f, 0.951056f, 0.162460f},
+	{0.238856f, 0.864188f, 0.442863f},
+	{0.262866f, 0.951056f, 0.162460f},
+	{0.500000f, 0.809017f, 0.309017f},
+	{0.238856f, 0.864188f, -0.442863f},
+	{0.262866f, 0.951056f, -0.162460f},
+	{0.500000f, 0.809017f, -0.309017f},
+	{0.850651f, 0.525731f, 0.000000f},
+	{0.716567f, 0.681718f, 0.147621f},
+	{0.716567f, 0.681718f, -0.147621f},
+	{0.525731f, 0.850651f, 0.000000f},
+	{0.425325f, 0.688191f, 0.587785f},
+	{0.864188f, 0.442863f, 0.238856f},
+	{0.688191f, 0.587785f, 0.425325f},
+	{0.809017f, 0.309017f, 0.500000f},
+	{0.681718f, 0.147621f, 0.716567f},
+	{0.587785f, 0.425325f, 0.688191f},
+	{0.955423f, 0.295242f, 0.000000f},
+	{1.000000f, 0.000000f, 0.000000f},
+	{0.951056f, 0.162460f, 0.262866f},
+	{0.850651f, -0.525731f, 0.000000f},
+	{0.955423f, -0.295242f, 0.000000f},
+	{0.864188f, -0.442863f, 0.238856f},
+	{0.951056f, -0.162460f, 0.262866f},
+	{0.809017f, -0.309017f, 0.500000f},
+	{0.681718f, -0.147621f, 0.716567f},
+	{0.850651f, 0.000000f, 0.525731f},
+	{0.864188f, 0.442863f, -0.238856f},
+	{0.809017f, 0.309017f, -0.500000f},
+	{0.951056f, 0.162460f, -0.262866f},
+	{0.525731f, 0.000000f, -0.850651f},
+	{0.681718f, 0.147621f, -0.716567f},
+	{0.681718f, -0.147621f, -0.716567f},
+	{0.850651f, 0.000000f, -0.525731f},
+	{0.809017f, -0.309017f, -0.500000f},
+	{0.864188f, -0.442863f, -0.238856f},
+	{0.951056f, -0.162460f, -0.262866f},
+	{0.147621f, 0.716567f, -0.681718f},
+	{0.309017f, 0.500000f, -0.809017f},
+	{0.425325f, 0.688191f, -0.587785f},
+	{0.442863f, 0.238856f, -0.864188f},
+	{0.587785f, 0.425325f, -0.688191f},
+	{0.688191f, 0.587785f, -0.425325f},
+	{-0.147621f, 0.716567f, -0.681718f},
+	{-0.309017f, 0.500000f, -0.809017f},
+	{0.000000f, 0.525731f, -0.850651f},
+	{-0.525731f, 0.000000f, -0.850651f},
+	{-0.442863f, 0.238856f, -0.864188f},
+	{-0.295242f, 0.000000f, -0.955423f},
+	{-0.162460f, 0.262866f, -0.951056f},
+	{0.000000f, 0.000000f, -1.000000f},
+	{0.295242f, 0.000000f, -0.955423f},
+	{0.162460f, 0.262866f, -0.951056f},
+	{-0.442863f, -0.238856f, -0.864188f},
+	{-0.309017f, -0.500000f, -0.809017f},
+	{-0.162460f, -0.262866f, -0.951056f},
+	{0.000000f, -0.850651f, -0.525731f},
+	{-0.147621f, -0.716567f, -0.681718f},
+	{0.147621f, -0.716567f, -0.681718f},
+	{0.000000f, -0.525731f, -0.850651f},
+	{0.309017f, -0.500000f, -0.809017f},
+	{0.442863f, -0.238856f, -0.864188f},
+	{0.162460f, -0.262866f, -0.951056f},
+	{0.238856f, -0.864188f, -0.442863f},
+	{0.500000f, -0.809017f, -0.309017f},
+	{0.425325f, -0.688191f, -0.587785f},
+	{0.716567f, -0.681718f, -0.147621f},
+	{0.688191f, -0.587785f, -0.425325f},
+	{0.587785f, -0.425325f, -0.688191f},
+	{0.000000f, -0.955423f, -0.295242f},
+	{0.000000f, -1.000000f, 0.000000f},
+	{0.262866f, -0.951056f, -0.162460f},
+	{0.000000f, -0.850651f, 0.525731f},
+	{0.000000f, -0.955423f, 0.295242f},
+	{0.238856f, -0.864188f, 0.442863f},
+	{0.262866f, -0.951056f, 0.162460f},
+	{0.500000f, -0.809017f, 0.309017f},
+	{0.716567f, -0.681718f, 0.147621f},
+	{0.525731f, -0.850651f, 0.000000f},
+	{-0.238856f, -0.864188f, -0.442863f},
+	{-0.500000f, -0.809017f, -0.309017f},
+	{-0.262866f, -0.951056f, -0.162460f},
+	{-0.850651f, -0.525731f, 0.000000f},
+	{-0.716567f, -0.681718f, -0.147621f},
+	{-0.716567f, -0.681718f, 0.147621f},
+	{-0.525731f, -0.850651f, 0.000000f},
+	{-0.500000f, -0.809017f, 0.309017f},
+	{-0.238856f, -0.864188f, 0.442863f},
+	{-0.262866f, -0.951056f, 0.162460f},
+	{-0.864188f, -0.442863f, 0.238856f},
+	{-0.809017f, -0.309017f, 0.500000f},
+	{-0.688191f, -0.587785f, 0.425325f},
+	{-0.681718f, -0.147621f, 0.716567f},
+	{-0.442863f, -0.238856f, 0.864188f},
+	{-0.587785f, -0.425325f, 0.688191f},
+	{-0.309017f, -0.500000f, 0.809017f},
+	{-0.147621f, -0.716567f, 0.681718f},
+	{-0.425325f, -0.688191f, 0.587785f},
+	{-0.162460f, -0.262866f, 0.951056f},
+	{0.442863f, -0.238856f, 0.864188f},
+	{0.162460f, -0.262866f, 0.951056f},
+	{0.309017f, -0.500000f, 0.809017f},
+	{0.147621f, -0.716567f, 0.681718f},
+	{0.000000f, -0.525731f, 0.850651f},
+	{0.425325f, -0.688191f, 0.587785f},
+	{0.587785f, -0.425325f, 0.688191f},
+	{0.688191f, -0.587785f, 0.425325f},
+	{-0.955423f, 0.295242f, 0.000000f},
+	{-0.951056f, 0.162460f, 0.262866f},
+	{-1.000000f, 0.000000f, 0.000000f},
+	{-0.850651f, 0.000000f, 0.525731f},
+	{-0.955423f, -0.295242f, 0.000000f},
+	{-0.951056f, -0.162460f, 0.262866f},
+	{-0.864188f, 0.442863f, -0.238856f},
+	{-0.951056f, 0.162460f, -0.262866f},
+	{-0.809017f, 0.309017f, -0.500000f},
+	{-0.864188f, -0.442863f, -0.238856f},
+	{-0.951056f, -0.162460f, -0.262866f},
+	{-0.809017f, -0.309017f, -0.500000f},
+	{-0.681718f, 0.147621f, -0.716567f},
+	{-0.681718f, -0.147621f, -0.716567f},
+	{-0.850651f, 0.000000f, -0.525731f},
+	{-0.688191f, 0.587785f, -0.425325f},
+	{-0.587785f, 0.425325f, -0.688191f},
+	{-0.425325f, 0.688191f, -0.587785f},
+	{-0.425325f, -0.688191f, -0.587785f},
+	{-0.587785f, -0.425325f, -0.688191f},
+	{-0.688191f, -0.587785f, -0.425325f},
 	};
 
 struct SMD2AnimationType
@@ -295,13 +296,13 @@ static const SMD2AnimationType MD2AnimationTypeList[21] =
 
 //! constructor
 CAnimatedMeshMD2::CAnimatedMeshMD2()
-: FrameCount(0), FrameList(0)
+: FrameList(0), FrameCount(0), TriangleCount(0)
 {
 	#ifdef _DEBUG
 	IAnimatedMesh::setDebugName("CAnimatedMeshMD2 IAnimatedMesh");
 	IMesh::setDebugName("CAnimatedMeshMD2 IMesh");
 	IMeshBuffer::setDebugName("CAnimatedMeshMD2 IMeshBuffer");
-	#endif	
+	#endif
 }
 
 
@@ -353,6 +354,15 @@ IMeshBuffer* CAnimatedMeshMD2::getMeshBuffer(u32 nr) const
 	return (IMeshBuffer*) this;
 }
 
+
+//! Returns pointer to a mesh buffer which fits a material
+IMeshBuffer* CAnimatedMeshMD2::getMeshBuffer( const video::SMaterial &material) const
+{
+	if (Material == material)
+		return (IMeshBuffer*) this;
+	else
+		return 0;
+}
 
 
 //! returns the material of this meshbuffer
@@ -447,33 +457,20 @@ void CAnimatedMeshMD2::updateInterpolationBuffer(s32 frame, s32 startFrameLoop, 
 	else
 	{
 		// key frames
-#if 1
 		u32 s = startFrameLoop >> MD2_FRAME_SHIFT;
 		u32 e = endFrameLoop >> MD2_FRAME_SHIFT;
 
 		firstFrame = frame >> MD2_FRAME_SHIFT;
-		// are there reverse anims ?
-		secondFrame = firstFrame + 1;
-		if ( secondFrame > e )
-			secondFrame = s;
+		secondFrame = core::if_c_a_else_b ( firstFrame + 1 > e, s, firstFrame + 1 );
 
-		firstFrame = irr::core::min_ ( FrameCount - 1, firstFrame );
-		secondFrame = irr::core::min_ ( FrameCount - 1, secondFrame );
+		firstFrame = core::s32_min ( FrameCount - 1, firstFrame );
+		secondFrame = core::s32_min ( FrameCount - 1, secondFrame );
 
-		div = (frame % (1<<MD2_FRAME_SHIFT)) / (f32)(1<<MD2_FRAME_SHIFT);
-#else
-		firstFrame = frame>>MD2_FRAME_SHIFT;
-
-		if (!((endFrameLoop>>MD2_FRAME_SHIFT) - (startFrameLoop>>MD2_FRAME_SHIFT)))
-			secondFrame = firstFrame;
-		else
-		secondFrame = (startFrameLoop>>MD2_FRAME_SHIFT) + (((frame>>MD2_FRAME_SHIFT)+1 - (startFrameLoop>>MD2_FRAME_SHIFT)) % 
-			((endFrameLoop>>MD2_FRAME_SHIFT) - (startFrameLoop>>MD2_FRAME_SHIFT)));
-
-		div = (frame % (1<<MD2_FRAME_SHIFT)) / (f32)(1<<MD2_FRAME_SHIFT);
-#endif
+		//div = (frame % (1<<MD2_FRAME_SHIFT)) / (f32)(1<<MD2_FRAME_SHIFT);
+		frame &= (1<<MD2_FRAME_SHIFT) - 1;
+		div = frame * MD2_FRAME_SHIFT_RECIPROCAL;
 	}
-		
+
 	video::S3DVertex* target = &InterpolateBuffer[0];
 	video::S3DVertex* first = FrameList[firstFrame].pointer();
 	video::S3DVertex* second = FrameList[secondFrame].pointer();
@@ -537,11 +534,13 @@ bool CAnimatedMeshMD2::loadFile(io::IReadFile* file)
 	// create Memory for indices and frames
 
 	TriangleCount = header.numTriangles;
+	if (FrameList)
+		delete [] FrameList;
 	FrameList = new core::array<video::S3DVertex>[header.numFrames];
 	FrameCount = header.numFrames;
 
 	s32 i;
-	
+
 	for (i=0; i<header.numFrames; ++i)
 		FrameList[i].reallocate(header.numVertices);
 
@@ -648,7 +647,7 @@ bool CAnimatedMeshMD2::loadFile(io::IReadFile* file)
 				v.X = Q2_VERTEX_NORMAL_TABLE[normalidx][0];
 				v.Y = Q2_VERTEX_NORMAL_TABLE[normalidx][1];
 				v.Z = Q2_VERTEX_NORMAL_TABLE[normalidx][2];
-			}	
+			}
 
 			normals[i].push_back(v);
 		}
@@ -668,13 +667,13 @@ bool CAnimatedMeshMD2::loadFile(io::IReadFile* file)
 	}
 
 	// put triangles into frame list
-	
+
 	f32 dmaxs = 1.0f/(header.skinWidth);
 	f32 dmaxt = 1.0f/(header.skinHeight);
 
 	video::S3DVertex vtx;
 	vtx.Color = video::SColor(255,255,255,255);
-	
+
 	for (s32 f = 0; f<header.numFrames; ++f)
 	{
 		core::array< core::vector3df >& vert = vertices[f];
@@ -753,7 +752,7 @@ void CAnimatedMeshMD2::calculateBoundingBox()
 //! sets a flag of all contained materials to a new value
 void CAnimatedMeshMD2::setMaterialFlag(video::E_MATERIAL_FLAG flag, bool newvalue)
 {
-	Material.Flags[flag] = newvalue;
+	Material.setFlag(flag, newvalue);
 }
 
 
@@ -764,12 +763,10 @@ const core::aabbox3d<f32>& CAnimatedMeshMD2::getBoundingBox() const
 	return BoundingBox;
 }
 
-
-
-//! returns an axis aligned bounding box
-core::aabbox3d<f32>& CAnimatedMeshMD2::getBoundingBox()
+//! set user axis aligned bounding box
+void CAnimatedMeshMD2::setBoundingBox( const core::aabbox3df& box)
 {
-	return BoundingBox;
+	BoundingBox = box;
 }
 
 
@@ -802,7 +799,7 @@ E_ANIMATED_MESH_TYPE CAnimatedMeshMD2::getMeshType() const
 
 
 //! Returns frame loop data for a special MD2 animation type.
-void CAnimatedMeshMD2::getFrameLoop(EMD2_ANIMATION_TYPE l, 
+void CAnimatedMeshMD2::getFrameLoop(EMD2_ANIMATION_TYPE l,
 									s32& outBegin, s32& outEnd, s32& outFPS) const
 {
 	if (l < 0 || l >= EMAT_COUNT)
@@ -811,15 +808,14 @@ void CAnimatedMeshMD2::getFrameLoop(EMD2_ANIMATION_TYPE l,
 	outBegin = MD2AnimationTypeList[l].begin << MD2_FRAME_SHIFT;
 	outEnd = MD2AnimationTypeList[l].end << MD2_FRAME_SHIFT;
 
-	// TA:correct to anim between last->first frame
+	// correct to anim between last->first frame
 	outEnd += MD2_FRAME_SHIFT == 0 ? 1 : ( 1 << MD2_FRAME_SHIFT ) - 1;
-	//TA: don't know about * 5...
-	outFPS = MD2AnimationTypeList[l].fps << MD2_FRAME_SHIFT; // * 5;
+	outFPS = MD2AnimationTypeList[l].fps << MD2_FRAME_SHIFT;
 }
 
 
 //! Returns frame loop data for a special MD2 animation type.
-bool CAnimatedMeshMD2::getFrameLoop(const c8* name, 
+bool CAnimatedMeshMD2::getFrameLoop(const c8* name,
 	s32& outBegin, s32&outEnd, s32& outFPS) const
 {
 	for (s32 i=0; i<(s32)FrameData.size(); ++i)
@@ -831,7 +827,7 @@ bool CAnimatedMeshMD2::getFrameLoop(const c8* name,
 			outFPS = FrameData[i].fps << MD2_FRAME_SHIFT;
 			return true;
 		}
-	
+
 	return false;
 }
 
@@ -844,7 +840,7 @@ s32 CAnimatedMeshMD2::getAnimationCount() const
 }
 
 
-//! Returns name of md2 animation. 
+//! Returns name of md2 animation.
 const c8* CAnimatedMeshMD2::getAnimationName(s32 nr) const
 {
 	if (nr < 0 || nr >= (s32)FrameData.size())

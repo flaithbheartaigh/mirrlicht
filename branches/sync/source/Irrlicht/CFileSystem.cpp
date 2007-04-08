@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -14,6 +14,7 @@
 #include "os.h"
 #include "IrrCompileConfig.h"
 #include "CAttributes.h"
+#include "CMemoryReadFile.h"
 
 #ifdef _IRR_WINDOWS_
 #include <direct.h> // for _chdir
@@ -89,6 +90,15 @@ IReadFile* CFileSystem::createAndOpenFile(const c8* filename)
 	return file;
 }
 
+//! Creates an IReadFile interface for treating memory like a file.
+IReadFile* CFileSystem::createMemoryReadFile(void* memory, s32 len, 
+											const c8* fileName, bool deleteMemoryWhenDropped)
+{
+	if (!memory)
+		return 0;
+	else
+		return new CMemoryReadFile(memory, len, fileName, deleteMemoryWhenDropped);
+}
 
 //! Opens a file for write access.
 IWriteFile* CFileSystem::createAndWriteFile(const c8* filename, bool append)
@@ -186,20 +196,17 @@ const c8* CFileSystem::getWorkingDirectory()
 }
 
 
-//! Changes the current Working Directory to the string given.
+//! Changes the current Working Directory to the given string.
 //! The string is operating system dependent. Under Windows it will look
 //! like this: "drive:\directory\sudirectory\"
-//! \return
-//! Returns true if successful, otherwise false.
+//! \return Returns true if successful, otherwise false.
 bool CFileSystem::changeWorkingDirectoryTo(const c8* newDirectory)
 {
 	bool success=false;
-#ifdef _IRR_WINDOWS_
+#ifdef _MSC_VER
 	success=(_chdir(newDirectory) == 0);
-#endif
-
-#if (defined(LINUX) || defined(MACOSX))
-	success=(chdir(newDirectory) != 0);
+#else
+	success=(chdir(newDirectory) == 0);
 #endif
 	return success;
 }

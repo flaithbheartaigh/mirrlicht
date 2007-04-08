@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -14,24 +14,17 @@ namespace scene
 //! constructor
 CCameraMayaSceneNode::CCameraMayaSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id,
 	 f32 rs, f32 zs, f32 ts)
-: CCameraSceneNode(parent, mgr, id)
+: CCameraSceneNode(parent, mgr, id), 
+	zooming(false), rotating(false), moving(false), translating(false),
+	zoomSpeed(zs), rotateSpeed(ts), translateSpeed(ts),
+	rotateStartX(0.0f), rotateStartY(0.0f), zoomStartX(0.0f), zoomStartY(0.0f),
+	translateStartX(0.0f), translateStartY(0.0f), currentZoom(70.0f), rotX(0.0f), rotY(0.0f)
 {
 	#ifdef _DEBUG
 	setDebugName("CCameraMayaSceneNode");
 	#endif
 
-	zooming = false;
-	rotating = false;
-	moving = false;
-	translating = false;
-	zoomSpeed = zs;
-	rotateSpeed = rs;
-	translateSpeed = ts;
-	currentZoom = 70.0f;
-	//Pos.set(0.0f, 70.0f, 0.0f);
 	Target.set(0.0f, 0.0f, 0.0f);
-	rotX = 0;
-	rotY = 0;
 	oldTarget = Target;
 
 	allKeysUp();
@@ -94,10 +87,10 @@ bool CCameraMayaSceneNode::OnEvent(SEvent event)
 	return true;
 }
 
-//! onPostRender is called just after rendering the whole scene.
+//! OnAnimate() is called just before rendering the whole scene.
 //! nodes may calculate or store animations here, and may do other useful things,
 //! dependent on what they are.
-void CCameraMayaSceneNode::OnPostRender(u32 timeMs)
+void CCameraMayaSceneNode::OnAnimate(u32 timeMs)
 {
 	animate();
 
@@ -128,7 +121,7 @@ void CCameraMayaSceneNode::animate()
 	f32 nRotY = rotY;
 	f32 nZoom = currentZoom;
 
-	if (isMouseKeyDown(0) && isMouseKeyDown(2))
+	if ( (isMouseKeyDown(0) && isMouseKeyDown(2)) || isMouseKeyDown(1) )
 	{
 		if (!zooming)
 		{
@@ -305,6 +298,30 @@ void CCameraMayaSceneNode::updateAnimationState()
 
 	// Zoom
 	currentZoom = (f32)Pos.getDistanceFrom(Target);
+}
+
+//! Sets the rotation speed
+void CCameraMayaSceneNode::setRotateSpeed(const f32 speed)
+{
+	rotateSpeed = speed;	
+}
+
+//! Sets the movement speed
+void CCameraMayaSceneNode::setMoveSpeed(const f32 speed)
+{
+	translateSpeed = speed;
+}
+
+//! Gets the rotation speed
+f32 CCameraMayaSceneNode::getRotateSpeed()
+{
+	return rotateSpeed;
+}
+
+// Gets the movement speed
+f32 CCameraMayaSceneNode::getMoveSpeed()
+{
+	return translateSpeed;
 }
 
 } // end namespace

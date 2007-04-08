@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -24,7 +24,7 @@ CGUITab::CGUITab(s32 number, IGUIEnvironment* environment,
 	IGUIElement* parent, const core::rect<s32>& rectangle, 
 	s32 id)
 	: IGUITab(environment, parent, id, rectangle), Number(number),
-	BackColor(0,0,0,0), DrawBackground(false)
+		DrawBackground(false), BackColor(0,0,0,0)
 {
 	#ifdef _DEBUG
 	setDebugName("CGUITab");
@@ -150,6 +150,7 @@ IGUITab* CGUITabControl::addTab(const wchar_t* caption, s32 id)
 
 	CGUITab* tab = new CGUITab(Tabs.size(), Environment, this, 
 		r, id);
+	tab->setAlignment(EGUIA_UPPERLEFT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_LOWERRIGHT);
 
 	tab->setText(caption);
 	tab->setVisible(false);
@@ -164,7 +165,7 @@ IGUITab* CGUITabControl::addTab(const wchar_t* caption, s32 id)
 	return tab;
 }
 
-//! adds an already existing tab
+//! adds a tab which has been created elsewhere
 void CGUITabControl::addTab(CGUITab* tab)
 {
 	if (!tab)
@@ -176,9 +177,18 @@ void CGUITabControl::addTab(CGUITab* tab)
 			return;
 
 	tab->grab();
+
+	if (tab->getNumber() == -1)
+		tab->setNumber((s32)Tabs.size());
+
 	while (tab->getNumber() >= (s32)Tabs.size())
 		Tabs.push_back(0);
 
+	if (Tabs[tab->getNumber()])
+	{
+		Tabs.push_back(Tabs[tab->getNumber()]);
+		Tabs[Tabs.size()-1]->setNumber(Tabs.size());
+	}
 	Tabs[tab->getNumber()] = tab;
 
 	if (ActiveTab == -1)
@@ -222,7 +232,8 @@ bool CGUITabControl::OnEvent(SEvent event)
 		switch(event.GUIEvent.EventType)
 		{
 			case gui::EGET_ELEMENT_FOCUS_LOST:
-				return true;
+				if (event.GUIEvent.Caller == (IGUIElement*)this)
+					return true;
 		}
 		break;
 	case EET_MOUSE_INPUT_EVENT:
@@ -262,7 +273,10 @@ void CGUITabControl::selectTab(core::position2d<s32> p)
 			text = Tabs[i]->getText();
 
 		// get text length
-		s32 len = font->getDimension(text).Width + 20;
+		s32 len = 20;
+		if (font)
+			len += font->getDimension(text).Width;
+
 		frameRect.UpperLeftCorner.X = pos;
 		frameRect.LowerRightCorner.X = frameRect.UpperLeftCorner.X + len;
 		pos += len;

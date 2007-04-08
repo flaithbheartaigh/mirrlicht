@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -6,7 +6,6 @@
 #define __C_SHADOW_VOLUME_SCENE_NODE_H_INCLUDED__
 
 #include "IShadowVolumeSceneNode.h"
-#include "SLight.h"
 
 namespace irr
 {
@@ -29,7 +28,7 @@ namespace scene
 		virtual void setMeshToRenderFrom(IMesh* mesh);
 
 		//! pre render method
-		virtual void OnPreRender();
+		virtual void OnRegisterSceneNode();
 
 		//! renders the node.
 		virtual void render();
@@ -44,7 +43,7 @@ namespace scene
 		virtual u32 getMaterialCount();
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_SHADOW_VOLUME; }
+		virtual ESCENE_NODE_TYPE getType() const { return ESNT_SHADOW_VOLUME; }
 
 	private:
 
@@ -63,13 +62,13 @@ namespace scene
 		//! Generates adjacency information based on mesh indices.
 		void calculateAdjacency(f32 epsilon=0.0001f);
 
-		bool UseZFailMethod;
 		core::aabbox3d<f32> Box;
 
 		u16* Indices;
 		core::vector3df* Vertices;
 		u16* Adjacency;
 		bool* FaceData; // used for zfail method, if face is front facing
+		bool UseZFailMethod;
 
 		s32 IndexCountAllocated;
 		s32 VertexCountAllocated;

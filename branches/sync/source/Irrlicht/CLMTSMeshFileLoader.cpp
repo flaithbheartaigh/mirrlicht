@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 // This file was written by Jonas Petersen and modified by Nikolaus Gebhardt.
@@ -94,8 +94,8 @@ namespace scene
 
 CLMTSMeshFileLoader::CLMTSMeshFileLoader(io::IFileSystem* fs, video::IVideoDriver* driver,
 										 io::IAttributes* parameters)
-	: Textures(NULL), Subsets(NULL), Triangles(NULL), NumTextures(0), NumLightMaps(0),
-	TextureIDs(NULL), Mesh(0), Driver(driver), FileSystem(fs), Parameters(parameters)
+	: Textures(0), TextureIDs(0), Subsets(0), Triangles(0), Mesh(0),
+	NumTextures(0), NumLightMaps(0), Parameters(parameters), Driver(driver), FileSystem(fs)
 {
 	if (Driver)
 		Driver->grab();
@@ -107,10 +107,9 @@ CLMTSMeshFileLoader::CLMTSMeshFileLoader(io::IFileSystem* fs, video::IVideoDrive
 #else
 
 CLMTSMeshFileLoader::CLMTSMeshFileLoader(IrrlichtDevice* device)
-: Textures(0), Subsets(0), Triangles(0), NumTextures(0), NumLightMaps(0),
-  TextureIDs(0), Mesh(NULL), Logger(NULL), Parameters(0)
+: Textures(0), TextureIDs(0), Subsets(0), Triangles(0), Mesh(0),
+	NumTextures(0), NumLightMaps(0), Parameters(0), Logger(0)
 {
-
 	FileSystem = device->getFileSystem();
 	FileSystem->grab();
 
@@ -342,11 +341,11 @@ void CLMTSMeshFileLoader::loadTextures()
 			SMeshBufferLightMap* b = (SMeshBufferLightMap*)Mesh->getMeshBuffer(i);
 
 			if (Subsets[i].TextID1 < Header.TextureCount)
-				b->Material.Texture1 = tex[TextureIDs[Subsets[i].TextID1]];
+				b->Material.Textures[0] = tex[TextureIDs[Subsets[i].TextID1]];
 			if (Subsets[i].TextID2 < Header.TextureCount)
-				b->Material.Texture2 = lig[TextureIDs[Subsets[i].TextID2]];
+				b->Material.Textures[1] = lig[TextureIDs[Subsets[i].TextID2]];
 
-			if (!b->Material.Texture2)
+			if (!b->Material.Textures[1])
 				b->Material.MaterialType = video::EMT_SOLID;
 		}
 

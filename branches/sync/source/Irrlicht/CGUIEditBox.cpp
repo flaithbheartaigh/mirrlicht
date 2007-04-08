@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -18,18 +18,20 @@ namespace gui
 
 //! constructor
 CGUIEditBox::CGUIEditBox(const wchar_t* text, bool border, IGUIEnvironment* environment,
-						 IGUIElement* parent, s32 id, const core::rect<s32>& rectangle,
-						 IOSOperator* op)
-: IGUIEditBox(environment, parent, id, rectangle), Border(border), 
-	OverrideColorEnabled(false), OverrideFont(0), CursorPos(0), ScrollPos(0),
-	MarkBegin(0), MarkEnd(0), MouseMarking(false), Operator(op), Max(0)
+			IGUIElement* parent, s32 id,
+			const core::rect<s32>& rectangle)
+: IGUIEditBox(environment, parent, id, rectangle), MouseMarking(false),
+	Border(border), OverrideColorEnabled(false), MarkBegin(0), MarkEnd(0),
+	OverrideColor(video::SColor(101,255,255,255)),
+	OverrideFont(0), CursorPos(0), ScrollPos(0), Max(0)
 {
 	#ifdef _DEBUG
 	setDebugName("CGUIEditBox");
 	#endif
 
-	OverrideColor = video::SColor(101,255,255,255);
 	Text = text;
+
+	Operator = environment->getOSOperator();
 
 	if (Operator)
 		Operator->grab();
@@ -84,16 +86,22 @@ bool CGUIEditBox::OnEvent(SEvent event)
 	case EET_GUI_EVENT:
 		if (event.GUIEvent.EventType == EGET_ELEMENT_FOCUS_LOST)
 		{
-			MouseMarking = false;
-			MarkBegin = 0;
-			MarkEnd = 0;
-			return true;
+			if (event.GUIEvent.Caller == (IGUIElement*)this)
+			{
+				MouseMarking = false;
+				MarkBegin = 0;
+				MarkEnd = 0;
+			}
 		}
 		break;
 	case EET_KEY_INPUT_EVENT:
-		return processKey(event);
+		if (processKey(event))
+			return true;
+		break;
 	case EET_MOUSE_INPUT_EVENT:
-		return processMouse(event);
+		if (processMouse(event))
+			return true;
+		break;
 	}
 
 	return Parent ? Parent->OnEvent(event) : false;
@@ -170,7 +178,7 @@ bool CGUIEditBox::processKey(const SEvent& event)
 						s.append(p);
 						s.append( Text.subString(CursorPos, Text.size()-CursorPos) );
 
-						if (!Max || s.size()<=Max) // thx to Fish FH for fix
+						if (!Max || s.size()<=(u32)Max) // thx to Fish FH for fix
 						{
 							Text = s;
 							s = p;
@@ -185,7 +193,7 @@ bool CGUIEditBox::processKey(const SEvent& event)
 						s.append(p);
 						s.append( Text.subString(realmend, Text.size()-realmend) );
 
-						if (!Max || s.size()<=Max)  // thx to Fish FH for fix
+						if (!Max || s.size()<=(u32)Max)  // thx to Fish FH for fix
 						{
 							Text = s;
 							s = p;
@@ -273,7 +281,7 @@ bool CGUIEditBox::processKey(const SEvent& event)
 
 		if (event.KeyInput.Shift) 
 		{ 
-			if (Text.size() > CursorPos) 
+			if (Text.size() > (u32)CursorPos) 
 			{ 
 				if (MarkBegin == MarkEnd) 
 					MarkBegin = CursorPos; 
@@ -287,7 +295,7 @@ bool CGUIEditBox::processKey(const SEvent& event)
 			MarkEnd = 0;
 		}
 
-		if (Text.size() > CursorPos) CursorPos++;
+		if (Text.size() > (u32)CursorPos) CursorPos++;
 		BlinkStartTime = os::Timer::getTime();
 		break;
 
@@ -295,7 +303,7 @@ bool CGUIEditBox::processKey(const SEvent& event)
 		if ( !this->IsEnabled )
 			break;
 
-		if (Text.size()!=0)
+		if (Text.size())
 		{
 			core::stringw s;
 			
@@ -314,7 +322,10 @@ bool CGUIEditBox::processKey(const SEvent& event)
 			else
 			{
 				// delete text behind cursor
-				s = Text.subString(0, CursorPos-1);
+				if (CursorPos>0)
+					s = Text.subString(0, CursorPos-1);
+				else
+					s = L"";
 				s.append( Text.subString(CursorPos, Text.size()-CursorPos) );
 				Text = s;
 				--CursorPos;
@@ -355,8 +366,8 @@ bool CGUIEditBox::processKey(const SEvent& event)
 				Text = s;
 			}
 
-			if (CursorPos > Text.size())
-				CursorPos = Text.size();
+			if (CursorPos > (s32)Text.size())
+				CursorPos = (s32)Text.size();
 
 			BlinkStartTime = os::Timer::getTime();
 			MarkBegin = 0;
@@ -369,7 +380,7 @@ bool CGUIEditBox::processKey(const SEvent& event)
 
 		if (event.KeyInput.Char != 0)
 		{
-			if (Text.size() < Max || Max == 0)
+			if (Text.size() < (u32)Max || Max == 0)
 			{
 				core::stringw s;
 
@@ -468,7 +479,7 @@ void CGUIEditBox::draw()
 		skin->draw3DSunkenPane(this, skin->getColor(EGDC_WINDOW),
 			false, true, frameRect, &AbsoluteClippingRect);
 		
-		frameRect.UpperLeftCorner.X += 3;
+		frameRect.UpperLeftCorner.X += skin->getSize(EGDS_TEXT_DISTANCE_X);
 	}
 
 	// draw the text
@@ -495,8 +506,8 @@ void CGUIEditBox::draw()
 		{
 			rct = frameRect;
 
-			rct.LowerRightCorner.Y -= 2;
-			rct.UpperLeftCorner.Y += 2;
+			rct.LowerRightCorner.Y -= skin->getSize(EGDS_TEXT_DISTANCE_Y);
+			rct.UpperLeftCorner.Y += skin->getSize(EGDS_TEXT_DISTANCE_Y);
 
 			s32 realmbgn = MarkBegin < MarkEnd ? MarkBegin : MarkEnd;
 			s32 realmend = MarkBegin < MarkEnd ? MarkEnd : MarkBegin;
@@ -600,7 +611,7 @@ void CGUIEditBox::setMax(s32 max)
 	if (Max < 0)
 		Max = 0;
 
-	if (Text.size() > Max && Max != 0)
+	if (Text.size() > (u32)Max && Max != 0)
 		Text = Text.subString(0, Max);
 }
 
@@ -650,7 +661,7 @@ bool CGUIEditBox::processMouse(const SEvent& event)
 		}
 		else
 		{
-			if (!AbsoluteRect.isPointInside(
+			if (!AbsoluteClippingRect.isPointInside(
 			core::position2d<s32>(event.MouseInput.X, event.MouseInput.Y)))
 			{
 				// remove focus

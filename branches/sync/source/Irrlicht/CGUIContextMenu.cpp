@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -7,7 +7,8 @@
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
 #include "IGUIFont.h"
-#include "GUIIcons.h"
+#include "IGUISpriteBank.h"
+#include "os.h"
 
 namespace irr
 {
@@ -20,7 +21,7 @@ namespace gui
 CGUIContextMenu::CGUIContextMenu(IGUIEnvironment* environment,
 				 IGUIElement* parent, s32 id,
 				 core::rect<s32> rectangle, bool getFocus)
-: IGUIContextMenu(environment, parent, id, rectangle), HighLighted(-1)
+: IGUIContextMenu(environment, parent, id, rectangle), HighLighted(-1), ChangeTime(0)
 {
 	#ifdef _DEBUG
 	setDebugName("CGUIContextMenu");
@@ -31,6 +32,8 @@ CGUIContextMenu::CGUIContextMenu(IGUIEnvironment* environment,
 
 	if (getFocus)
 		Environment->setFocus(this);
+
+	setNotClipped(true);
 }
 
 
@@ -51,10 +54,11 @@ s32 CGUIContextMenu::getItemCount() const
 
 
 //! Adds a menu item.
-s32 CGUIContextMenu::addItem(const wchar_t* text, s32 id, bool enabled, bool hasSubMenu)
+s32 CGUIContextMenu::addItem(const wchar_t* text, s32 id, bool enabled, bool hasSubMenu, bool checked)
 {
 	SItem s;
 	s.Enabled = enabled;
+	s.Checked = checked;
 	s.Text = text;
 	s.IsSeparator = (text == 0);
 	s.SubMenu = 0;
@@ -62,7 +66,7 @@ s32 CGUIContextMenu::addItem(const wchar_t* text, s32 id, bool enabled, bool has
 
 	if (hasSubMenu)
 	{
-		s.SubMenu = new CGUIContextMenu(Environment, this, -1,
+		s.SubMenu = new CGUIContextMenu(Environment, this, id,
 			core::rect<s32>(0,0,100,100), false);
 		s.SubMenu->setVisible(false);
 	}
@@ -95,7 +99,7 @@ void CGUIContextMenu::setSubMenu(s32 index, CGUIContextMenu* menu)
 //! Adds a separator item to the menu
 void CGUIContextMenu::addSeparator()
 {
-	addItem(0, true);
+	addItem(0, -1, true, false, false);
 }
 
 
@@ -143,6 +147,15 @@ void CGUIContextMenu::setItemEnabled(s32 idx, bool enabled)
 	Items[idx].Enabled = enabled;
 }
 
+//! Sets if the menu item should be checked.
+void CGUIContextMenu::setItemChecked(s32 idx, bool checked )
+{
+	if (idx < 0 || idx >= (s32)Items.size())
+		return;
+
+	Items[idx].Checked = checked;
+}
+
 
 //! Removes a menu item
 void CGUIContextMenu::removeItem(s32 idx)
@@ -185,8 +198,12 @@ bool CGUIContextMenu::OnEvent(SEvent event)
 		switch(event.GUIEvent.EventType)
 		{
 		case gui::EGET_ELEMENT_FOCUS_LOST:
-			remove();
-			return true;
+			if (event.GUIEvent.Caller == (IGUIElement*)this)
+			{
+				remove();
+				return true;
+			}
+			break;
 		}
 		break;
 	case EET_MOUSE_INPUT_EVENT:
@@ -220,6 +237,7 @@ bool CGUIContextMenu::OnEvent(SEvent event)
 void CGUIContextMenu::setVisible(bool visible)
 {
 	HighLighted = -1;
+	ChangeTime = os::Timer::getTime();
 	for (s32 j=0; j<(s32)Items.size(); ++j)
 		if (Items[j].SubMenu)
 			Items[j].SubMenu->setVisible(false);
@@ -255,7 +273,7 @@ s32 CGUIContextMenu::sendClick(core::position2d<s32> p)
 	}
 
 	// check click on myself
-	if (AbsoluteRect.isPointInside(p) &&
+	if (AbsoluteClippingRect.isPointInside(p) &&
 		HighLighted >= 0 && HighLighted <(s32)Items.size())
 	{
 		if (!Items[HighLighted].Enabled ||
@@ -295,6 +313,7 @@ bool CGUIContextMenu::highlight(core::position2d<s32> p)
 		if (Items[openmenu].SubMenu->highlight(p))
 		{
 			HighLighted = openmenu;
+			ChangeTime = os::Timer::getTime();
 			return true;
 		}
 	}
@@ -304,6 +323,7 @@ bool CGUIContextMenu::highlight(core::position2d<s32> p)
 		if (getHRect(Items[i], AbsoluteRect).isPointInside(p))
 		{
 			HighLighted = i;
+			ChangeTime = os::Timer::getTime();
 
 			// make submenus visible/invisible
 			for (s32 j=0; j<(s32)Items.size(); ++j)
@@ -345,12 +365,16 @@ void CGUIContextMenu::draw()
 		return;
 
 	IGUISkin* skin = Environment->getSkin();
+
+	if (!skin)
+		return;
+	
 	IGUIFont* font = skin->getFont();
-	IGUIFont* defaultFont = Environment->getBuiltInFont();
+	IGUISpriteBank* sprites = skin->getSpriteBank();
+
 	video::IVideoDriver* driver = Environment->getVideoDriver();
 
 	core::rect<s32> rect = AbsoluteRect;
-	//core::rect<s32>* clip = &AbsoluteClippingRect;
 	core::rect<s32>* clip = 0;
 
 	// draw frame
@@ -405,17 +429,33 @@ void CGUIContextMenu::draw()
 			if (!Items[i].Enabled)
 				c = EGDC_GRAY_TEXT;
 
-			font->draw(Items[i].Text.c_str(), rect,
-				skin->getColor(c), false, true, clip);
+			if (font)
+				font->draw(Items[i].Text.c_str(), rect,
+					skin->getColor(c), false, true, clip);
 
 			// draw submenu symbol
-			if (Items[i].SubMenu && defaultFont)
+			if (Items[i].SubMenu && sprites)
 			{
 				core::rect<s32> r = rect;
 				r.UpperLeftCorner.X = r.LowerRightCorner.X - 15;
 
-				defaultFont->draw(GUI_ICON_CURSOR_RIGHT, r,
-					skin->getColor(c), true, true, clip);
+				sprites->draw2DSprite(skin->getIcon(EGDI_CURSOR_RIGHT), 
+					r.getCenter(), clip, skin->getColor(c), 
+					(i == HighLighted) ? ChangeTime : 0,  
+					(i == HighLighted) ? os::Timer::getTime() : 0, 
+					(i == HighLighted), true); 
+			}
+
+			// draw checked symbol
+			if (Items[i].Checked && sprites)
+			{
+				core::rect<s32> r = rect;
+				r.UpperLeftCorner.X -= 15;
+				sprites->draw2DSprite(skin->getIcon(EGDI_CHECK_BOX_CHECKED), 
+					r.getCenter(), clip, skin->getColor(c), 
+					(i == HighLighted) ? ChangeTime : 0,  
+					(i == HighLighted) ? os::Timer::getTime() : 0, 
+					(i == HighLighted), true); 
 			}
 
 		}
@@ -467,9 +507,7 @@ void CGUIContextMenu::recalculateSize()
 	rect.LowerRightCorner.X = RelativeRect.UpperLeftCorner.X + width;
 	rect.LowerRightCorner.Y = RelativeRect.UpperLeftCorner.Y + height;
 
-	RelativeRect = rect;
-
-	updateAbsolutePosition();
+	setRelativePosition(rect);
 
 	// recalculate submenus
 	for (i=0; i<(s32)Items.size(); ++i)
@@ -545,12 +583,10 @@ void CGUIContextMenu::serializeAttributes(io::IAttributes* out, io::SAttributeRe
 	s32 i=0;
 	for (; i < (s32)Items.size(); ++i)
 	{
-		if (Items[i].IsSeparator)
-		{
-			tmp = "IsSeparator"; tmp += i;
-			out->addBool(tmp.c_str(), Items[i].IsSeparator);
-		}
-		else
+		tmp = "IsSeparator"; tmp += i;
+		out->addBool(tmp.c_str(), Items[i].IsSeparator);
+
+		if (!Items[i].IsSeparator)
 		{
 			tmp = "Text"; tmp += i;
 			out->addString(tmp.c_str(), Items[i].Text.c_str());
@@ -586,9 +622,10 @@ void CGUIContextMenu::deserializeAttributes(io::IAttributes* in, io::SAttributeR
 		core::stringw txt;
 		s32 commandid;
 		bool enabled;
+		bool checked;
 
 		tmp = "IsSeparator"; tmp += i;
-		if ( in->existsAttribute(tmp.c_str()) )
+		if ( in->getAttributeAsBool(tmp.c_str()) )
 			addSeparator();
 		else
 		{
@@ -600,8 +637,11 @@ void CGUIContextMenu::deserializeAttributes(io::IAttributes* in, io::SAttributeR
 
 			tmp = "Enabled"; tmp += i;
 			enabled = in->getAttributeAsBool(tmp.c_str());
+
+			tmp = "Checked"; tmp += i;
+			checked = in->getAttributeAsBool(tmp.c_str());
 			
-			addItem(core::stringw(txt.c_str()).c_str(), commandid, enabled);
+			addItem(core::stringw(txt.c_str()).c_str(), commandid, enabled, false, checked);
 		}
 	}
 
