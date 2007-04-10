@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -32,7 +32,7 @@ CMemoryReadFile::~CMemoryReadFile()
 
 
 //! returns how much was read
-s32 CMemoryReadFile::read(void* buffer, s32 sizeToRead)
+s32 CMemoryReadFile::read(void* buffer, u32 sizeToRead)
 {
 	s32 amount = sizeToRead;
 	if (Pos + amount > Len)

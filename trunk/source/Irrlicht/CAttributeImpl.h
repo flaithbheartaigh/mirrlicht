@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -27,8 +27,6 @@ public:
 		setBool(value);
 	}
 
-	bool BoolValue;
-
 	virtual s32 getInt()
 	{
 		return BoolValue ? 1 : 0;
@@ -44,9 +42,9 @@ public:
 		return BoolValue;
 	}
 
-	virtual void getString(char* target)
+	virtual core::stringw getStringW()
 	{
-		strcpy(target, BoolValue ? "true" : "false");
+		return core::stringw( BoolValue ? L"true" : L"false" );
 	}
 
 	virtual void setInt(s32 intValue)
@@ -69,15 +67,17 @@ public:
 		BoolValue = strcmp(string, "true") == 0;
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_BOOL;
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"bool";
 	}
+
+	bool BoolValue;
 };
 
 // Attribute implemented for integers
@@ -106,9 +106,9 @@ public:
 		return (Value != 0);
 	}
 
-	virtual void getString(char* target)
+	virtual core::stringw getStringW()
 	{
-		sprintf(target, "%d", Value);
+		return core::stringw(Value);
 	}
 
 	virtual void setInt(s32 intValue)
@@ -126,13 +126,13 @@ public:
 		Value = atoi(text);
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_INT;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"int";
 	}
@@ -166,9 +166,9 @@ public:
 		return (Value != 0);
 	}
 
-	virtual void getString(char* target)
+	virtual core::stringw getStringW()
 	{
-		sprintf(target, "%f", Value);
+		return core::stringw(Value);
 	}
 
 	virtual void setInt(s32 intValue)
@@ -179,28 +179,26 @@ public:
 	virtual void setFloat(f32 floatValue)
 	{
 		Value = floatValue;
-	};
+	}
 
 	virtual void setString(const char* text)
 	{
 		Value = core::fast_atof(text);
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const 
 	{
 		return EAT_FLOAT;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"float";
 	}
 
 	f32 Value;
 };
-
-
 
 
 
@@ -215,7 +213,7 @@ class CNumbersAttribute : public IAttribute
 public:
 
 	CNumbersAttribute(const char* name, video::SColorf value) : 
-		IsFloat(true), Count(4), ValueI(), ValueF()
+		ValueI(), ValueF(), Count(4), IsFloat(true)
 	{
 		Name = name;
 		ValueF.push_back(value.r);
@@ -225,7 +223,7 @@ public:
 	}
 
 	CNumbersAttribute(const char* name, video::SColor value) :
-		IsFloat(false), Count(4), ValueI(), ValueF()
+		ValueI(), ValueF(), Count(4), IsFloat(false)
 	{
 		Name = name;
 		ValueI.push_back(value.getRed());
@@ -236,7 +234,7 @@ public:
 
 
 	CNumbersAttribute(const char* name, core::vector3df value) : 
-		IsFloat(true), Count(3), ValueI(), ValueF()
+		ValueI(), ValueF(), Count(3), IsFloat(true)
 	{
 		Name = name;
 		ValueF.push_back(value.X);
@@ -245,7 +243,7 @@ public:
 	}
 
 	CNumbersAttribute(const char* name, core::position2df value) : 
-		IsFloat(true), Count(2), ValueI(), ValueF()
+		ValueI(), ValueF(), Count(2), IsFloat(true)
 	{
 		Name = name;
 		ValueF.push_back(value.X);
@@ -253,7 +251,7 @@ public:
 	}
 
 	CNumbersAttribute(const char* name, core::position2di value) : 
-		IsFloat(false), Count(2), ValueI(), ValueF()
+		ValueI(), ValueF(), Count(2), IsFloat(false)
 	{
 		Name = name;
 		ValueI.push_back(value.X);
@@ -261,7 +259,7 @@ public:
 	}
 
 	CNumbersAttribute(const char* name, core::rect<s32> value) : 
-		IsFloat(false), Count(4), ValueI(), ValueF()
+		ValueI(), ValueF(), Count(4), IsFloat(false)
 	{
 		Name = name;
 		ValueI.push_back(value.UpperLeftCorner.X);
@@ -271,7 +269,7 @@ public:
 	}
 
 	CNumbersAttribute(const char* name, core::rect<f32> value) : 
-		IsFloat(true), Count(4), ValueI(), ValueF()
+		ValueI(), ValueF(), Count(4), IsFloat(true)
 	{
 		Name = name;
 		ValueF.push_back(value.UpperLeftCorner.X);
@@ -280,8 +278,128 @@ public:
 		ValueF.push_back(value.LowerRightCorner.Y);
 	}
 
-	// todo: matrix4, quaternion, aabbox3d, plane, triangle3d, vector2df, 
-	//		vector2di, line2di, line2df, line3df, dimension2di, dimension2df
+	CNumbersAttribute(const char* name, core::matrix4 value) : 
+		ValueI(), ValueF(), Count(16), IsFloat(true)
+	{
+		Name = name;
+		for (s32 r=0; r<4; ++r)
+			for (s32 c=0; c<4; ++c)
+				ValueF.push_back(value(r,c));
+	}
+
+	CNumbersAttribute(const char* name, core::quaternion value) : 
+		ValueI(), ValueF(), Count(4), IsFloat(true)
+	{
+		Name = name;
+		ValueF.push_back(value.X);
+		ValueF.push_back(value.Y);
+		ValueF.push_back(value.Z);
+		ValueF.push_back(value.W);
+	}
+
+	CNumbersAttribute(const char* name, core::aabbox3d<f32> value) : 
+		ValueI(), ValueF(), Count(6), IsFloat(true)
+	{
+		Name = name;
+		ValueF.push_back(value.MinEdge.X);
+		ValueF.push_back(value.MinEdge.Y);
+		ValueF.push_back(value.MinEdge.Z);
+		ValueF.push_back(value.MaxEdge.X);
+		ValueF.push_back(value.MaxEdge.Y);
+		ValueF.push_back(value.MaxEdge.Z);
+	}
+
+	CNumbersAttribute(const char* name, core::plane3df value) : 
+		ValueI(), ValueF(), Count(4), IsFloat(true)
+	{
+		Name = name;
+		ValueF.push_back(value.Normal.X);
+		ValueF.push_back(value.Normal.Y);
+		ValueF.push_back(value.Normal.Z);
+		ValueF.push_back(value.D);
+	}
+
+	CNumbersAttribute(const char* name, core::triangle3df value) : 
+		ValueI(), ValueF(), Count(9), IsFloat(true)
+	{
+		Name = name;
+		ValueF.push_back(value.pointA.X);
+		ValueF.push_back(value.pointA.Y);
+		ValueF.push_back(value.pointA.Z);
+		ValueF.push_back(value.pointB.X);
+		ValueF.push_back(value.pointB.Y);
+		ValueF.push_back(value.pointB.Z);
+		ValueF.push_back(value.pointC.X);
+		ValueF.push_back(value.pointC.Y);
+		ValueF.push_back(value.pointC.Z);
+	}
+
+	CNumbersAttribute(const char* name, core::vector2df value) : 
+		ValueI(), ValueF(), Count(2), IsFloat(true)
+	{
+		Name = name;
+		ValueF.push_back(value.X);
+		ValueF.push_back(value.Y);
+	}
+
+	CNumbersAttribute(const char* name, core::vector2di value) : 
+		ValueI(), ValueF(), Count(2), IsFloat(false)
+	{
+		Name = name;
+		ValueI.push_back(value.X);
+		ValueI.push_back(value.Y);
+	}
+
+	CNumbersAttribute(const char* name, core::line2di value) : 
+		ValueI(), ValueF(), Count(4), IsFloat(false)
+	{
+		Name = name;
+		ValueI.push_back(value.start.X);
+		ValueI.push_back(value.start.Y);
+		ValueI.push_back(value.end.X);
+		ValueI.push_back(value.end.Y);
+	}
+
+	CNumbersAttribute(const char* name, core::line2df value) : 
+		ValueI(), ValueF(), Count(4), IsFloat(true)
+	{
+		Name = name;
+		ValueF.push_back(value.start.X);
+		ValueF.push_back(value.start.Y);
+		ValueF.push_back(value.end.X);
+		ValueF.push_back(value.end.Y);
+	}
+
+	CNumbersAttribute(const char* name, core::line3df value) : 
+		ValueI(), ValueF(), Count(6), IsFloat(true)
+	{
+		Name = name;
+		ValueF.push_back(value.start.X);
+		ValueF.push_back(value.start.Y);
+		ValueF.push_back(value.start.Z);
+		ValueF.push_back(value.end.X);
+		ValueF.push_back(value.end.Y);
+		ValueF.push_back(value.end.Z);
+	}
+
+	CNumbersAttribute(const char* name, core::dimension2di value) : 
+		ValueI(), ValueF(), Count(2), IsFloat(false)
+	{
+		Name = name;
+		ValueI.push_back(value.Width);
+		ValueI.push_back(value.Height);
+	}
+
+
+	CNumbersAttribute(const char* name, core::dimension2df value) : 
+		ValueI(), ValueF(), Count(2), IsFloat(true)
+	{
+		Name = name;
+		ValueF.push_back(value.Width);
+		ValueF.push_back(value.Height);
+	}
+
+
 	
 	// getting values
 	virtual s32 getInt()
@@ -322,19 +440,38 @@ public:
 		
 	}
 
-	virtual void getString(char* target)
+
+	virtual core::stringc getString()
 	{
-		char outstr[50];
-		target[0] = '\0';
+		core::stringc outstr;
+		
 		for (u32 i=0; i <Count; ++i)
 		{
 			if (IsFloat)
-				sprintf(outstr, "%f%s", ValueF[i], i==Count-1 ? "" : ", " );
+				outstr += ValueF[i];
 			else
-				sprintf(outstr, "%d%s", ValueI[i], i==Count-1 ? "" : ", " );
+				outstr += ValueI[i];
 
-			strcat(target,outstr);
+			if (i < Count-1)
+				outstr += ", ";
 		}
+		return outstr;
+	}
+	virtual core::stringw getStringW()
+	{
+		core::stringw outstr;
+		
+		for (u32 i=0; i <Count; ++i)
+		{
+			if (IsFloat)
+				outstr += ValueF[i];
+			else
+				outstr += ValueI[i];
+
+			if (i < Count-1)
+				outstr += L", ";
+		}
+		return outstr;
 	}
 
 	virtual core::position2di getPosition()
@@ -423,10 +560,172 @@ public:
 		return r;
 	}
 
+	virtual core::matrix4 getMatrix()
+	{
+		core::matrix4 ret;
+		if (IsFloat)
+		{
+			for (u32 r=0; r<4; ++r)
+				for (u32 c=0; c<4; ++c)
+					if (Count > c+r*4) 
+						ret(r,c) = ValueF[c+r*4];
+		}
+		else
+		{
+			for (u32 r=0; r<4; ++r)
+				for (u32 c=0; c<4; ++c)
+					if (Count > c+r*4) 
+						ret(r,c) = (f32)ValueI[c+r*4];
+		}
+		return ret;
+	}
+
+	virtual core::quaternion getQuaternion()
+	{
+		core::quaternion ret;
+		if (IsFloat)
+		{
+			ret.X = Count > 0 ? ValueF[0] : 0.0f;
+			ret.Y = Count > 1 ? ValueF[1] : 0.0f;
+			ret.Z = Count > 2 ? ValueF[2] : 0.0f;
+			ret.W = Count > 3 ? ValueF[3] : 0.0f;
+		}
+		else
+		{
+			ret.X = Count > 0 ? (f32)ValueI[0] : 0.0f;
+			ret.Y = Count > 1 ? (f32)ValueI[1] : 0.0f;
+			ret.Z = Count > 2 ? (f32)ValueI[2] : 0.0f;
+			ret.W = Count > 3 ? (f32)ValueI[3] : 0.0f;
+		}
+		return ret;
+	}
+
+	virtual core::triangle3df getTriangle()
+	{
+		core::triangle3df ret;
+
+		if (IsFloat)
+		{
+			ret.pointA.X = Count > 0 ? ValueF[0] : 0.0f;
+			ret.pointA.Y = Count > 1 ? ValueF[1] : 0.0f;
+			ret.pointA.Z = Count > 2 ? ValueF[2] : 0.0f;
+			ret.pointB.X = Count > 3 ? ValueF[3] : 0.0f;
+			ret.pointB.Y = Count > 4 ? ValueF[4] : 0.0f;
+			ret.pointB.Z = Count > 5 ? ValueF[5] : 0.0f;
+			ret.pointC.X = Count > 6 ? ValueF[6] : 0.0f;
+			ret.pointC.X = Count > 7 ? ValueF[7] : 0.0f;
+			ret.pointC.Z = Count > 8 ? ValueF[8] : 0.0f;
+		}
+		else
+		{
+			ret.pointA.X = Count > 0 ? (f32)ValueI[0] : 0.0f;
+			ret.pointA.Y = Count > 1 ? (f32)ValueI[1] : 0.0f;
+			ret.pointA.Z = Count > 2 ? (f32)ValueI[2] : 0.0f;
+			ret.pointB.X = Count > 3 ? (f32)ValueI[3] : 0.0f;
+			ret.pointB.Y = Count > 4 ? (f32)ValueI[4] : 0.0f;
+			ret.pointB.Z = Count > 5 ? (f32)ValueI[5] : 0.0f;
+			ret.pointC.X = Count > 6 ? (f32)ValueI[6] : 0.0f;
+			ret.pointC.X = Count > 7 ? (f32)ValueI[7] : 0.0f;
+			ret.pointC.Z = Count > 8 ? (f32)ValueI[8] : 0.0f;
+		}
+
+		return ret;
+	}
+
+	virtual core::plane3df getPlane()
+	{
+		core::plane3df ret;
+
+		if (IsFloat)
+		{
+			ret.Normal.X = Count > 0 ? ValueF[0] : 0.0f;
+			ret.Normal.Y = Count > 1 ? ValueF[1] : 0.0f;
+			ret.Normal.Z = Count > 2 ? ValueF[2] : 0.0f;
+			ret.D		 = Count > 3 ? ValueF[3] : 0.0f;
+		}
+		else
+		{
+			ret.Normal.X = Count > 0 ? (f32)ValueI[0] : 0.0f;
+			ret.Normal.Y = Count > 1 ? (f32)ValueI[1] : 0.0f;
+			ret.Normal.Z = Count > 2 ? (f32)ValueI[2] : 0.0f;
+			ret.D		 = Count > 3 ? (f32)ValueI[3] : 0.0f;
+		}
+
+		return ret;
+	}
+
+	virtual core::aabbox3df getBBox()
+	{
+		core::aabbox3df ret;
+		if (IsFloat)
+		{
+			ret.MinEdge.X = Count > 0 ? ValueF[0] : 0.0f;
+			ret.MinEdge.Y = Count > 1 ? ValueF[1] : 0.0f;
+			ret.MinEdge.Z = Count > 2 ? ValueF[2] : 0.0f;
+			ret.MaxEdge.X = Count > 3 ? ValueF[3] : 0.0f;
+			ret.MaxEdge.Y = Count > 4 ? ValueF[4] : 0.0f;
+			ret.MaxEdge.Z = Count > 5 ? ValueF[5] : 0.0f;
+		}
+		else
+		{
+			ret.MinEdge.X = Count > 0 ? (f32)ValueI[0] : 0.0f;
+			ret.MinEdge.Y = Count > 1 ? (f32)ValueI[1] : 0.0f;
+			ret.MinEdge.Z = Count > 2 ? (f32)ValueI[2] : 0.0f;
+			ret.MaxEdge.X = Count > 3 ? (f32)ValueI[3] : 0.0f;
+			ret.MaxEdge.Y = Count > 4 ? (f32)ValueI[4] : 0.0f;
+			ret.MaxEdge.Z = Count > 5 ? (f32)ValueI[5] : 0.0f;
+		}
+		return ret;
+
+	}
+
+	virtual core::line2df getLine2d()
+	{
+		core::line2df ret;
+		if (IsFloat)
+		{
+			ret.start.X = Count > 0 ? ValueF[0] : 0.0f;
+			ret.start.Y = Count > 1 ? ValueF[1] : 0.0f;
+			ret.end.X   = Count > 2 ? ValueF[2] : 0.0f;
+			ret.end.Y   = Count > 3 ? ValueF[3] : 0.0f;
+		}
+		else
+		{
+			ret.start.X = Count > 0 ? (f32)ValueI[0] : 0.0f;
+			ret.start.Y = Count > 1 ? (f32)ValueI[1] : 0.0f;
+			ret.end.X   = Count > 2 ? (f32)ValueI[2] : 0.0f;
+			ret.end.Y   = Count > 3 ? (f32)ValueI[3] : 0.0f;
+		}
+		return ret;
+	}
+
+	virtual core::line3df getLine3d()
+	{
+		core::line3df ret;
+		if (IsFloat)
+		{
+			ret.start.X = Count > 0 ? ValueF[0] : 0.0f;
+			ret.start.Y = Count > 1 ? ValueF[1] : 0.0f;
+			ret.start.Z = Count > 2 ? ValueF[2] : 0.0f;
+			ret.end.X   = Count > 3 ? ValueF[3] : 0.0f;
+			ret.end.Y   = Count > 4 ? ValueF[4] : 0.0f;
+			ret.end.Z   = Count > 5 ? ValueF[5] : 0.0f;
+		}
+		else
+		{
+			ret.start.X = Count > 0 ? (f32)ValueI[0] : 0.0f;
+			ret.start.Y = Count > 1 ? (f32)ValueI[1] : 0.0f;
+			ret.start.Z = Count > 2 ? (f32)ValueI[2] : 0.0f;
+			ret.end.X   = Count > 3 ? (f32)ValueI[3] : 0.0f;
+			ret.end.Y   = Count > 4 ? (f32)ValueI[4] : 0.0f;
+			ret.end.Z   = Count > 5 ? (f32)ValueI[5] : 0.0f;
+		}
+		return ret;
+	}
+
 	//! get float array
 	virtual core::array<f32> getFloatArray()
 	{
-
 		if (!IsFloat)
 		{
 			ValueF.clear();
@@ -448,8 +747,8 @@ public:
 		return ValueI;
 	}
 
+	
 	// setting values
-
 	virtual void setInt(s32 intValue)
 	{
 		// set all values
@@ -530,6 +829,7 @@ public:
 			if (Count > 1) ValueI[1] = v.Y;
 		}
 	}
+
 	virtual void setVector(core::vector3df v)
 	{
 		reset();
@@ -585,6 +885,7 @@ public:
 			if (Count > 3) ValueI[3] = color.getAlpha();
 		}
 	}
+
 	virtual void setRect(core::rect<s32> value)
 	{
 		reset();
@@ -601,6 +902,198 @@ public:
 			if (Count > 1) ValueI[1] = value.UpperLeftCorner.Y;
 			if (Count > 2) ValueI[2] = value.LowerRightCorner.X;
 			if (Count > 3) ValueI[3] = value.LowerRightCorner.Y;
+		}
+	}
+
+	virtual void setMatrix(core::matrix4 value)
+	{
+		reset();
+		if (IsFloat)
+		{
+			for (u32 r=0; r<4; ++r)
+				for (u32 c=0; c<4; ++c)
+					if (Count > c+r*4) 
+						ValueF[c+r*4] = value(r,c);
+		}
+		else
+		{
+			for (u32 r=0; r<4; ++r)
+				for (u32 c=0; c<4; ++c)
+					if (Count > c+r*4) 
+						ValueI[c+r*4] = (s32)value(r,c);
+		}
+	}
+
+	virtual void setQuaternion(core::quaternion value)
+	{
+		reset();
+		if (IsFloat)
+		{
+			if (Count > 0) ValueF[0] = value.X;
+			if (Count > 1) ValueF[1] = value.Y;
+			if (Count > 2) ValueF[2] = value.Z;
+			if (Count > 3) ValueF[3] = value.W;
+		}
+		else
+		{
+			if (Count > 0) ValueI[0] = (s32)value.X;
+			if (Count > 1) ValueI[1] = (s32)value.Y;
+			if (Count > 2) ValueI[2] = (s32)value.Z;
+			if (Count > 3) ValueI[3] = (s32)value.W;
+		}
+	}
+
+	virtual void setBoundingBox(core::aabbox3d<f32> value)
+	{
+		reset();
+		if (IsFloat)
+		{
+			if (Count > 0) ValueF[0] = value.MinEdge.X;
+			if (Count > 1) ValueF[1] = value.MinEdge.Y;
+			if (Count > 2) ValueF[2] = value.MinEdge.Z;
+			if (Count > 3) ValueF[3] = value.MaxEdge.X;
+			if (Count > 4) ValueF[4] = value.MaxEdge.Y;
+			if (Count > 5) ValueF[5] = value.MaxEdge.Z;
+		}
+		else
+		{
+			if (Count > 0) ValueI[0] = (s32)value.MinEdge.X;
+			if (Count > 1) ValueI[1] = (s32)value.MinEdge.Y;
+			if (Count > 2) ValueI[2] = (s32)value.MinEdge.Z;
+			if (Count > 3) ValueI[3] = (s32)value.MaxEdge.X;
+			if (Count > 4) ValueI[4] = (s32)value.MaxEdge.Y;
+			if (Count > 5) ValueI[5] = (s32)value.MaxEdge.Z;
+		}
+	}
+
+	virtual void setPlane(core::plane3df value)
+	{
+		reset();
+		if (IsFloat)
+		{
+			if (Count > 0) ValueF[0] = value.Normal.X;
+			if (Count > 1) ValueF[1] = value.Normal.Y;
+			if (Count > 2) ValueF[2] = value.Normal.Z;
+			if (Count > 3) ValueF[3] = value.D;
+		}
+		else
+		{
+			if (Count > 0) ValueI[0] = (s32)value.Normal.X;
+			if (Count > 1) ValueI[1] = (s32)value.Normal.Y;
+			if (Count > 2) ValueI[2] = (s32)value.Normal.Z;
+			if (Count > 3) ValueI[3] = (s32)value.D;
+		}
+	}
+
+	virtual void setTriangle3d(core::triangle3df value)
+	{
+		reset();
+		if (IsFloat)
+		{
+			if (Count > 0) ValueF[0] = value.pointA.X;
+			if (Count > 1) ValueF[1] = value.pointA.Y;
+			if (Count > 2) ValueF[2] = value.pointA.Z;
+			if (Count > 3) ValueF[3] = value.pointB.X;
+			if (Count > 4) ValueF[4] = value.pointB.Y;
+			if (Count > 5) ValueF[5] = value.pointB.Z;
+			if (Count > 6) ValueF[6] = value.pointC.X;
+			if (Count > 7) ValueF[7] = value.pointC.Y;
+			if (Count > 8) ValueF[8] = value.pointC.Z;
+		}
+		else
+		{
+			if (Count > 0) ValueI[0] = (s32)value.pointA.X;
+			if (Count > 1) ValueI[1] = (s32)value.pointA.Y;
+			if (Count > 2) ValueI[2] = (s32)value.pointA.Z;
+			if (Count > 3) ValueI[3] = (s32)value.pointB.X;
+			if (Count > 4) ValueI[4] = (s32)value.pointB.Y;
+			if (Count > 5) ValueI[5] = (s32)value.pointB.Z;
+			if (Count > 6) ValueI[6] = (s32)value.pointC.X;
+			if (Count > 7) ValueI[7] = (s32)value.pointC.Y;
+			if (Count > 8) ValueI[8] = (s32)value.pointC.Z;
+		}
+	}
+
+	virtual void setVector2d(core::vector2df v)
+	{
+		reset();
+		if (IsFloat)
+		{
+			if (Count > 0) ValueF[0] = v.X;
+			if (Count > 1) ValueF[1] = v.Y;
+		}
+		else
+		{
+			if (Count > 0) ValueI[0] = (s32)v.X;
+			if (Count > 1) ValueI[1] = (s32)v.Y;
+		}
+	}
+
+	virtual void setVector2d(core::vector2di v)
+	{
+		reset();
+		if (IsFloat)
+		{
+			if (Count > 0) ValueF[0] = (f32)v.X;
+			if (Count > 1) ValueF[1] = (f32)v.Y;
+		}
+		else
+		{
+			if (Count > 0) ValueI[0] = v.X;
+			if (Count > 1) ValueI[1] = v.Y;
+		}
+	}
+
+	virtual void setLine2d(core::line2di v)
+	{
+		reset();
+		if (IsFloat)
+		{
+			if (Count > 0) ValueF[0] = (f32)v.start.X;
+			if (Count > 1) ValueF[1] = (f32)v.start.Y;
+			if (Count > 2) ValueF[2] = (f32)v.end.X;
+			if (Count > 3) ValueF[3] = (f32)v.end.Y;
+		}
+		else
+		{
+			if (Count > 0) ValueI[0] = v.start.X;
+			if (Count > 1) ValueI[1] = v.start.Y;
+			if (Count > 2) ValueI[2] = v.end.X;
+			if (Count > 3) ValueI[3] = v.end.Y;
+		}
+	}
+
+	virtual void setLine2d(core::line2df v)
+	{
+		reset();
+		if (IsFloat)
+		{
+			if (Count > 0) ValueF[0] = v.start.X;
+			if (Count > 1) ValueF[1] = v.start.Y;
+			if (Count > 2) ValueF[2] = v.end.X;
+			if (Count > 3) ValueF[3] = v.end.Y;
+		}
+		else
+		{
+			if (Count > 0) ValueI[0] = (s32)v.start.X;
+			if (Count > 1) ValueI[1] = (s32)v.start.Y;
+			if (Count > 2) ValueI[2] = (s32)v.end.X;
+			if (Count > 3) ValueI[3] = (s32)v.end.Y;
+		}
+	}
+
+	virtual void setDimension2d(core::dimension2di v)
+	{
+		reset();
+		if (IsFloat)
+		{
+			if (Count > 0) ValueF[0] = (f32)v.Width;
+			if (Count > 1) ValueF[1] = (f32)v.Height;
+		}
+		else
+		{
+			if (Count > 0) ValueI[0] = v.Width;
+			if (Count > 1) ValueI[1] = v.Height;
 		}
 	}
 
@@ -632,6 +1125,7 @@ public:
 		}
 	}
 
+
 	//! is it a number list?
 	virtual bool isNumberList()
 	{
@@ -644,21 +1138,37 @@ public:
 		return IsFloat;
 	}
 
+	virtual E_ATTRIBUTE_TYPE getType() const
+	{
+		if (IsFloat)
+			return EAT_FLOATARRAY;
+		else
+			return EAT_INTARRAY;
+	}
+
+	virtual const wchar_t* getTypeString() const
+	{
+		if (IsFloat)
+			return L"floatlist";
+		else
+			return L"intlist";
+	}
+
 protected:
 
 	//! clear all values
 	void reset()
 	{
-		
-		for (u32 i=0; i < Count ; ++i)
-			if (IsFloat)
-				ValueF[i]=0.0f;
-			else
-				ValueI[i]=0;
+		if (IsFloat)
+			for (u32 i=0; i < Count ; ++i)
+				ValueF[i] = 0.0f;
+		else
+			for (u32 i=0; i < Count ; ++i)
+				ValueI[i] = 0;
 	}
 
-	core::array<f32> ValueF;
 	core::array<s32> ValueI;
+	core::array<f32> ValueF;
 	u32 Count;
 	bool IsFloat;
 };
@@ -695,13 +1205,13 @@ public:
 		setInt((s32)floatValue);
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const 
 	{
 		return EAT_COLORF;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"colorf";
 	}
@@ -740,10 +1250,12 @@ public:
 		setInt((s32)floatValue);
 	}
 
-	virtual void getString(char* target)
+	virtual core::stringw getStringW()
 	{
+		char tmp[10];
 		video::SColor c = getColor();
-		sprintf(target, "%08x", c.color);
+		sprintf(tmp, "%08x", c.color);
+		return core::stringw(tmp);
 	}
 
 	virtual void setString(const char* text)
@@ -753,19 +1265,18 @@ public:
 		setColor(c);
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_COLOR;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"color";
 	}
 
 };
-
 
 
 // Attribute implemented for 3d vectors
@@ -775,12 +1286,20 @@ public:
 
 	CVector3DAttribute(const char* name, core::vector3df value) : CNumbersAttribute(name, value) {}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_VECTOR3D;
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual core::matrix4 getMatrix()
+	{
+		core::matrix4 ret;
+		ret.makeIdentity();
+		ret.setTranslation( core::vector3df(ValueF[0],ValueF[1],ValueF[2]) );
+		return ret;
+	}
+
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"vector3d";
 	}
@@ -793,12 +1312,12 @@ public:
 
 	CPosition2DAttribute(const char* name, core::position2di value) : CNumbersAttribute(name, value) {}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_POSITION2D;
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"position";
 	}
@@ -813,32 +1332,163 @@ public:
 
 	CRectAttribute(const char* name, core::rect<s32> value) : CNumbersAttribute(name, value) { }
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_RECT;
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"rect";
 	}
+};
 
-	core::rect<s32> Value;
+// Attribute implemented for matrices
+class CMatrixAttribute : public CNumbersAttribute
+{
+public:
+
+	CMatrixAttribute(const char* name, core::matrix4 value) : CNumbersAttribute(name, value) { }
+
+	virtual E_ATTRIBUTE_TYPE getType() const
+	{
+		return EAT_MATRIX;
+	}
+
+	virtual core::quaternion getQuaternion()
+	{
+		return core::quaternion(getMatrix());
+	}
+
+	virtual const wchar_t* getTypeString() const
+	{
+		return L"matrix";
+	}
+};
+
+// Attribute implemented for quaternions
+class CQuaternionAttribute : public CNumbersAttribute
+{
+public:
+
+	CQuaternionAttribute(const char* name, core::quaternion value) : CNumbersAttribute(name, value) { }
+
+	virtual E_ATTRIBUTE_TYPE getType() const
+	{
+		return EAT_QUATERNION;
+	}
+
+	virtual core::matrix4 getMatrix()
+	{
+		return getQuaternion().getMatrix();
+	}
+
+	virtual const wchar_t* getTypeString() const
+	{
+		return L"quaternion";
+	}
 };
 
 
+// Attribute implemented for bounding boxes
+class CBBoxAttribute : public CNumbersAttribute
+{
+public:
+
+	CBBoxAttribute(const char* name, core::aabbox3df value) : CNumbersAttribute(name, value) { }
+
+	virtual E_ATTRIBUTE_TYPE getType() const
+	{
+		return EAT_BBOX;
+	}
+
+	virtual const wchar_t* getTypeString() const
+	{
+		return L"box3d";
+	}
+};
+
+// Attribute implemented for planes
+class CPlaneAttribute : public CNumbersAttribute
+{
+public:
+
+	CPlaneAttribute(const char* name, core::plane3df value) : CNumbersAttribute(name, value) { }
+
+	virtual E_ATTRIBUTE_TYPE getType() const
+	{
+		return EAT_PLANE;
+	}
+
+	virtual const wchar_t* getTypeString() const
+	{
+		return L"plane";
+	}
+};
+
+// Attribute implemented for triangles
+class CTriangleAttribute : public CNumbersAttribute
+{
+public:
+
+	CTriangleAttribute(const char* name, core::triangle3df value) : CNumbersAttribute(name, value) { }
+
+	virtual E_ATTRIBUTE_TYPE getType() const
+	{
+		return EAT_TRIANGLE3D;
+	}
+
+	virtual core::plane3df getPlane()
+	{
+		return getTriangle().getPlane();
+	}
+
+	virtual const wchar_t* getTypeString() const
+	{
+		return L"triangle";
+	}
+};
 
 
+// Attribute implemented for 2d lines
+class CLine2dAttribute : public CNumbersAttribute
+{
+public:
 
-// quaternion
-// matrix4
-// triangle3d
-// vector2d
-// line2d
-// line3d
-// dimension2d
-// aabbox3d
-// plane
+	CLine2dAttribute(const char* name, core::line2df value) : CNumbersAttribute(name, value) { }
+
+	virtual E_ATTRIBUTE_TYPE getType() const
+	{
+		return EAT_LINE2D;
+	}
+
+	virtual const wchar_t* getTypeString() const
+	{
+		return L"line2d";
+	}
+};
+
+// Attribute implemented for 3d lines
+class CLine3dAttribute : public CNumbersAttribute
+{
+public:
+
+	CLine3dAttribute(const char* name, core::line3df value) : CNumbersAttribute(name, value) { }
+
+	virtual E_ATTRIBUTE_TYPE getType() const
+	{
+		return EAT_LINE3D;
+	}
+
+	virtual const wchar_t* getTypeString() const
+	{
+		return L"line3d";
+	}
+};
+
+
+// vector2df
+// dimension2di
 
 /* 
 	Special attributes
@@ -894,9 +1544,14 @@ public:
 		return (getInt() != 0); // does not make a lot of sense, I know
 	}
 
-	virtual void getString(char* target)
+	virtual core::stringc getString()
 	{
-		strcpy(target, Value.c_str());
+		return Value;
+	}
+
+	virtual core::stringw getStringW()
+	{
+		return core::stringw(Value.c_str());
 	}
 
 	virtual void setInt(s32 intValue)
@@ -922,13 +1577,13 @@ public:
 		return Value.c_str();
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_ENUM;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"enum";
 	}
@@ -991,19 +1646,19 @@ public:
 			return Value.equals_ignore_case("true");
 	}
 
-	virtual void getString(char* target)
+	virtual core::stringc getString()
 	{
 		if (IsStringW)
-			strcpy(target, core::stringc(ValueW.c_str()).c_str() );
+			return core::stringc(ValueW.c_str());
 		else
-			strcpy(target, Value.c_str());
+			return Value;
 	}
-	virtual void getString(wchar_t* target)
+	virtual core::stringw getStringW()
 	{
 		if (IsStringW)
-			wcscpy(target, ValueW.c_str() );
+			return ValueW;
 		else
-			wcscpy(target, core::stringw(Value.c_str()).c_str());
+			return core::stringw(Value.c_str());
 	}
 
 	virtual void setInt(s32 intValue)
@@ -1040,13 +1695,13 @@ public:
 			Value = core::stringc(text);
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_STRING;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"string";
 	}
@@ -1132,13 +1787,13 @@ public:
 
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_BINARY;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"binary";
 	}
@@ -1180,6 +1835,16 @@ public:
 		return (Value != 0);
 	}
 
+	virtual core::stringw getStringW()
+	{
+		return core::stringw(Value ? Value->getName().c_str() : 0);
+	}
+
+	virtual core::stringc getString()
+	{
+		return Value ? Value->getName() : core::stringc();
+	}
+
 	virtual void getString(char* target)
 	{
 		if (Value)
@@ -1210,13 +1875,13 @@ public:
 			Value->grab();
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_TEXTURE;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"texture";
 	}
@@ -1248,14 +1913,14 @@ public:
 		Value = value;
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
-		return EAT_ARRAY;
+		return EAT_STRINGWARRAY;
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
-		return L"array";
+		return L"stringwarray";
 	}
 
 	core::array<core::stringw> Value;

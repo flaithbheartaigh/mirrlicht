@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 // Code for this scene node has been contributed by Anders la Cour-Harbo (alc)
@@ -49,7 +49,7 @@ CSkyDomeSceneNode::CSkyDomeSceneNode(video::ITexture* sky, u32 horiRes, u32 vert
 	Buffer.Material.Lighting = false;
 	Buffer.Material.ZBuffer = false;
 	Buffer.Material.ZWriteEnable = false;
-	Buffer.Material.Texture1 = sky;
+	Buffer.Material.Textures[0] = sky;
 	Buffer.BoundingBox.MaxEdge.set(0,0,0);
 	Buffer.BoundingBox.MinEdge.set(0,0,0);
 
@@ -139,12 +139,12 @@ const core::aabbox3d<f32>& CSkyDomeSceneNode::getBoundingBox() const
 }
 
 
-void CSkyDomeSceneNode::OnPreRender()
+void CSkyDomeSceneNode::OnRegisterSceneNode()
 {
 	if (IsVisible)
 	{
 		SceneManager->registerNodeForRendering(this, ESNRP_SKY_BOX);
-		ISceneNode::OnPreRender();
+		ISceneNode::OnRegisterSceneNode();
 	}
 }
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -9,7 +9,7 @@
 #include "IGUIButton.h"
 #include "IGUIStaticText.h"
 #include "IGUIFont.h"
-#include "GUIIcons.h"
+#include "IGUISpriteBank.h"
 #include "IFileList.h"
 #include "os.h"
 #include "SoftwareDriver2_helper.h"
@@ -57,20 +57,36 @@ CGUIColorSelectDialog::CGUIColorSelectDialog( const wchar_t* title, IGUIEnvironm
 
 	Text = title;
 
+	IGUISkin* skin = Environment->getSkin();
+	core::rect<s32> rec;
+
 	s32 buttonw = environment->getSkin()->getSize(EGDS_WINDOW_BUTTON_WIDTH);
 	s32 posx = RelativeRect.getWidth() - buttonw - 4;
 
-	CloseButton = Environment->addButton(core::rect<s32>(posx, 3, posx + buttonw, 3 + buttonw), this, -1, GUI_ICON_WINDOW_CLOSE);
-	CloseButton->setOverrideFont(Environment->getBuiltInFont());
+	CloseButton = Environment->addButton(core::rect<s32>(posx, 3, posx + buttonw, 3 + buttonw), 
+		this, -1, L"", skin ? skin->getDefaultText(EGDT_WINDOW_CLOSE) : L"Close");
+	if (skin && skin->getSpriteBank())
+	{
+		CloseButton->setSpriteBank(skin->getSpriteBank());
+		CloseButton->setSprite(EGBS_BUTTON_UP, skin->getIcon(EGDI_WINDOW_CLOSE), skin->getColor(EGDC_WINDOW_SYMBOL));
+		CloseButton->setSprite(EGBS_BUTTON_DOWN, skin->getIcon(EGDI_WINDOW_CLOSE), skin->getColor(EGDC_WINDOW_SYMBOL));
+	}
 	CloseButton->setSubElement(true);
+	CloseButton->setAlignment(EGUIA_LOWERRIGHT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_UPPERLEFT); 
 	CloseButton->grab();
 
-	OKButton = Environment->addButton(core::rect<s32>(RelativeRect.getWidth()-80, 30, RelativeRect.getWidth()-10, 50), this, -1, L"OK");
+	OKButton = Environment->addButton(
+		core::rect<s32>(RelativeRect.getWidth()-80, 30, RelativeRect.getWidth()-10, 50),
+		this, -1, skin ? skin->getDefaultText(EGDT_MSG_BOX_OK) : L"OK");
 	OKButton->setSubElement(true);
+	OKButton->setAlignment(EGUIA_LOWERRIGHT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_UPPERLEFT); 
 	OKButton->grab();
 
-	CancelButton = Environment->addButton(core::rect<s32>(RelativeRect.getWidth()-80, 55, RelativeRect.getWidth()-10, 75), this, -1, L"Cancel");
+	CancelButton = Environment->addButton(
+		core::rect<s32>(RelativeRect.getWidth()-80, 55, RelativeRect.getWidth()-10, 75), 
+		this, -1, skin ? skin->getDefaultText(EGDT_MSG_BOX_CANCEL) : L"Cancel");
 	CancelButton->setSubElement(true);
+	CancelButton->setAlignment(EGUIA_LOWERRIGHT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_UPPERLEFT); 
 	CancelButton->grab();
 
 	core::rect<s32> r;
@@ -79,12 +95,13 @@ CGUIColorSelectDialog::CGUIColorSelectDialog( const wchar_t* title, IGUIEnvironm
 	ColorRing.Texture = driver->getTexture ( "#colorring" );
 	if ( 0 == ColorRing.Texture )
 	{
-		buildColorRing ( core::dimension2d<s32> ( 128, 128  ), 1,  Environment->getSkin ()->getColor (EGDC_3D_SHADOW ).color );
+		buildColorRing(core::dimension2d<s32>(128, 128), 1,  
+			Environment->getSkin()->getColor(EGDC_3D_SHADOW).color);
 	}
 
 	r.UpperLeftCorner.X = 20;
 	r.UpperLeftCorner.Y = 20;
-	ColorRing.Control = Environment->addImage ( ColorRing.Texture, r.UpperLeftCorner, true, this );
+	ColorRing.Control = Environment->addImage(ColorRing.Texture, r.UpperLeftCorner, true, this);
 	ColorRing.Control->setSubElement(true);
 	ColorRing.Control->grab();
 
@@ -135,6 +152,8 @@ CGUIColorSelectDialog::CGUIColorSelectDialog( const wchar_t* title, IGUIEnvironm
 		Battery.push_back ( item );
 	}
 
+	bringToFront(CancelButton);
+	bringToFront(OKButton);
 
 }
 
@@ -385,6 +404,15 @@ bool CGUIColorSelectDialog::OnEvent(SEvent event)
 		case EMIE_MOUSE_MOVED:
 			if (Dragging)
 			{
+				// gui window should not be dragged outside its parent
+				if (Parent)
+					if (event.MouseInput.X < Parent->getAbsolutePosition().UpperLeftCorner.X +1 ||
+						event.MouseInput.Y < Parent->getAbsolutePosition().UpperLeftCorner.Y +1 ||
+						event.MouseInput.X > Parent->getAbsolutePosition().LowerRightCorner.X -1 ||
+						event.MouseInput.Y > Parent->getAbsolutePosition().LowerRightCorner.Y -1)
+
+						return true;
+
 				move(core::position2d<s32>(event.MouseInput.X - DragStart.X, event.MouseInput.Y - DragStart.Y));
 				DragStart.X = event.MouseInput.X;
 				DragStart.Y = event.MouseInput.Y;

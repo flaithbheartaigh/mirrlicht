@@ -5,14 +5,6 @@
 #include "dimension2d.h"
 #include "irrString.h"
 
-#include "IrrCompileConfig.h"
-// this should really go into the compile config header.
-// there is a similar macro in irrlicht.h, but i feel that
-// macro should be moved to compile config also.
-#ifdef _IRR_WINDOWS_
-#  define snprintf _snprintf
-#endif
-
 #if defined(__SYMBIAN32__) && defined(__WINS__)	
 	#include <stdarg.h>
 	class snprintf_work_around
@@ -55,7 +47,7 @@ bool CImageWriterPPM::isAWriteableFileExtension(const c8* fileName)
 	return strstr(fileName, ".ppm") != 0;
 }
 
-bool CImageWriterPPM::writeImage(io::IWriteFile *file, IImage *image)
+bool CImageWriterPPM::writeImage(io::IWriteFile *file, IImage *image,u32 param)
 {
 	char cache[70];
 	char size;
@@ -109,5 +101,5 @@ bool CImageWriterPPM::writeImage(io::IWriteFile *file, IImage *image)
 	return true;
 }
 
-}; // namespace video
-}; // namespace irr
+} // namespace video
+} // namespace irr

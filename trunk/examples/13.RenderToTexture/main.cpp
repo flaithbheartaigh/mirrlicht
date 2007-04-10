@@ -34,7 +34,7 @@ int main()
 		case 'b': driverType = video::EDT_DIRECT3D8;break;
 		case 'c': driverType = video::EDT_OPENGL;   break;
 		case 'd': driverType = video::EDT_SOFTWARE; break;
-		case 'e': driverType = video::EDT_SOFTWARE2;break;
+		case 'e': driverType = video::EDT_BURNINGSVIDEO;break;
 		case 'f': driverType = video::EDT_NULL;     break;
 		default: return 1;
 	}	
@@ -163,6 +163,8 @@ int main()
 	That's, wasn't quite complicated I hope. :)
 	*/
 
+	int lastFPS = -1;
+
 	while(device->run())
 	if (device->isWindowActive())
 	{
@@ -195,6 +197,18 @@ int main()
 		env->drawAll();
 
 		driver->endScene();
+
+		// display frames per second in window title
+		int fps = driver->getFPS();
+		if (lastFPS != fps)
+		{
+			core::stringw str = L"Irrlicht Engine - Render to Texture and Specular Highlights example";
+			str += " FPS:";
+			str += fps;
+
+			device->setWindowCaption(str.c_str());
+			lastFPS = fps;
+		}
 	}
 
 	if (rt)

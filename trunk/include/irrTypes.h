@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -61,16 +61,17 @@ typedef float				f32;
 typedef double				f64; 
 
 
-} // end namespace
+} // end namespace irr
 
 #ifdef __SYMBIAN32__
 #   include <stddef.h> //for size_t
 #else
 #include <wchar.h>
 #ifdef _IRR_WINDOWS_
-//! Define for swprintf because this method does not match the ISO C standard
-//! on Windows platforms, but it does on all other ones.
-#define   swprintf   _snwprintf
+//! Defines for s{w,n}printf because these methods do not match the ISO C
+//! standard on Windows platforms, but it does on all others.
+#define swprintf _snwprintf
+#define snprintf _snprintf
 #endif // _IRR_WINDOWS_
 
 // define the wchar_t type if not already built in.
@@ -88,8 +89,9 @@ typedef unsigned short wchar_t;
 #define _WCHAR_T_DEFINED
 #endif // wchar is not defined
 #endif // microsoft compiler
-#endif
-//! define a break macro for debugging only in Win32 mode.
+#endif // _IRR_WINDOWS_
+
+//! define a break macro for debugging.
 #if defined(_DEBUG)
 #if defined(_IRR_WINDOWS_) && defined(_MSC_VER)
 #define _IRR_DEBUG_BREAK_IF( _CONDITION_ ) if (_CONDITION_) {_asm int 3}

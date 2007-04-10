@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -153,7 +153,7 @@ namespace scene
 		//! panoramic texture on it and is drawn around the camera position.
 		virtual ISceneNode* addSkyDomeSceneNode(video::ITexture* texture,
 			u32 horiRes, u32 vertRes, f64 texturePercentage,
-			f64 spherePercentage, ISceneNode* parent, s32 id);
+			f64 spherePercentage, ISceneNode* parent=0, s32 id=-1);
 
 		//! Adds a text scene node, which is able to display 
 		//! 2d text at a position in three dimensional space
@@ -163,13 +163,13 @@ namespace scene
 			s32 id=-1);
 
 		//! Adds a text scene node, which uses billboards
-		virtual ITextSceneNode* addTextSceneNode2(gui::IGUIFontASCII* font, const wchar_t* text,
+		virtual ITextSceneNode* addBillboardTextSceneNode(gui::IGUIFont* font, const wchar_t* text,
 			ISceneNode* parent = 0,
 			const core::dimension2d<f32>& size = core::dimension2d<f32>(10.0f, 10.0f),
-			f32 kerning = 0.5f,
 			const core::vector3df& position = core::vector3df(0,0,0), s32 id=-1,
 			video::SColor shade_top = 0xFFFFFFFF, video::SColor shade_down = 0xFFFFFFFF);
 
+		//! Adds a scene node, which can render a quake3 shader
 		virtual ISceneNode* addQuake3SceneNode(IMeshBuffer* meshBuffer, const quake3::SShader * shader,
 												ISceneNode* parent=0, s32 id=-1
 												);
@@ -193,7 +193,9 @@ namespace scene
 			f32 maxHeight, const core::dimension2d<s32>& defaultVertexBlockSize);
 
 		//! Add a arrow mesh to the mesh pool
-		virtual IAnimatedMesh* addArrowMesh(const c8* name, u32 tesselation, f32 width, f32 height, video::SColor vtxColor);
+		virtual IAnimatedMesh* addArrowMesh(const c8* name, u32 tesselationCylinder, u32 tesselationCone, f32 height,
+											f32 cylinderHeight, f32 width0,f32 width1,
+											video::SColor vtxColor0, video::SColor vtxColor1);
 
 		//! Adds a particle system scene node. 
 		virtual IParticleSystemSceneNode* addParticleSystemSceneNode(
@@ -204,7 +206,7 @@ namespace scene
 
 		//! Adds a terrain scene node to the scene graph.
 		virtual ITerrainSceneNode* addTerrainSceneNode(
-			const char* heightMapFileName, 
+			const c8* heightMapFileName, 
 			ISceneNode* parent=0, s32 id=-1, 
 			const core::vector3df& position = core::vector3df(0.0f,0.0f,0.0f),
 			const core::vector3df& rotation = core::vector3df(0.0f,0.0f,0.0f),
@@ -331,7 +333,13 @@ namespace scene
 		virtual ISceneNode* getSceneNodeFromId(s32 id, ISceneNode* start=0);
 
 		//! Returns the first scene node with the specified name.
-		virtual ISceneNode* getSceneNodeFromName(const char* name, ISceneNode* start=0);
+		virtual ISceneNode* getSceneNodeFromName(const c8* name, ISceneNode* start=0);
+
+		//! Returns the first scene node with the specified type.
+		virtual ISceneNode* getSceneNodeFromType(scene::ESCENE_NODE_TYPE type, ISceneNode* start=0);
+
+		//! returns scene nodes by type.
+		virtual void getSceneNodesFromType(ESCENE_NODE_TYPE type, core::array<scene::ISceneNode*>& outNodes, ISceneNode* start=0);
 
 		//! Posts an input event to the environment. Usually you do not have to
 		//! use this method, it is used by the internal engine.
@@ -350,10 +358,10 @@ namespace scene
 		virtual E_SCENE_NODE_RENDER_PASS getSceneNodeRenderPass();
 
 		//! Creates a new scene manager. 
-		virtual ISceneManager* createNewSceneManager();
+		virtual ISceneManager* createNewSceneManager(bool cloneContent);
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_UNKNOWN; }
+		virtual ESCENE_NODE_TYPE getType() const { return ESNT_UNKNOWN; }
 
 		//! Returns the default scene node factory which can create all built in scene nodes
 		virtual ISceneNodeFactory* getDefaultSceneNodeFactory();
@@ -410,7 +418,7 @@ namespace scene
 		//! Returns ambient color of the scene
 		virtual video::SColorf getAmbientLight();
 
-	private:		
+	private:
 
 		//! Returns a typename from a scene node animator type or null if not found
 		virtual const c8* getAnimatorTypeName(ESCENE_NODE_ANIMATOR_TYPE type);
@@ -445,7 +453,7 @@ namespace scene
 				textureValue = 0;
 
 				if (n->getMaterialCount())
-					textureValue = (n->getMaterial(0).Texture1);
+					textureValue = (n->getMaterial(0).Textures[0]);
 
 				node = n;
 			}
@@ -465,7 +473,7 @@ namespace scene
 
 			ShaderNodeEntry(ISceneNode* n, u32 sceneTime )
 			{
-				textureValue = n->getMaterial( sceneTime ).Texture1;
+				textureValue = n->getMaterial( sceneTime ).Textures[0];
 
 				node = n;
 			}
@@ -530,7 +538,6 @@ namespace scene
 			}
 		};
 
-
 		//! video driver
 		video::IVideoDriver* Driver;
 
@@ -576,7 +583,7 @@ namespace scene
 		//! Mesh cache
 		CMeshCache* MeshCache;
 
-		E_SCENE_NODE_RENDER_PASS CurrentRendertime;	
+		E_SCENE_NODE_RENDER_PASS CurrentRendertime;
 
 		//! constants for reading and writing XML.
 		//! Not made static due to portability problems.

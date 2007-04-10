@@ -1,10 +1,11 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CAnimatedMeshMS3D.h"
 #include "os.h"
 #include "IVideoDriver.h"
+#include "quaternion.h"
 
 namespace irr
 {
@@ -13,7 +14,7 @@ namespace scene
 
 
 // byte-align structures
-#ifdef _MSC_VER
+#if defined(_MSC_VER) ||  defined(__BORLANDC__) || defined (__BCPLUSPLUS__) 
 #	pragma pack( push, packing )
 #	pragma pack( 1 )
 #	define PACK_STRUCT
@@ -72,7 +73,7 @@ struct MS3DMaterial
     s8 Alphamap[128];
 } PACK_STRUCT;
 
-//	Joint information
+// Joint information
 struct MS3DJoint
 {
 	u8 Flags;
@@ -92,7 +93,7 @@ struct MS3DKeyframe
 } PACK_STRUCT;
 
 // Default alignment
-#ifdef _MSC_VER
+#if defined(_MSC_VER) ||  defined(__BORLANDC__) || defined (__BCPLUSPLUS__) 
 #	pragma pack( pop, packing )
 #elif defined(__SYMBIAN32__) && defined(__WINS__)
 #   pragma pack(4) //default alignment in Project settings 
@@ -295,7 +296,7 @@ bool CAnimatedMeshMS3D::loadFile(io::IReadFile* file)
 		tmpBuffer.Material.EmissiveColor = video::SColorf(material->Emissive[0], material->Emissive[1], material->Emissive[2], material->Emissive[3]).toSColor ();
 		tmpBuffer.Material.SpecularColor = video::SColorf(material->Specular[0], material->Specular[1], material->Specular[2], material->Specular[3]).toSColor ();
 		tmpBuffer.Material.Shininess = material->Shininess;
-		tmpBuffer.Material.Texture1 = Driver->getTexture((const c8*)material->Texture);
+		tmpBuffer.Material.Textures[0] = Driver->getTexture((const c8*)material->Texture);
 		tmpBuffer.BoundingBox = &BoundingBox;
 		tmpBuffer.Vertices = &AnimatedVertices;
 	}
@@ -537,9 +538,8 @@ IMesh* CAnimatedMeshMS3D::getMesh(s32 frame, s32 detailLevel, s32 startFrameLoop
 
 
 
-void CAnimatedMeshMS3D::getKeyframeData(core::array<SKeyframe>& keys, f32 time, core::vector3df& outdata)
+void CAnimatedMeshMS3D::getKeyframeData(const core::array<SKeyframe>& keys, f32 time, core::vector3df& outdata) const
 {
-
 	if (keys.size())
 	{
 		if (time < keys[0].timeindex)
@@ -547,18 +547,50 @@ void CAnimatedMeshMS3D::getKeyframeData(core::array<SKeyframe>& keys, f32 time, 
 			outdata = keys[0].data;
 			return;
 		}
-		if (time > keys[keys.size()-1].timeindex)
+		if (time > keys.getLast().timeindex)
 		{
-			outdata = keys[keys.size()-1].data;
+			outdata = keys.getLast().data;
 			return;
 		}
 
-		for (s32 i=0; i<(s32)keys.size()-1; ++i)
+		for (u32 i=0; i<keys.size()-1; ++i)
 		{
 			if (keys[i].timeindex <= time && keys[i+1].timeindex >= time)
 			{
 				f32 interpolate = (time - keys[i].timeindex)/(keys[i+1].timeindex - keys[i].timeindex);
 				outdata = keys[i].data + ((keys[i+1].data - keys[i].data) * interpolate);
+				return;
+			}
+		}
+	}
+}
+
+
+void CAnimatedMeshMS3D::getKeyframeRotation(const core::array<SKeyframe>& keys, f32 time, core::vector3df& outdata) const
+{
+	if (keys.size())
+	{
+		if (time < keys[0].timeindex)
+		{
+			outdata = keys[0].data;
+			return;
+		}
+		if (time > keys.getLast().timeindex)
+		{
+			outdata = keys.getLast().data;
+			return;
+		}
+
+		for (u32 i=0; i<keys.size()-1; ++i)
+		{
+			if (keys[i].timeindex <= time && keys[i+1].timeindex >= time)
+			{
+//				core::quaternion q1(keys[i].data);
+//				core::quaternion q2(keys[i+1].data);
+				f32 interpolate = (time - keys[i].timeindex)/(keys[i+1].timeindex - keys[i].timeindex);
+				core::quaternion q;
+				q.slerp(keys[i].data, keys[i+1].data, interpolate);
+				q.toEuler(outdata);
 				return;
 			}
 		}
@@ -620,9 +652,9 @@ void CAnimatedMeshMS3D::animate(s32 frame)
 		core::vector3df translation = Joints[i].Translation;
 		core::vector3df rotation = Joints[i].Rotation;
 		
-		// find keyframe translation and roation
+		// find keyframe translation and rotation
 		getKeyframeData(Joints[i].TranslationKeys, time, translation);
-		getKeyframeData(Joints[i].RotationKeys, time, rotation);
+		getKeyframeRotation(Joints[i].RotationKeys, time, rotation);
 
 		transform.makeIdentity();
 		transform.setRotationRadians(rotation);
@@ -673,7 +705,21 @@ u32 CAnimatedMeshMS3D::getMeshBufferCount() const
 //! returns pointer to a mesh buffer
 IMeshBuffer* CAnimatedMeshMS3D::getMeshBuffer(u32 nr) const
 {
-	return (IMeshBuffer*) &Buffers[nr];
+	if (nr < Buffers.size())
+		return (IMeshBuffer*) &Buffers[nr];
+	else
+		return 0;
+}
+
+//! Returns pointer to a mesh buffer which fits a material
+IMeshBuffer* CAnimatedMeshMS3D::getMeshBuffer( const video::SMaterial &material) const
+{
+	for (u32 i=0; i<Buffers.size(); ++i)
+	{
+		if (Buffers[i].getMaterial() == material)
+			return (IMeshBuffer*) &Buffers[i];
+	}
+	return 0;
 }
 
 
@@ -684,18 +730,17 @@ const core::aabbox3d<f32>& CAnimatedMeshMS3D::getBoundingBox() const
 }
 
 
-//! returns an axis aligned bounding box
-core::aabbox3d<f32>& CAnimatedMeshMS3D::getBoundingBox()
+//! set user axis aligned bounding box
+void CAnimatedMeshMS3D::setBoundingBox( const core::aabbox3df& box)
 {
-	return BoundingBox;
+	BoundingBox = box;
 }
-
 
 //! sets a flag of all contained materials to a new value
 void CAnimatedMeshMS3D::setMaterialFlag(video::E_MATERIAL_FLAG flag, bool newvalue)
 {
 	for (s32 i=0; i<(int)Buffers.size(); ++i) 
-		Buffers[i].Material.Flags[flag] = newvalue;
+		Buffers[i].Material.setFlag(flag, newvalue);
 }
 
 
@@ -773,9 +818,9 @@ const core::aabbox3d<f32>& CAnimatedMeshMS3D::SMS3DMeshBuffer::getBoundingBox() 
 } 
 
 //! returns an axis aligned bounding box 
-core::aabbox3d<f32>& CAnimatedMeshMS3D::SMS3DMeshBuffer::getBoundingBox() 
+void CAnimatedMeshMS3D::SMS3DMeshBuffer::setBoundingBox( const core::aabbox3df& box) 
 { 
-	return *BoundingBox; 
+	*BoundingBox = box; 
 } 
 
 //! returns which type of vertex data is stored.

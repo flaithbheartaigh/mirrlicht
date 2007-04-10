@@ -23,8 +23,8 @@ class map
 	public:
 
 		RBTree(const KeyTypeRB& k, const ValueTypeRB& v)
-			: mKey(k), mValue(v), mLeftChild(0), mRightChild(0),
-				mParent(0), mIsRed(true) {}
+			: mLeftChild(0), mRightChild(0), mParent(0), mKey(k),
+				mValue(v), mIsRed(true) {}
 
 		virtual ~RBTree(){}
 
@@ -100,7 +100,6 @@ class map
 		}
 
 	private:
-
 		RBTree();
 
 		RBTree*		mLeftChild;
@@ -112,7 +111,6 @@ class map
 		ValueTypeRB	mValue;
 
 		bool mIsRed;
-
 	};
 
 	public:
@@ -472,10 +470,10 @@ class map
 	}; // ParentLastIterator
 
 
-	// AccessClass is a temparoary class used with the [] operator.
+	// AccessClass is a temporary class used with the [] operator.
 	// It makes it possible to have different behavior in situations like:
 	// myTree["Foo"] = 32;
-	//   If "Foo" already exist, just update its value else insert a new
+	//   If "Foo" already exists, just update its value else insert a new
 	//   element.
 	// int i = myTree["Foo"]
 	// If "Foo" exists return its value, else throw an exception.
@@ -505,7 +503,6 @@ class map
 			_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 			return node->getValue();
 		}
-
 
 	private:
 
@@ -617,11 +614,11 @@ class map
 
 	//! Replaces the value if the key already exists,
 	//! otherwise inserts a new element.
-	//! \param key: the index for this value
+	//! \param k: the index for this value
 	//! \param v: the new value of
 	void set(const KeyType& k, const ValueType& v)
 	{
-		Node* p = Find(k);
+		Node* p = find(k);
 		if (p)
 			p->setValue(v);
 		else

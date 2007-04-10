@@ -1,13 +1,12 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #ifndef __I_CURSOR_CONTROL_H_INCLUDED__
 #define __I_CURSOR_CONTROL_H_INCLUDED__
 
-#include "position2d.h"
 #include "IUnknown.h"
-#include "irrTypes.h"
+#include "position2d.h"
 
 namespace irr
 {

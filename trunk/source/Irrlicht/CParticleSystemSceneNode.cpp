@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -24,7 +24,7 @@ CParticleSystemSceneNode::CParticleSystemSceneNode(bool createDefaultEmitter,
 	const core::vector3df& position, const core::vector3df& rotation,
 	const core::vector3df& scale)
 	: IParticleSystemSceneNode(parent, mgr, id, position, rotation, scale),
-	Emitter(0), ParticlesAreGlobal(true), LastEmitTime(0)
+	Emitter(0), LastEmitTime(0), ParticlesAreGlobal(true)
 {
 	#ifdef _DEBUG
 	setDebugName("CParticleSystemSceneNode");
@@ -149,14 +149,14 @@ IParticleAffector* CParticleSystemSceneNode::createGravityAffector(
 
 
 //! pre render event
-void CParticleSystemSceneNode::OnPreRender()
+void CParticleSystemSceneNode::OnRegisterSceneNode()
 {
 	doParticleSystem(os::Timer::getTime());
 
 	if (IsVisible && (Particles.size() != 0))
 	{
 		SceneManager->registerNodeForRendering(this);
-		ISceneNode::OnPreRender();
+		ISceneNode::OnRegisterSceneNode();
 	}
 }
 
@@ -194,12 +194,12 @@ void CParticleSystemSceneNode::render()
 	f32 f;
 
 	f = 0.5f * ParticleSize.Width;
-	const core::vector3df horizontal ( m.M[0] * f, m.M[4] * f, m.M[8] * f );
+	const core::vector3df horizontal ( m[0] * f, m[4] * f, m[8] * f );
 
 	f = -0.5f * ParticleSize.Height;
-	const core::vector3df vertical ( m.M[1] * f, m.M[5] * f, m.M[9] * f );
+	const core::vector3df vertical ( m[1] * f, m[5] * f, m[9] * f );
 
-	const core::vector3df view ( -m.M[2], -m.M[6] , -m.M[10] );
+	const core::vector3df view ( -m[2], -m[6] , -m[10] );
 
 #endif
 
@@ -288,14 +288,12 @@ void CParticleSystemSceneNode::doParticleSystem(u32 time)
 			if (newParticles > 16250-j)
 				newParticles=16250-j;
 			Particles.set_used(j+newParticles);
-			for (s32 i=0; i<newParticles; ++i)
+			for (s32 i=j; i<j+newParticles; ++i)
 			{
-				AbsoluteTransformation.rotateVect(array[i].startVector);
-
+				Particles[i]=array[i-j];
+				AbsoluteTransformation.rotateVect(Particles[i].startVector);
 				if (ParticlesAreGlobal)
-					AbsoluteTransformation.transformVect(array[i].pos);
-
-				Particles[j+i]=array[i];
+					AbsoluteTransformation.transformVect(Particles[i].pos);
 			}
 		}
 	}
@@ -470,6 +468,8 @@ void CParticleSystemSceneNode::deserializeAttributes(io::IAttributes* in, io::SA
 	case EPET_BOX:
 		Emitter = createBoxEmitter();
 		break;
+	default:
+		break;
 	}
 
 	s32 idx = 0;
@@ -503,6 +503,9 @@ void CParticleSystemSceneNode::deserializeAttributes(io::IAttributes* in, io::SA
 			break;
 		case EPAT_GRAVITY:
 			aff = createGravityAffector();
+			break;
+		case EPAT_NONE:
+		default:
 			break;
 		}
 

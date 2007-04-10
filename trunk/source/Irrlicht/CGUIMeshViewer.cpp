@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -6,6 +6,7 @@
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
 #include "IAnimatedMesh.h"
+#include "IMesh.h"
 #include "irrMath.h"
 #include "os.h"
 #include "IGUISkin.h"
@@ -158,6 +159,9 @@ void CGUIMeshViewer::draw()
 				break;
 			case video::EVT_2TCOORDS:
 				driver->drawIndexedTriangleList((video::S3DVertex2TCoords*)mb->getVertices(), mb->getVertexCount(), mb->getIndices(), mb->getIndexCount()/ 3);
+				break;
+			case video::EVT_TANGENTS:
+				driver->drawIndexedTriangleList((video::S3DVertexTangents*)mb->getVertices(), mb->getVertexCount(), mb->getIndices(), mb->getIndexCount()/ 3);
 				break;
 			}
 		}

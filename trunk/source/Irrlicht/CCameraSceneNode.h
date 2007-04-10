@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -90,7 +90,7 @@ namespace scene
 		virtual void setFOV(f32 fovy);
 
 		//! PreRender event
-		virtual void OnPreRender();
+		virtual void OnRegisterSceneNode();
 
 		//! Render
 		virtual void render();
@@ -116,7 +116,7 @@ namespace scene
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0);
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_CAMERA; }
+		virtual ESCENE_NODE_TYPE getType() const { return ESNT_CAMERA; }
 
 		virtual core::vector3df getAbsolutePosition() const;
 
@@ -128,12 +128,10 @@ namespace scene
 		core::vector3df Target;
 		core::vector3df UpVector;
 
-		f32 Fovy;		// Field of view, in radians. 
+		f32 Fovy;	// Field of view, in radians. 
 		f32 Aspect;	// Aspect ratio. 
-		f32 ZNear;		// value of the near view-plane. 
-		f32 ZFar;		// Z-value of the far view-plane.
-
-		//core::dimension2d<f32> screenDim;
+		f32 ZNear;	// value of the near view-plane. 
+		f32 ZFar;	// Z-value of the far view-plane.
 
 		SViewFrustum ViewArea;
 

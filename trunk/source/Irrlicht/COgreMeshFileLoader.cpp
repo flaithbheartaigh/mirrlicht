@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 // orginally written by Christian Stehno, modified by Nikolaus Gebhardt
@@ -8,6 +8,7 @@
 #include "SMeshBuffer.h"
 #include "SAnimatedMesh.h"
 #include "fast_atof.h"
+#include "coreutil.h"
 
 namespace irr
 {
@@ -41,7 +42,7 @@ const u16 COGRE_SUBMESH_TEXTURE_ALIAS= 0x4200;
 
 //! Constructor
 COgreMeshFileLoader::COgreMeshFileLoader(IMeshManipulator* manip,io::IFileSystem* fs, video::IVideoDriver* driver)
-: FileSystem(fs), Driver(driver), Manipulator(manip), Mesh(0)
+: FileSystem(fs), Driver(driver), SwapEndian(false), Mesh(0), Manipulator(manip), NumUV(0)
 {
 	if (FileSystem)
 		FileSystem->grab();
@@ -93,11 +94,11 @@ IAnimatedMesh* COgreMeshFileLoader::createMesh(io::IReadFile* file)
 	else if (id == 0x0010)
 		SwapEndian=true;
 	else
-		return false;
+		return 0;
 	ChunkData data;
 	readString(file, data, Version);
 	if (Version != "[MeshSerializer_v1.30]")
-		return false;
+		return 0;
 
 	clearMeshes();
 	if (Mesh)
@@ -128,7 +129,7 @@ IAnimatedMesh* COgreMeshFileLoader::createMesh(io::IReadFile* file)
 	Mesh->drop();
 	Mesh = 0;
 
-    return 0;
+	return 0;
 }
 
 
@@ -368,14 +369,14 @@ void COgreMeshFileLoader::composeMeshBufferMaterial(scene::IMeshBuffer* mb, cons
 			material=Materials[k].Techniques[0].Passes[0].Material;
 			if (Materials[k].Techniques[0].Passes[0].Texture.Filename.size())
 			{
-				material.Texture1=Driver->getTexture(Materials[k].Techniques[0].Passes[0].Texture.Filename.c_str());
-				if (!material.Texture1)
+				material.Textures[0]=Driver->getTexture(Materials[k].Techniques[0].Passes[0].Texture.Filename.c_str());
+				if (!material.Textures[0])
 				{
 					// retry with relative path
 					core::stringc relative = CurrentlyLoadingFromPath;
 					relative += '/';
 					relative += Materials[k].Techniques[0].Passes[0].Texture.Filename;
-					material.Texture1 = Driver->getTexture(relative.c_str());
+					material.Textures[0] = Driver->getTexture(relative.c_str());
 				}
 			}
 			break;

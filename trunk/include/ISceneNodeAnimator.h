@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -15,7 +15,7 @@ namespace irr
 namespace io
 {
 	class IAttributes;
-}
+} // end namespace io
 namespace scene
 {
 	class ISceneNode;
@@ -39,8 +39,16 @@ namespace scene
 		/// \param timeMs: Current time in milli seconds.
 		virtual void animateNode(ISceneNode* node, u32 timeMs) = 0;
 
+		//! Creates a clone of this animator. 
+		/** Please note that you will have to drop (IUnknown::drop()) 
+		the returned pointer after calling this. */
+		virtual ISceneNodeAnimator* createClone(ISceneNode* node, ISceneManager* newManager=0) 
+		{
+			return 0; // to be implemented by derived classes.
+		}
+
 		//! Returns type of the scene node animator
-		virtual ESCENE_NODE_ANIMATOR_TYPE getType()
+		virtual ESCENE_NODE_ANIMATOR_TYPE getType() const
 		{
 			return ESNAT_UNKNOWN;
 		}

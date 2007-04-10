@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -42,8 +42,9 @@ CGUIToolBar::CGUIToolBar(IGUIEnvironment* environment, IGUIElement* parent, s32 
 		}
 	}
 
-	RelativeRect.UpperLeftCorner.X = 0;
-	RelativeRect.UpperLeftCorner.Y = y;
+	core::rect<s32> rr;
+	rr.UpperLeftCorner.X = 0;
+	rr.UpperLeftCorner.Y = y;
 	s32 height = Environment->getSkin()->getSize ( EGDS_MENU_HEIGHT );
 
 	/*IGUISkin* skin = Environment->getSkin();
@@ -55,9 +56,9 @@ CGUIToolBar::CGUIToolBar(IGUIEnvironment* environment, IGUIElement* parent, s32 
 			height = t;
 	}*/
 
-	RelativeRect.LowerRightCorner.X = parentwidth;
-	RelativeRect.LowerRightCorner.Y = RelativeRect.UpperLeftCorner.Y + height;
-	updateAbsolutePosition();
+	rr.LowerRightCorner.X = parentwidth;
+	rr.LowerRightCorner.Y = rr.UpperLeftCorner.Y + height;
+	setRelativePosition(rr);
 }
 
 
@@ -93,7 +94,10 @@ void CGUIToolBar::draw()
 void CGUIToolBar::updateAbsolutePosition()
 {
 	if (Parent)
-		RelativeRect.LowerRightCorner.X = Parent->getAbsolutePosition().getWidth();
+	{
+		DesiredRect.UpperLeftCorner.X = 0;
+		DesiredRect.LowerRightCorner.X = Parent->getAbsolutePosition().getWidth();
+	}
 
 	IGUIElement::updateAbsolutePosition();
 }

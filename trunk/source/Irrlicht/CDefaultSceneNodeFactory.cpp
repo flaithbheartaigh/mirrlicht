@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -100,6 +100,8 @@ ISceneNode* CDefaultSceneNodeFactory::addSceneNode(ESCENE_NODE_TYPE type, IScene
 												 core::vector3df(), core::vector3df(1,1,1), true);
 	case ESNT_PARTICLE_SYSTEM:
 		return Manager->addParticleSystemSceneNode(true, parent);
+	default:
+		break;
 	}
 
 	return 0;

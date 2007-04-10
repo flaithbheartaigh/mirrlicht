@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="Irrlicht"
 	ProjectGUID="{E08E042A-6C45-411B-92BE-3CC31331019F}"
 	RootNamespace="Irrlicht"
@@ -801,6 +801,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\include\IGUISpriteBank.h"
+					>
+				</File>
+				<File
 					RelativePath=".\..\..\include\IGUIStaticText.h"
 					>
 				</File>
@@ -902,14 +906,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\CGUIFontMultiTexture.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CGUIFontMultiTexture.h"
-				>
-			</File>
-			<File
 				RelativePath=".\CGUIImage.cpp"
 				>
 			</File>
@@ -982,6 +978,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CGUISpriteBank.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CGUISpriteBank.h"
+				>
+			</File>
+			<File
 				RelativePath=".\CGUIStaticText.cpp"
 				>
 			</File>
@@ -1011,10 +1015,6 @@
 			</File>
 			<File
 				RelativePath=".\CGUIWindow.h"
-				>
-			</File>
-			<File
-				RelativePath=".\GUIIcons.h"
 				>
 			</File>
 		</Filter>
@@ -1637,6 +1637,14 @@
 					>
 				</File>
 				<File
+					RelativePath=".\CAnimatedMeshMD3.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\CAnimatedMeshMD3.h"
+					>
+				</File>
+				<File
 					RelativePath=".\CAnimatedMeshMS3D.cpp"
 					>
 				</File>
@@ -1682,6 +1690,14 @@
 				</File>
 				<File
 					RelativePath=".\CLMTSMeshFileLoader.h"
+					>
+				</File>
+				<File
+					RelativePath=".\CMD3MeshFileLoader.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\CMD3MeshFileLoader.h"
 					>
 				</File>
 				<File
@@ -2223,10 +2239,6 @@
 			</File>
 			<File
 				RelativePath="CTimer.h"
-				>
-			</File>
-			<File
-				RelativePath="fast_atof.h"
 				>
 			</File>
 			<File

@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -137,24 +137,14 @@ namespace core
 		//! Todo: 64 Bit template doesnt work.. need specialized template
 		vector3d<T>& normalize()
 		{
-			T l = (T) reciprocal_squareroot ( f32(X*X + Y*Y + Z*Z) );
-
-			X *= l;
-			Y *= l;
-			Z *= l;
-			return *this;
-
-/*
-			T l = (T)getLength();
+			T l = X*X + Y*Y + Z*Z;
 			if (l == 0)
 				return *this;
-
-			l = (T)1.0 / l;
+			l = (T) reciprocal_squareroot ( l );
 			X *= l;
 			Y *= l;
 			Z *= l;
 			return *this;
-*/
 		}
 
 		//! Sets the length of the vector to a new value
@@ -230,9 +220,9 @@ namespace core
 		}
 
 		//! Returns interpolated vector. ( quadratic )
-		/** \param other0: other vector to interpolate between
-			\param other1: other vector to interpolate between
-		\param factor: value between 0.0f and 1.0f. */
+		/** \param v2: second vector to interpolate with
+		\param v3: third vector to interpolate with
+		\param d: value between 0.0f and 1.0f. */
 		vector3d<T> getInterpolated_quadratic(const vector3d<T>& v2, const vector3d<T>& v3, const T d) const
 		{
 			// this*(1-d)*(1-d) + 2 * v2 * (1-d) + v3 * d * d;
@@ -242,9 +232,8 @@ namespace core
 			const T mul2 = d * d;
 
 			return vector3d<T> ( X * mul0 + v2.X * mul1 + v3.X * mul2,
-								 Y * mul0 + v2.Y * mul1 + v3.Y * mul2,
-								 Z * mul0 + v2.Z * mul1 + v3.Z * mul2
-								);
+					Y * mul0 + v2.Y * mul1 + v3.Y * mul2,
+					Z * mul0 + v2.Z * mul1 + v3.Z * mul2);
 		}
 
 		//! Gets the Y and Z rotations of a vector.
@@ -257,10 +246,10 @@ namespace core
 
 			angle.Y = (T)atan2(X, Z); 
 			angle.Y *= (f32)RADTODEG64;
-			    
-			if (angle.Y < 0.0f) angle.Y += 360.0f; 
-			if (angle.Y >= 360.0f) angle.Y -= 360.0f; 
-			    
+
+			if (angle.Y < 0.0f) angle.Y += 360.0f;
+			if (angle.Y >= 360.0f) angle.Y -= 360.0f;
+
 			f32 z1 = (f32)sqrt(X*X + Z*Z); 
 			    
 			angle.X = (T)atan2(z1, Y); 

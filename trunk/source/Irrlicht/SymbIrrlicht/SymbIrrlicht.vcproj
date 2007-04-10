@@ -219,6 +219,9 @@
 				RelativePath="..\..\..\include\IAnimatedMeshMD2.h">
 			</File>
 			<File
+				RelativePath="..\..\..\include\IAnimatedMeshMD3.h">
+			</File>
+			<File
 				RelativePath="..\..\..\include\IAnimatedMeshMS3D.h">
 			</File>
 			<File
@@ -480,6 +483,9 @@
 					RelativePath="..\..\..\include\IGUIFont.h">
 				</File>
 				<File
+					RelativePath="..\..\..\include\IGUIFontBitmap.h">
+				</File>
+				<File
 					RelativePath="..\..\..\include\IGUIImage.h">
 				</File>
 				<File
@@ -496,6 +502,9 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\IGUISkin.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\IGUISpriteBank.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\IGUIStaticText.h">
@@ -515,6 +524,9 @@
 				Filter="">
 				<File
 					RelativePath="..\..\..\include\aabbox3d.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\coreutil.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\dimension2d.h">
@@ -574,6 +586,9 @@
 			<File
 				RelativePath=".\sis\SymbIrrlicht.pkg">
 			</File>
+			<File
+				RelativePath=".\sis\SymbIrrlicht.SIS">
+			</File>
 		</Filter>
 		<Filter
 			Name="src">
@@ -587,13 +602,25 @@
 					RelativePath="..\CIrrDeviceLinux.cpp">
 				</File>
 				<File
+					RelativePath="..\CIrrDeviceLinux.h">
+				</File>
+				<File
 					RelativePath="..\CIrrDeviceStub.cpp">
+				</File>
+				<File
+					RelativePath="..\CIrrDeviceStub.h">
 				</File>
 				<File
 					RelativePath="..\CIrrDeviceSymbian.cpp">
 				</File>
 				<File
+					RelativePath="..\CIrrDeviceSymbian.h">
+				</File>
+				<File
 					RelativePath="..\CIrrDeviceWin32.cpp">
+				</File>
+				<File
+					RelativePath="..\CIrrDeviceWin32.h">
 				</File>
 				<File
 					RelativePath="..\CLogger.cpp">
@@ -1288,7 +1315,19 @@
 						RelativePath="..\CAnimatedMeshB3d.cpp">
 					</File>
 					<File
+						RelativePath="..\CAnimatedMeshB3d.h">
+					</File>
+					<File
 						RelativePath="..\CAnimatedMeshMD2.cpp">
+					</File>
+					<File
+						RelativePath="..\CAnimatedMeshMD2.h">
+					</File>
+					<File
+						RelativePath="..\CAnimatedMeshMD3.cpp">
+					</File>
+					<File
+						RelativePath="..\CAnimatedMeshMD3.h">
 					</File>
 					<File
 						RelativePath="..\CAnimatedMeshMS3D.cpp">
@@ -1300,6 +1339,9 @@
 						RelativePath="..\CCSMLoader.cpp">
 					</File>
 					<File
+						RelativePath="..\CCSMLoader.h">
+					</File>
+					<File
 						RelativePath="..\CDefaultMeshFormatLoader.cpp">
 					</File>
 					<File
@@ -1307,6 +1349,12 @@
 					</File>
 					<File
 						RelativePath="..\CLMTSMeshFileLoader.cpp">
+					</File>
+					<File
+						RelativePath="..\CMD3MeshFileLoader.cpp">
+					</File>
+					<File
+						RelativePath="..\CMD3MeshFileLoader.h">
 					</File>
 					<File
 						RelativePath="..\CMY3DMeshFileLoader.cpp">
@@ -1393,12 +1441,6 @@
 					RelativePath="..\CGUIFont.cpp">
 				</File>
 				<File
-					RelativePath="..\CGUIFontMultiTexture.cpp">
-				</File>
-				<File
-					RelativePath="..\CGUIFontMultiTexture.h">
-				</File>
-				<File
 					RelativePath="..\CGUIImage.cpp">
 				</File>
 				<File
@@ -1424,6 +1466,12 @@
 				</File>
 				<File
 					RelativePath="..\CGUISkin.cpp">
+				</File>
+				<File
+					RelativePath="..\CGUISpriteBank.cpp">
+				</File>
+				<File
+					RelativePath="..\CGUISpriteBank.h">
 				</File>
 				<File
 					RelativePath="..\CGUIStaticText.cpp">

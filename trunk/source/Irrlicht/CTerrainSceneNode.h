@@ -1,9 +1,9 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 // The code for the TerrainSceneNode is based on the GeoMipMapSceneNode
-// developed by Spinz. He made it available for Irrlicht and allowed it to be 
+// developed by Spintz. He made it available for Irrlicht and allowed it to be 
 // distributed under this licence. I only modified some parts. A lot of thanks go to him. 
 
 #ifndef __C_TERRAIN_SCENE_NODE_H__
@@ -11,7 +11,6 @@
 
 #include "ITerrainSceneNode.h"
 #include "SMesh.h"
-#include "SMaterial.h"
 #include "IReadFile.h"
 #include "ITextSceneNode.h"
 
@@ -21,7 +20,7 @@ namespace scene
 {
 	//! A scene node for displaying terrain using the geo mip map algorithm.
 	/** The code for the TerrainSceneNode is based on the GeoMipMapSceneNode
-	 * developed by Spinz. He made it available for Irrlicht and allowed it to be 
+	 * developed by Spintz. He made it available for Irrlicht and allowed it to be 
 	 * distributed under this licence. I only modified some parts. A lot of thanks go to him. 
 	 **/
 	class CTerrainSceneNode : public ITerrainSceneNode
@@ -120,7 +119,7 @@ namespace scene
 		//! SetCameraRotationDeltaThreshold functions.  This also determines if a given patch
 		//! for the scene node is within the view frustum and if it's not the indices are not
 		//! generated for that patch.
-		virtual void OnPreRender();
+		virtual void OnRegisterSceneNode();
 
 		//! Render the scene node
 		virtual void render();
@@ -205,7 +204,7 @@ namespace scene
 		virtual void scaleTexture(f32 scale = 1.0f, f32 scale2=0.0f );
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_TERRAIN; }
+		virtual ESCENE_NODE_TYPE getType() const { return ESNT_TERRAIN; }
 
 	private:
 
@@ -214,34 +213,39 @@ namespace scene
 
 		struct SPatch
 		{
-			s32					CurrentLOD;
-			core::aabbox3df		BoundingBox;
-			core::vector3df		Center;
-			scene::ITextSceneNode*		DebugText;
-
-			SPatch*				Top;
-			SPatch*				Bottom;
-			SPatch*				Right;
-			SPatch*				Left;
-
 			SPatch()
-			: CurrentLOD( -1 )
-			, Top( 0 )
-			, Bottom( 0 )
-			, Right( 0 )
-			, Left( 0 )
-			, DebugText ( 0 )
+			: CurrentLOD(-1), DebugText(0),
+			Top(0), Bottom(0), Right(0), Left(0)
 			{
 			}
+
+			s32			CurrentLOD;
+			core::aabbox3df		BoundingBox;
+			core::vector3df		Center;
+			scene::ITextSceneNode*	DebugText;
+			SPatch*			Top;
+			SPatch*			Bottom;
+			SPatch*			Right;
+			SPatch*			Left;
 		};
 
 		struct STerrainData
 		{
 			STerrainData()
+			: Size(0), PatchSize(0), CalcPatchSize(0),
+				PatchCount(0), MaxLOD(0),
+				BoundingBox(core::aabbox3df( 99999.9f, 99999.9f, 99999.9f, -99999.9f, -99999.9f, -99999.9f)),
+				LODDistanceThreshold(0), Patches(0)
 			{
-				Patches = 0;
-				LODDistanceThreshold = 0;
-				BoundingBox = core::aabbox3df( 99999.9f, 99999.9f, 99999.9f, -99999.9f, -99999.9f, -99999.9f);
+			}
+
+			STerrainData(s32 patchSize, s32 maxLOD, const core::vector3df& position, const core::vector3df& rotation, const core::vector3df& scale)
+			: Size(0), Position(position), Rotation(rotation), Scale(scale),
+				PatchSize(patchSize), CalcPatchSize(patchSize-1),
+				PatchCount(0), MaxLOD(maxLOD),
+				BoundingBox(core::aabbox3df( 99999.9f, 99999.9f, 99999.9f, -99999.9f, -99999.9f, -99999.9f)),
+				LODDistanceThreshold(0), Patches(0)
+			{
 			}
 
 			s32		Size;

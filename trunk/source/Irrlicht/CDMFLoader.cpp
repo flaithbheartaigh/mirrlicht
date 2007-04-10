@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 //
@@ -86,18 +86,18 @@ void CDMFLoader::GetFaceNormal(	f32 a[3], //First point
  See IUnknown::drop() for more information.*/
 IAnimatedMesh* CDMFLoader::createMesh(io::IReadFile* file)
 {
+	if (!file)
+		return 0;
+
+	//Load stringlist
+	StringList dmfRawFile(file);
+
+	if (dmfRawFile.size()==0)
+		return 0;
+
 	SMesh * Mesh = new SMesh();
 
 	u32 i;
-
-	if (!file)
-		return false;
-
-    //Load stringlist
-    StringList dmfRawFile(file);
-
-    if (dmfRawFile.size()==0)
-		return false;
 
     //begin logging with
     //fprintf(flog,"DMF Loader version %1.1f log file\nTrying to load: %s\n",DMFloader_vers,file->getFileName());
@@ -428,8 +428,8 @@ IAnimatedMesh* CDMFLoader::createMesh(io::IReadFile* file)
             lig->regenerateMipMapLevels();
     }
 
-    buffer->Material.Texture1=tex;
-    buffer->Material.Texture2=lig;
+    buffer->Material.Textures[0]=tex;
+    buffer->Material.Textures[1]=lig;
   }
 
   delete verts;
@@ -448,7 +448,7 @@ IAnimatedMesh* CDMFLoader::createMesh(io::IReadFile* file)
 	{
 		if (Mesh->MeshBuffers[i]->getVertexCount() == 0 ||
 			Mesh->MeshBuffers[i]->getIndexCount() == 0 ||
-			Mesh->MeshBuffers[i]->getMaterial().Texture1 == 0)
+			Mesh->MeshBuffers[i]->getMaterial().Textures[0] == 0)
 		{
 			// Meshbuffer is empty -- drop it
 			Mesh->MeshBuffers[i]->drop();

@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -15,7 +15,7 @@ namespace video
 
 
 // byte-align structures
-#ifdef _MSC_VER
+#if defined(_MSC_VER) ||  defined(__BORLANDC__) || defined (__BCPLUSPLUS__) 
 #	pragma pack( push, packing )
 #	pragma pack( 1 )
 #	define PACK_STRUCT
@@ -29,23 +29,24 @@ namespace video
 #	  define PACK_STRUCT	__attribute__((packed,aligned(1)))
 #   endif
 #else
-#	error compiler not supported
+#	define PACK_STRUCT
 #endif
 
-	 struct STGAHeader{
-	    u8 IdLength;
-	    u8 ColorMapType;
-	    u8 ImageType;
-	    u8 FirstEntryIndex[2];
-	    u16 ColorMapLength;
-	    u8 ColorMapEntrySize;
-	    u8 XOrigin[2];
-	    u8 YOrigin[2];
-	    u16 ImageWidth;
-	    u16 ImageHeight;
-	    u8 PixelDepth;
-	    u8 ImageDescriptor;
-    } PACK_STRUCT;
+	// these structs are also used in the TGA writer
+	struct STGAHeader{
+		u8 IdLength;
+		u8 ColorMapType;
+		u8 ImageType;
+		u8 FirstEntryIndex[2];
+		u16 ColorMapLength;
+		u8 ColorMapEntrySize;
+		u8 XOrigin[2];
+		u8 YOrigin[2];
+		u16 ImageWidth;
+		u16 ImageHeight;
+		u8 PixelDepth;
+		u8 ImageDescriptor;
+	} PACK_STRUCT;
 
 	struct STGAFooter
 	{
@@ -55,7 +56,7 @@ namespace video
 	} PACK_STRUCT;
 
 // Default alignment
-#ifdef _MSC_VER
+#if defined(_MSC_VER) ||  defined(__BORLANDC__) || defined (__BCPLUSPLUS__) 
 #	pragma pack( pop, packing )
 #elif defined(__SYMBIAN32__) && defined(__WINS__)
 #   pragma pack(4) //default alignment in Project settings 

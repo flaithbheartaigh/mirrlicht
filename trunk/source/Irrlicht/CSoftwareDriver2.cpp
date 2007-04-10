@@ -1,12 +1,18 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt / Thomas Alten
+// Copyright (C) 2002-2007 Nikolaus Gebhardt / Thomas Alten
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CSoftwareDriver2.h"
+
+#include "IrrCompileConfig.h"
+
+#ifdef _IRR_COMPILE_WITH_BURNINGSVIDEO_
+
 #include "CSoftwareTexture2.h"
 #include "CSoftware2MaterialRenderer.h"
 #include "S3DVertex.h"
 #include "S4DVertex.h"
+
 
 namespace irr
 {
@@ -16,9 +22,9 @@ namespace video
 
 //! constructor
 CSoftwareDriver2::CSoftwareDriver2(const core::dimension2d<s32>& windowSize, bool fullscreen, io::IFileSystem* io, video::IImagePresenter* presenter)
-: CNullDriver(io, windowSize), CurrentShader(0),
-	 DepthBuffer(0), RenderTargetTexture(0), RenderTargetSurface(0),
-	 CurrentOut ( 12 * 2, 128 ), Temp ( 12 * 2, 128 )
+: CNullDriver(io, windowSize), BackBuffer(0), Presenter(presenter),
+	RenderTargetTexture(0), RenderTargetSurface(0), CurrentShader(0),
+	 DepthBuffer(0), CurrentOut ( 12 * 2, 128 ), Temp ( 12 * 2, 128 )
 {
 	#ifdef _DEBUG
 	setDebugName("CSoftwareDriver2");
@@ -33,10 +39,6 @@ CSoftwareDriver2::CSoftwareDriver2(const core::dimension2d<s32>& windowSize, boo
 	BackBuffer = new CImage(ECF_SOFTWARE2, windowSize);
 	BackBuffer->fill(SColor(0));
 	
-	// get presenter
-
-	Presenter = presenter;
-
 	// create z buffer
 
 	DepthBuffer = irr::video::createDepthBuffer(BackBuffer->getDimension());
@@ -164,7 +166,6 @@ void CSoftwareDriver2::setCurrentShader()
 	bool zMaterialTest = true;
 	switch ( Material.org.MaterialType )
 	{
-
 		case EMT_ONETEXTURE_BLEND:
 			shader = ETR_TEXTURE_BLEND;
 			zMaterialTest = false;
@@ -210,16 +211,16 @@ void CSoftwareDriver2::setCurrentShader()
 			break;
 
 		case EMT_LIGHTMAP_LIGHTING_M4:
-			if ( Material.org.Texture2 )
+			if ( Material.org.Textures[1] )
 				shader = ETR_TEXTURE_GOURAUD_LIGHTMAP_M4;
 			break;
 		case EMT_LIGHTMAP_M4:
-			if ( Material.org.Texture2 )
+			if ( Material.org.Textures[1] )
 				shader = ETR_TEXTURE_LIGHTMAP_M4;
 			break;
 
 		case EMT_LIGHTMAP_ADD:
-			if ( Material.org.Texture2 )
+			if ( Material.org.Textures[1] )
 				shader = ETR_TEXTURE_GOURAUD_LIGHTMAP_ADD;
 			break;
 
@@ -237,7 +238,7 @@ void CSoftwareDriver2::setCurrentShader()
 		shader = ETR_TEXTURE_GOURAUD_NOZ;
 	}
 
-	if ( 0 == Material.org.Texture1 )
+	if ( 0 == Material.org.Textures[0] )
 	{
 		shader = ETR_GOURAUD;
 	}
@@ -265,12 +266,14 @@ void CSoftwareDriver2::setCurrentShader()
 				E_MODULATE_FUNC modulate;
 				unpack_texureBlendFunc ( srcFact, dstFact, modulate, Material.org.MaterialTypeParam );
 				CurrentShader->setParam ( 0, Material.org.MaterialTypeParam );
-			} break;
+			}
+			break;
+			default:
+			break;
 		}
 
 		CurrentShader->setRenderTarget(RenderTargetSurface, ViewPort);
 	}
-
 }
 
 
@@ -280,7 +283,7 @@ bool CSoftwareDriver2::queryFeature(E_VIDEO_DRIVER_FEATURE feature)
 {
 	switch (feature)
 	{
-#ifdef SOFTWARE_DRIVER_2_BILINEAR   
+#ifdef SOFTWARE_DRIVER_2_BILINEAR
 	case EVDF_BILINEAR_FILTER:
 		return true;
 #endif
@@ -346,21 +349,21 @@ void CSoftwareDriver2::setTransform(E_TRANSFORMATION_STATE state, const core::ma
 
 				core::matrix4 m2 ( Transformation[ETS_WORLD_VIEW].m );
 				m2.makeInverse ();
-				m2.getTransposed ( Transformation[ETS_WORLD_VIEW_INVERSE_TRANSPOSED].m.M );
+				m2.getTransposed ( Transformation[ETS_WORLD_VIEW_INVERSE_TRANSPOSED].m );
 			}
 #endif
 			break;
-
+		default:
+			break;
 	}
 }
-
 
 
 
 //! sets the current Texture
 bool CSoftwareDriver2::setTexture(u32 stage, video::ITexture* texture)
 {
-	if (texture && texture->getDriverType() != EDT_SOFTWARE2)
+	if (texture && texture->getDriverType() != EDT_BURNINGSVIDEO)
 	{
 		os::Printer::log("Fatal Error: Tried to set a texture not owned by this driver.", ELL_ERROR);
 		return false;
@@ -396,12 +399,15 @@ void CSoftwareDriver2::setMaterial(const SMaterial& material)
 	Material.SpecularColor.setA8R8G8B8 ( Material.org.SpecularColor.color );
 
 	Material.SpecularEnabled = Material.org.Shininess != 0.f;
-	if (Material.SpecularEnabled )
+	if (Material.SpecularEnabled)
 		Material.org.NormalizeNormals = true;
 
-
-	setTexture( 0, Material.org.Texture1 );
-	setTexture( 1, Material.org.Texture2 );
+	for (u32 i = 0; i < 2; ++i)
+	{
+		setTexture( i, Material.org.Textures[i] );
+		setTransform((E_TRANSFORMATION_STATE) (ETS_TEXTURE_0 + i), 
+				material.getTextureMatrix(i));
+	}
 }
 
 
@@ -438,7 +444,7 @@ bool CSoftwareDriver2::endScene( s32 windowId, core::rect<s32>* sourceRect )
 bool CSoftwareDriver2::setRenderTarget(video::ITexture* texture, bool clearBackBuffer, 
 								 bool clearZBuffer, SColor color)
 {
-	if (texture && texture->getDriverType() != EDT_SOFTWARE2)
+	if (texture && texture->getDriverType() != EDT_BURNINGSVIDEO)
 	{
 		os::Printer::log("Fatal Error: Tried to set a texture not owned by this driver.", ELL_ERROR);
 		return false;
@@ -590,24 +596,13 @@ REALINLINE u32 CSoftwareDriver2::clipToFrustumTest ( const s4DVertex * v  ) cons
 
 #else
 
-/*
-	if (condition) state |= m; else state &= ~m; 
-*/
-inline void setbit ( u32 &state, s32 condition, u32 mask )
-{
-	// 0, or any postive to mask
-	//s32 conmask = -condition >> 31;
-	state ^= ( ( -condition >> 31 ) ^ state ) & mask;
-}
 
 REALINLINE u32 CSoftwareDriver2::clipToFrustumTest ( const s4DVertex * v  ) const
 {
 	u32 flag = 0;
-	f32 dotPlane;
 	for ( u32 i = 0; i!= 6; ++i )
 	{
-		dotPlane = v->Pos.dotProduct ( NDCPlane[i] );
-		setbit ( flag, dotPlane <= 0.f, 1 << i );
+		core::setbit ( flag, v->Pos.dotProduct ( NDCPlane[i] ) <= 0.f, 1 << i );
 	}
 	return flag;
 }
@@ -720,8 +715,8 @@ inline void CSoftwareDriver2::ndc_2_dc_and_project ( s4DVertex *dest,s4DVertex *
 		const f32 iw = core::reciprocal ( w );
 
 		// to device coordinates
-		dest[g].Pos.x = iw * ( source[g].Pos.x * Transformation [ ETS_CLIPSCALE ].m.M[ 0] + w * Transformation [ ETS_CLIPSCALE ].m.M[12] );
-		dest[g].Pos.y = iw * ( source[g].Pos.y * Transformation [ ETS_CLIPSCALE ].m.M[ 5] + w * Transformation [ ETS_CLIPSCALE ].m.M[13] );
+		dest[g].Pos.x = iw * ( source[g].Pos.x * Transformation [ ETS_CLIPSCALE ].m[ 0] + w * Transformation [ ETS_CLIPSCALE ].m[12] );
+		dest[g].Pos.y = iw * ( source[g].Pos.y * Transformation [ ETS_CLIPSCALE ].m[ 5] + w * Transformation [ ETS_CLIPSCALE ].m[13] );
 
 #ifndef SOFTWARE_DRIVER_2_USE_WBUFFER
 		dest[g].Pos.z = iw * source[g].Pos.z;
@@ -761,8 +756,8 @@ inline void CSoftwareDriver2::ndc_2_dc_and_project2 ( const s4DVertex **v, const
 		const f32 iw = core::reciprocal ( w );
 
 		// to device coordinates
-		a[1].Pos.x = iw * ( a->Pos.x * Transformation [ ETS_CLIPSCALE ].m.M[ 0] + w * Transformation [ ETS_CLIPSCALE ].m.M[12] );
-		a[1].Pos.y = iw * ( a->Pos.y * Transformation [ ETS_CLIPSCALE ].m.M[ 5] + w * Transformation [ ETS_CLIPSCALE ].m.M[13] );
+		a[1].Pos.x = iw * ( a->Pos.x * Transformation [ ETS_CLIPSCALE ].m[ 0] + w * Transformation [ ETS_CLIPSCALE ].m[12] );
+		a[1].Pos.y = iw * ( a->Pos.y * Transformation [ ETS_CLIPSCALE ].m[ 5] + w * Transformation [ ETS_CLIPSCALE ].m[13] );
 
 #ifndef SOFTWARE_DRIVER_2_USE_WBUFFER
 		a[1].Pos.z = a->Pos.z * iw;
@@ -910,9 +905,8 @@ const SVSize CSoftwareDriver2::vSize[] =
 /*!
 	fill a cache line with transformed, light and clipp test triangles
 */
-void CSoftwareDriver2::VertexCache_fill ( const u32 sourceIndex,
-												const u32 destIndex
-											)
+void CSoftwareDriver2::VertexCache_fill(const u32 sourceIndex,
+					const u32 destIndex)
 {
 	u8 * source;
 	s4DVertex *dest;
@@ -970,8 +964,8 @@ void CSoftwareDriver2::VertexCache_fill ( const u32 sourceIndex,
 
 		for ( t = 0; t != vSize[VertexCache.vType].TexSize; ++t )
 		{
-			const f32 *M =  Transformation [ ETS_TEXTURE_0 + t ].m.M;
-			if ( Material.org.TextureWrap )
+			const core::matrix4& M = Transformation [ ETS_TEXTURE_0 + t ].m;
+			if ( Material.org.TextureWrap[0]==ETC_REPEAT )
 			{
 				dest->Tex[t].x = M[0] * src[t].X + M[4] * src[t].Y + M[8];
 				dest->Tex[t].y = M[1] * src[t].X + M[5] * src[t].Y + M[9];
@@ -1108,7 +1102,7 @@ REALINLINE void CSoftwareDriver2::VertexCache_get ( s4DVertex ** face )
 		}
 	}
 
-	const u32 i0 = if_c_a_else_0 ( VertexCache.pType != scene::EPT_TRIANGLE_FAN, VertexCache.indicesRun );
+	const u32 i0 = core::if_c_a_else_0 ( VertexCache.pType != scene::EPT_TRIANGLE_FAN, VertexCache.indicesRun );
 
 	face[0] = VertexCache_getVertex ( VertexCache.indices[ i0    ] );
 	face[1] = VertexCache_getVertex ( VertexCache.indices[ VertexCache.indicesRun + 1] );
@@ -1119,7 +1113,7 @@ REALINLINE void CSoftwareDriver2::VertexCache_get ( s4DVertex ** face )
 
 REALINLINE void CSoftwareDriver2::VertexCache_get2 ( s4DVertex ** face )
 {
-	const u32 i0 = if_c_a_else_0 ( VertexCache.pType != scene::EPT_TRIANGLE_FAN, VertexCache.indicesRun );
+	const u32 i0 = core::if_c_a_else_0 ( VertexCache.pType != scene::EPT_TRIANGLE_FAN, VertexCache.indicesRun );
 
 	VertexCache_fill ( VertexCache.indices[ i0    ], 0 );
 	VertexCache_fill ( VertexCache.indices[ VertexCache.indicesRun + 1], 1 );
@@ -1480,7 +1474,7 @@ void CSoftwareDriver2::lightVertex ( s4DVertex *dest, const S3DVertex *source )
 	{
 		const SInternalLight &light = Light[i];
 
-		sVec4 vp;				// unit vector vertex to light
+		sVec4 vp;			// unit vector vertex to light
 		sVec4 lightHalf;		// blinn-phong reflection
 
 
@@ -1579,7 +1573,7 @@ void CSoftwareDriver2::draw2DImage(video::ITexture* texture, const core::positio
 {
 	if (texture)
 	{
-		if (texture->getDriverType() != EDT_SOFTWARE2)
+		if (texture->getDriverType() != EDT_BURNINGSVIDEO)
 		{
 			os::Printer::log("Fatal Error: Tried to copy from a surface not owned by this driver.", ELL_ERROR);
 			return;
@@ -1813,7 +1807,7 @@ const wchar_t* CSoftwareDriver2::getName()
 //! Returns type of video driver
 E_DRIVER_TYPE CSoftwareDriver2::getDriverType()
 {
-	return EDT_SOFTWARE2;
+	return EDT_BURNINGSVIDEO;
 }
 
 //! Returns the transformation set by setTransform
@@ -1858,24 +1852,36 @@ void CSoftwareDriver2::setTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag, bool
 //! THIS METHOD HAS TO BE OVERRIDDEN BY DERIVED DRIVERS WITH OWN TEXTURES
 ITexture* CSoftwareDriver2::createDeviceDependentTexture(IImage* surface, const char* name)
 {
-	return new CSoftwareTexture2(surface, name, getTextureCreationFlag(ETCF_CREATE_MIP_MAPS)
-					);
+	return new CSoftwareTexture2(surface, name, getTextureCreationFlag(ETCF_CREATE_MIP_MAPS));
 
 }
 
 //! Returns the maximum amount of primitives (mostly vertices) which
 //! the device is able to render with one drawIndexedTriangleList
 //! call.
-s32 CSoftwareDriver2::getMaximalPrimitiveCount()
+u32 CSoftwareDriver2::getMaximalPrimitiveCount()
 {
 	return 0x00800000;
 }
 
+} // end namespace video
+} // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_BURNINGSVIDEO_
+
+namespace irr
+{
+namespace video
+{
 
 //! creates a video driver
 IVideoDriver* createSoftwareDriver2(const core::dimension2d<s32>& windowSize, bool fullscreen, io::IFileSystem* io, video::IImagePresenter* presenter)
 {
+	#ifdef _IRR_COMPILE_WITH_BURNINGSVIDEO_
 	return new CSoftwareDriver2(windowSize, fullscreen, io, presenter);
+	#else
+	return 0;
+	#endif // _IRR_COMPILE_WITH_BURNINGSVIDEO_
 }
 
 

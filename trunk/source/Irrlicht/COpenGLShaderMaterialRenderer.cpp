@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -22,7 +22,7 @@ namespace video
 COpenGLShaderMaterialRenderer::COpenGLShaderMaterialRenderer(video::COpenGLDriver* driver,
 	s32& outMaterialTypeNr, const c8* vertexShaderProgram, const c8* pixelShaderProgram,
 	IShaderConstantSetCallBack* callback, IMaterialRenderer* baseMaterial, s32 userData)
-	: Driver(driver), BaseMaterial(baseMaterial), CallBack(callback),
+	: Driver(driver), CallBack(callback), BaseMaterial(baseMaterial),
 		VertexShader(0), PixelShader(0), UserData(userData)
 {
 	if (BaseMaterial)
@@ -40,7 +40,7 @@ COpenGLShaderMaterialRenderer::COpenGLShaderMaterialRenderer(video::COpenGLDrive
 COpenGLShaderMaterialRenderer::COpenGLShaderMaterialRenderer(COpenGLDriver* driver,
 							IShaderConstantSetCallBack* callback,
 							IMaterialRenderer* baseMaterial, s32 userData)
-: Driver(driver), BaseMaterial(baseMaterial), CallBack(callback),
+: Driver(driver), CallBack(callback), BaseMaterial(baseMaterial),
 		VertexShader(0), PixelShader(0), UserData(userData)
 {
 	if (BaseMaterial)
@@ -97,10 +97,10 @@ bool COpenGLShaderMaterialRenderer::OnRender(IMaterialRendererServices* service,
 void COpenGLShaderMaterialRenderer::OnSetMaterial(video::SMaterial& material, const video::SMaterial& lastMaterial,
 	bool resetAllRenderstates, video::IMaterialRendererServices* services)
 {
-	Driver->setTexture(3, material.Texture4);
-	Driver->setTexture(2, material.Texture3);
-	Driver->setTexture(1, material.Texture2);
-	Driver->setTexture(0, material.Texture1);
+	Driver->setTexture(3, material.Textures[3]);
+	Driver->setTexture(2, material.Textures[2]);
+	Driver->setTexture(1, material.Textures[1]);
+	Driver->setTexture(0, material.Textures[0]);
 
 	Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 

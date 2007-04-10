@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -11,7 +11,7 @@ namespace io
 
 
 CReadFile::CReadFile(const c8* fileName)
-: FileSize(0)
+: File(0), FileSize(0)
 {
 	#ifdef _DEBUG
 	setDebugName("CReadFile");
@@ -32,7 +32,7 @@ CReadFile::~CReadFile()
 
 
 //! returns how much was read
-s32 CReadFile::read(void* buffer, s32 sizeToRead)
+s32 CReadFile::read(void* buffer, u32 sizeToRead)
 {
 	if (!isOpen())
 		return 0;
@@ -77,7 +77,7 @@ void CReadFile::openFile()
 	if (Filename.size() == 0) // bugfix posted by rt
 	{
 		File = 0;
-		return; 
+		return;
 	}
 
 	File = fopen(Filename.c_str(), "rb");

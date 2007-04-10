@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -41,11 +41,13 @@ public:
 	virtual void setVertexColors(IMesh* mesh, video::SColor color) const;
 
 	//! Recalculates all normals of the mesh.
-	/** \param mesh: Mesh on which the operation is performed. */
+	/** \param mesh: Mesh on which the operation is performed.
+	    \param smooth: Whether to use smoothed normals. */
 	virtual void recalculateNormals(scene::IMesh* mesh, bool smooth = false) const;
 
 	//! Recalculates all normals of the mesh buffer.
-	/** \param buffer: Mesh buffer on which the operation is performed. */
+	/** \param buffer: Mesh buffer on which the operation is performed.
+	    \param smooth: Whether to use smoothed normals. */
 	virtual void recalculateNormals(IMeshBuffer* buffer, bool smooth = false) const;
 
 	//! Scales the whole mesh.
@@ -58,13 +60,13 @@ public:
 		\param m: transformation matrix. */
 	virtual void transformMesh(scene::IMesh* mesh, const core::matrix4& m) const;
 
-	//! Clones a static IMesh into a modifyable SMesh.
+	//! Clones a static IMesh into a modifiable SMesh.
 	virtual SMesh* createMeshCopy(scene::IMesh* mesh) const;
 
 	//! Creates a planar texture mapping on the mesh
 	//! \param mesh: Mesh on which the operation is performed.
 	//! \param resolution: resolution of the planar mapping. This is the value
-	//! specifying which is the releation between world space and 
+	//! specifying which is the relation between world space and 
 	//! texture coordinate space.
 	virtual void makePlanarTextureMapping(scene::IMesh* mesh, f32 resolution) const;
 

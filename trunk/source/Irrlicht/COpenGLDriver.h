@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
@@ -18,8 +18,10 @@
 	#include <GL/gl.h>
 	#include <GL/glu.h>
 	#include "glext.h"
+#ifdef _MSC_VER
 	#pragma comment(lib, "OpenGL32.lib")
 	#pragma comment(lib, "GLu32.lib")
+#endif
 #elif defined(MACOSX)
 	#define GL_EXT_texture_env_combine 1
 	#include "CIrrDeviceMacOSX.h"
@@ -43,6 +45,7 @@
 	#include <GL/glx.h>
 	#if defined(_IRR_OPENGL_USE_EXTPOINTER_)
 	#include "glext.h"
+	#undef GLX_ARB_get_proc_address // avoid problems with local glxext.h
 	#include "glxext.h"
 	#endif
 #endif
@@ -130,8 +133,9 @@ namespace video
 				const core::position2d<s32>& pos,
 				const core::array<core::rect<s32> >& sourceRects,
 				const core::array<s32>& indices,
-				const core::rect<s32>* clipRect, SColor color,
-				bool useAlphaChannelOfTexture);
+				const core::rect<s32>* clipRect=0,
+				SColor color=SColor(255,255,255,255),
+				bool useAlphaChannelOfTexture=false);
 
 		//! Draws a part of the texture into the rectangle.
 		virtual void draw2DImage(video::ITexture* texture, const core::rect<s32>& destRect,
@@ -296,6 +300,11 @@ namespace video
 		//! IMaterialRendererServices)
 		virtual IVideoDriver* getVideoDriver();
 
+		//! Returns the maximum amount of primitives (mostly vertices) which
+		//! the device is able to render with one drawIndexedTriangleList
+		//! call.
+		virtual u32 getMaximalPrimitiveCount();
+
 		ITexture* createRenderTargetTexture(const core::dimension2d<s32>& size);
 
 		bool setRenderTarget(video::ITexture* texture, bool clearBackBuffer,
@@ -364,6 +373,7 @@ namespace video
 		bool TextureNPOTExtension;
 		bool FramebufferObjectExtension;
 		bool EXTPackedDepthStencil;
+		bool EXTSeparateSpecularColor;
 
 		SMaterial Material, LastMaterial;
 		COpenGLTexture* RenderTargetTexture;
@@ -373,6 +383,7 @@ namespace video
 
 		GLint MaxTextureUnits;
 		GLint MaxLights;
+		GLint MaxIndices;
 
 		core::dimension2d<s32> CurrentRendertargetSize;
 

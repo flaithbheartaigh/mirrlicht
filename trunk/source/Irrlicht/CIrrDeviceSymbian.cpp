@@ -341,7 +341,24 @@ bool CIrrDeviceSymbian::run()
 	return true;
 }
 
+//! Pause the current process for the minimum time allowed only to allow other processes to execute
+void CIrrDeviceSymbian::yield()
+{
+	User::After(1);
+}
 
+//! Pause execution and let other processes to run for a specified amount of time.
+void CIrrDeviceSymbian::sleep(u32 timeMs, bool pauseTimer)
+{
+	bool wasStopped = Timer ? Timer->isStopped() : true;
+	if (pauseTimer && !wasStopped)
+		Timer->stop();
+
+	User::After(timeMs);
+
+	if (pauseTimer && !wasStopped)
+		Timer->start();
+}
 
 //! sets the caption of the window
 void CIrrDeviceSymbian::setWindowCaption(const wchar_t* text)

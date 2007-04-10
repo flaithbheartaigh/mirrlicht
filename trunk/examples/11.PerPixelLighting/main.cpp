@@ -36,7 +36,7 @@ public:
 
 		// set a nicer font
 		gui::IGUISkin* skin = env->getSkin();
-		gui::IGUIFont* font = env->getFont("../../media/fontlucida.png");
+		gui::IGUIFont* font = env->getFont("../../media/fonthaettenschweiler.bmp");
 		if (font)
 			skin->setFont(font);
 
@@ -170,7 +170,7 @@ int main()
 		case 'b': driverType = video::EDT_DIRECT3D8;break;
 		case 'c': driverType = video::EDT_OPENGL;   break;
 		case 'd': driverType = video::EDT_SOFTWARE; break;
-		case 'e': driverType = video::EDT_SOFTWARE2;break;
+		case 'e': driverType = video::EDT_BURNINGSVIDEO;break;
 		case 'f': driverType = video::EDT_NULL;     break;
 		default: return 0;
 	}	
@@ -272,10 +272,10 @@ int main()
 
 		scene::IMesh* tangentMesh = smgr->getMeshManipulator()->createMeshWithTangents(
 			roomMesh->getMesh(0));
-			
+
 		room = smgr->addMeshSceneNode(tangentMesh);
-		room->setMaterialTexture(0,	colorMap);
-		room->setMaterialTexture(1,	normalMap);
+		room->setMaterialTexture(0, colorMap);
+		room->setMaterialTexture(1, normalMap);
 
 		room->getMaterial(0).SpecularColor.set(0,0,0,0);
 
@@ -352,7 +352,6 @@ int main()
 		smgr->addLightSceneNode(0, core::vector3df(0,0,0), 
 		video::SColorf(0.5f, 1.0f, 0.5f, 0.0f), 200.0f);
 
-	light1->setDebugDataVisible ( scene::EDS_FULL );
 
 	// add fly circle animator to light 1
 	scene::ISceneNodeAnimator* anim = 
@@ -385,7 +384,6 @@ int main()
 		smgr->addLightSceneNode(0, core::vector3df(0,0,0), 
 		video::SColorf(1.0f, 0.2f, 0.2f, 0.0f), 200.0f);
 
-	light2->setDebugDataVisible ( scene::EDS_FULL );
 	// add fly circle animator to light 2
 	anim = smgr->createFlyCircleAnimator (core::vector3df(0,150,0),200.0f, 0.001f, core::vector3df ( 0.2f, 0.9f, 0.f )); 
 	light2->addAnimator(anim);

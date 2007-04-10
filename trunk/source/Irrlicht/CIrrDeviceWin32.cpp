@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -18,6 +18,7 @@
 #include <winuser.h>
 #include "irrlicht.h"
 
+
 namespace irr
 {
 	namespace video
@@ -34,7 +35,6 @@ namespace irr
 			u32 bits, bool fullscreen, bool stencilBuffer, io::IFileSystem* io,
 			bool vsync, bool antiAlias);
 	}
-
 } // end namespace irr
 
 
@@ -81,12 +81,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	irr::SEvent event;
 	SEnvMapper* envm = 0;
 
+	BYTE allKeys[256];
+
+	static irr::s32 ClickCount=0;
+	if (GetCapture() != hWnd && ClickCount > 0)
+		ClickCount = 0;
+
 	switch (message)
 	{
 	case WM_PAINT:
 		{
 			PAINTSTRUCT ps;
-			HDC hdc = BeginPaint(hWnd, &ps);
+			BeginPaint(hWnd, &ps);
 			EndPaint(hWnd, &ps);
 		}
 		return 0;
@@ -101,7 +107,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			SetCursor(NULL);
 			return 0;
 		}
-        break;
+		break;
 
 	case WM_MOUSEWHEEL:
 		event.EventType = irr::EET_MOUSE_INPUT_EVENT;
@@ -120,60 +126,84 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_LBUTTONDOWN:
-        event.EventType = irr::EET_MOUSE_INPUT_EVENT;
+		ClickCount++;
+		SetCapture(hWnd);
+		event.EventType = irr::EET_MOUSE_INPUT_EVENT;
 		event.MouseInput.Event = irr::EMIE_LMOUSE_PRESSED_DOWN;
-		event.MouseInput.X = LOWORD(lParam);
-		event.MouseInput.Y = HIWORD(lParam);
+		event.MouseInput.X = (short)LOWORD(lParam);
+		event.MouseInput.Y = (short)HIWORD(lParam);
 		dev = getDeviceFromHWnd(hWnd);
 		if (dev)
 			dev->postEventFromUser(event);
 		return 0;
 
 	case WM_LBUTTONUP:
+		ClickCount--;
+		if (ClickCount<1)
+		{
+			ClickCount=0;
+			ReleaseCapture();
+		}
 		event.EventType = irr::EET_MOUSE_INPUT_EVENT;
 		event.MouseInput.Event = irr::EMIE_LMOUSE_LEFT_UP;
-		event.MouseInput.X = LOWORD(lParam);
-		event.MouseInput.Y = HIWORD(lParam);
+		event.MouseInput.X = (short)LOWORD(lParam);
+		event.MouseInput.Y = (short)HIWORD(lParam);
 		dev = getDeviceFromHWnd(hWnd);
 		if (dev)
 			dev->postEventFromUser(event);
 		return 0;
 
 	case WM_RBUTTONDOWN:
+		ClickCount++;
+		SetCapture(hWnd);
 		event.EventType = irr::EET_MOUSE_INPUT_EVENT;
 		event.MouseInput.Event = irr::EMIE_RMOUSE_PRESSED_DOWN;
-		event.MouseInput.X = LOWORD(lParam);
-		event.MouseInput.Y = HIWORD(lParam);
+		event.MouseInput.X = (short)LOWORD(lParam);
+		event.MouseInput.Y = (short)HIWORD(lParam);
 		dev = getDeviceFromHWnd(hWnd);
 		if (dev)
 			dev->postEventFromUser(event);
 		return 0;
 
 	case WM_RBUTTONUP:
+		ClickCount--;
+		if (ClickCount<1)
+		{
+			ClickCount=0;
+			ReleaseCapture();
+		}
 		event.EventType = irr::EET_MOUSE_INPUT_EVENT;
 		event.MouseInput.Event = irr::EMIE_RMOUSE_LEFT_UP;
-		event.MouseInput.X = LOWORD(lParam);
-		event.MouseInput.Y = HIWORD(lParam);
+		event.MouseInput.X = (short)LOWORD(lParam);
+		event.MouseInput.Y = (short)HIWORD(lParam);
 		dev = getDeviceFromHWnd(hWnd);
 		if (dev)
 			dev->postEventFromUser(event);
 		return 0;
 
 	case WM_MBUTTONDOWN:
+		ClickCount++;
+		SetCapture(hWnd);
 		event.EventType = irr::EET_MOUSE_INPUT_EVENT;
 		event.MouseInput.Event = irr::EMIE_MMOUSE_PRESSED_DOWN;
-		event.MouseInput.X = LOWORD(lParam);
-		event.MouseInput.Y = HIWORD(lParam);
+		event.MouseInput.X = (short)LOWORD(lParam);
+		event.MouseInput.Y = (short)HIWORD(lParam);
 		dev = getDeviceFromHWnd(hWnd);
 		if (dev)
 			dev->postEventFromUser(event);
 		return 0;
 
 	case WM_MBUTTONUP:
+		ClickCount--;
+		if (ClickCount<1)
+		{
+			ClickCount=0;
+			ReleaseCapture();
+		}
 		event.EventType = irr::EET_MOUSE_INPUT_EVENT;
 		event.MouseInput.Event = irr::EMIE_MMOUSE_LEFT_UP;
-		event.MouseInput.X = LOWORD(lParam);
-		event.MouseInput.Y = HIWORD(lParam);
+		event.MouseInput.X = (short)LOWORD(lParam);
+		event.MouseInput.Y = (short)HIWORD(lParam);
 		dev = getDeviceFromHWnd(hWnd);
 		if (dev)
 			dev->postEventFromUser(event);
@@ -182,8 +212,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEMOVE:
 		event.EventType = irr::EET_MOUSE_INPUT_EVENT;
 		event.MouseInput.Event = irr::EMIE_MOUSE_MOVED;
-		event.MouseInput.X = LOWORD(lParam);
-		event.MouseInput.Y = HIWORD(lParam);
+		event.MouseInput.X = (short)LOWORD(lParam);
+		event.MouseInput.Y = (short)HIWORD(lParam);
 		dev = getDeviceFromHWnd(hWnd);
 		if (dev)
 			dev->postEventFromUser(event);
@@ -196,7 +226,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			event.KeyInput.PressedDown = true;
 			dev = getDeviceFromHWnd(hWnd);
 
-			BYTE allKeys[256];
 			WORD KeyAsc=0;
 			GetKeyboardState(allKeys);
 			ToAscii(wParam,lParam,allKeys,&KeyAsc,0);
@@ -217,7 +246,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			event.KeyInput.PressedDown = false;
 			dev = getDeviceFromHWnd(hWnd);
 
-			BYTE allKeys[256];
 			WORD KeyAsc=0;
 			GetKeyboardState(allKeys);
 			ToAscii(wParam,lParam,allKeys,&KeyAsc,0);
@@ -247,8 +275,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_SYSCOMMAND:
 		// prevent screensaver or monitor powersave mode from starting
-		if (wParam == SC_SCREENSAVE ||
-			wParam == SC_MONITORPOWER)
+		if ((wParam & 0xFFF0) == SC_SCREENSAVE ||
+			(wParam & 0xFFF0) == SC_MONITORPOWER)
 			return 0;
 		break;
 	}
@@ -270,8 +298,8 @@ CIrrDeviceWin32::CIrrDeviceWin32(video::E_DRIVER_TYPE driverType,
 				 HWND externalWindow,
 				 const char* version)
 : CIrrDeviceStub(version, receiver), HWnd(0), ChangedToFullScreen(false),
-	Win32CursorControl(0), IsNonNTWindows(false), Resized(false),
-	FullScreen(fullscreen), ExternalWindow(false)
+	FullScreen(fullscreen), IsNonNTWindows(false), Resized(false),
+	ExternalWindow(false), Win32CursorControl(0)
 {
 	core::stringc winversion;
 	getWindowsVersion(winversion);
@@ -286,14 +314,12 @@ CIrrDeviceWin32::CIrrDeviceWin32(video::E_DRIVER_TYPE driverType,
 	setDebugName("CIrrDeviceWin32");
 	#endif
 
+	// create the window, only if we do not use the null device
 	if (driverType != video::EDT_NULL && externalWindow==0)
 	{
-		// create the window, only if we do not use the null device
-
 		const c8* ClassName = "CIrrDeviceWin32";
 
 		// Register Class
-
 		WNDCLASSEX wcex;
 		wcex.cbSize		= sizeof(WNDCLASSEX);
 		wcex.style		= CS_HREDRAW | CS_VREDRAW;
@@ -373,7 +399,8 @@ CIrrDeviceWin32::CIrrDeviceWin32(video::E_DRIVER_TYPE driverType,
 
 	createDriver(driverType, windowSize, bits, fullscreen, stencilbuffer, vsync, antiAlias, highPrecisionFPU);
 
-	createGUIAndScene();
+	if (VideoDriver)
+		createGUIAndScene();
 
 	// register environment
 
@@ -459,18 +486,28 @@ void CIrrDeviceWin32::createDriver(video::E_DRIVER_TYPE driverType,
 			os::Printer::log("Could not create OpenGL driver.", ELL_ERROR);
 		}
 		#else
-		os::Printer::log("OpenGL driver was not compiled into this dll.", ELL_ERROR);
+		os::Printer::log("OpenGL driver was not compiled in.", ELL_ERROR);
 		#endif
 		break;
 
 	case video::EDT_SOFTWARE:
+
+		#ifdef _IRR_COMPILE_WITH_SOFTWARE_
 		if (fullscreen)	switchToFullScreen(windowSize.Width, windowSize.Height, bits);
 		VideoDriver = video::createSoftwareDriver(windowSize, fullscreen, FileSystem, this);
+		#else
+		os::Printer::log("Software driver was not compiled in.", ELL_ERROR);
+		#endif
+
 		break;
 
-	case video::EDT_SOFTWARE2:
+	case video::EDT_BURNINGSVIDEO:
+		#ifdef _IRR_COMPILE_WITH_BURNINGSVIDEO_
 		if (fullscreen)	switchToFullScreen(windowSize.Width, windowSize.Height, bits);
 		VideoDriver = video::createSoftwareDriver2(windowSize, fullscreen, FileSystem, this);
+		#else
+		os::Printer::log("Burning's Video driver was not compiled in.", ELL_ERROR);
+		#endif 
 		break;
 
 	default:
@@ -512,6 +549,27 @@ bool CIrrDeviceWin32::run()
 }
 
 
+//! Pause the current process for the minimum time allowed only to allow other processes to execute
+void CIrrDeviceWin32::yield()
+{
+	Sleep(1);
+	
+}
+
+//! Pause execution and let other processes to run for a specified amount of time.
+void CIrrDeviceWin32::sleep(u32 timeMs, bool pauseTimer)
+{
+	bool wasStopped = Timer ? Timer->isStopped() : true;
+	if (pauseTimer && !wasStopped)
+		Timer->stop();
+	
+	Sleep(timeMs);
+
+	if (pauseTimer && !wasStopped)
+		Timer->start();
+}
+
+
 void CIrrDeviceWin32::resizeIfNecessary()
 {
 	if (!Resized)
@@ -524,12 +582,12 @@ void CIrrDeviceWin32::resizeIfNecessary()
 
 	if (r.right < 2 || r.bottom < 2)
 	{
-		sprintf(tmp, "Ignoring resize operation to (%d %d)", r.right, r.bottom);
+		sprintf(tmp, "Ignoring resize operation to (%ld %ld)", r.right, r.bottom);
 		os::Printer::log(tmp);
 	}
 	else
 	{
-		sprintf(tmp, "Resizing window (%d %d)", r.right, r.bottom);
+		sprintf(tmp, "Resizing window (%ld %ld)", r.right, r.bottom);
 		os::Printer::log(tmp);
 
 		if ( r.right % 2 )
@@ -613,7 +671,7 @@ void CIrrDeviceWin32::present(video::IImage* image, s32 windowId, core::rect<s32
 //! notifies the device that it should close itself
 void CIrrDeviceWin32::closeDevice()
 {
-	DestroyWindow(HWnd); 	//PostQuitMessage(0);
+	DestroyWindow(HWnd);
 }
 
 
@@ -707,7 +765,7 @@ void CIrrDeviceWin32::getWindowsVersion(core::stringc& out)
 	BOOL bOsVersionInfoEx;
 
 	ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
-	osvi.dwOSVersionInfoSize	= sizeof(OSVERSIONINFOEX);
+	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
 
 	if(!(bOsVersionInfoEx = GetVersionEx ((OSVERSIONINFO*) &osvi)))
 	{
@@ -740,10 +798,10 @@ void CIrrDeviceWin32::getWindowsVersion(core::stringc& out)
 			{
 				if( osvi.wSuiteMask & VER_SUITE_DATACENTER )
 					out.append("DataCenter Server ");
-			   else if( osvi.wSuiteMask & VER_SUITE_ENTERPRISE )
-				   out.append("Advanced Server ");
-			   else
-				   out.append("Server ");
+				else if( osvi.wSuiteMask & VER_SUITE_ENTERPRISE )
+					out.append("Advanced Server ");
+				else
+					out.append("Server ");
 			}
 			#endif
 		}
@@ -766,7 +824,7 @@ void CIrrDeviceWin32::getWindowsVersion(core::stringc& out)
 				out.append("Server " );
 			if ( lstrcmpi( "SERVERNT", szProductType) == 0 )
 				out.append("Advanced Server ");
-         	}
+		}
 
 		// Display version, service pack (if any), and build number.
 
@@ -774,7 +832,7 @@ void CIrrDeviceWin32::getWindowsVersion(core::stringc& out)
 
 		if (osvi.dwMajorVersion <= 4 )
 		{
-			sprintf (tmp, "version %d.%d %s (Build %d)",
+			sprintf (tmp, "version %ld.%ld %s (Build %ld)",
 				osvi.dwMajorVersion,
 				osvi.dwMinorVersion,
 				osvi.szCSDVersion,
@@ -782,7 +840,7 @@ void CIrrDeviceWin32::getWindowsVersion(core::stringc& out)
 		}
 		else
 		{
-			sprintf (tmp, "%s (Build %d)", osvi.szCSDVersion,
+			sprintf (tmp, "%s (Build %ld)", osvi.szCSDVersion,
 				osvi.dwBuildNumber & 0xFFFF);
 		}
 
@@ -805,7 +863,7 @@ void CIrrDeviceWin32::getWindowsVersion(core::stringc& out)
 			out.append("Microsoft Windows 98 ");
 			if ( osvi.szCSDVersion[1] == 'A' )
 				out.append( "SE " );
-        }
+		}
 
 		if (osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 90)
 			out.append("Microsoft Windows Me ");
@@ -817,7 +875,7 @@ void CIrrDeviceWin32::getWindowsVersion(core::stringc& out)
 		IsNonNTWindows = true;
 		out.append("Microsoft Win32s ");
 		break;
-   }
+	}
 }
 
 //! Notifies the device, that it has been resized

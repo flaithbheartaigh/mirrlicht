@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -18,8 +18,10 @@
 	#include <GL/gl.h>
 	#include <GL/glu.h>
 	#include "glext.h"
+#ifdef _MSC_VER
 	#pragma comment(lib, "OpenGL32.lib")
 	#pragma comment(lib, "GLu32.lib")
+#endif
 #elif defined(MACOSX)
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>

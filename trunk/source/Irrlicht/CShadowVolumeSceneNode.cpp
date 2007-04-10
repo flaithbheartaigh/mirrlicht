@@ -1,10 +1,11 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CShadowVolumeSceneNode.h"
 #include "ISceneManager.h"
 #include "IVideoDriver.h"
+#include "SLight.h"
 
 namespace irr
 {
@@ -14,15 +15,13 @@ namespace scene
 
 //! constructor
 CShadowVolumeSceneNode::CShadowVolumeSceneNode(ISceneNode* parent,
-						ISceneManager* mgr,
-						s32 id,
-						bool zfailmethod,
-						f32 infinity)
-: IShadowVolumeSceneNode(parent, mgr, id), Edges(0), EdgeCount(0),
-	ShadowVolumesUsed(0), Indices(0), Vertices(0), IndexCount(0),
-	VertexCount(0),	IndexCountAllocated(0),
-	VertexCountAllocated(0), UseZFailMethod(zfailmethod),
-	Adjacency(0), FaceData(0), Infinity(infinity)
+					ISceneManager* mgr, s32 id,
+					bool zfailmethod, f32 infinity)
+: IShadowVolumeSceneNode(parent, mgr, id), Indices(0), Vertices(0),
+	Adjacency(0), FaceData(0), UseZFailMethod(zfailmethod),
+	IndexCountAllocated(0), VertexCountAllocated(0),
+	IndexCount(0), VertexCount(0), ShadowVolumesUsed(0),
+	Edges(0), EdgeCount(0), Infinity(infinity)
 {
 	#ifdef _DEBUG
 	setDebugName("CShadowVolumeSceneNode");
@@ -352,6 +351,15 @@ void CShadowVolumeSceneNode::setMeshToRenderFrom(IMesh* mesh)
 					Vertices[VertexCount++] = (*vp).Pos;
 			}
 			break;
+		case video::EVT_TANGENTS:
+			{
+				const video::S3DVertexTangents* vp = (video::S3DVertexTangents*)b->getVertices();
+				const video::S3DVertexTangents* vpend = vp + vtxcnt;
+
+				for (; vp!=vpend; ++vp)
+					Vertices[VertexCount++] = (*vp).Pos;
+			}
+			break;
 		}
 	}
 
@@ -385,12 +393,12 @@ void CShadowVolumeSceneNode::setMeshToRenderFrom(IMesh* mesh)
 
 
 //! pre render method
-void CShadowVolumeSceneNode::OnPreRender()
+void CShadowVolumeSceneNode::OnRegisterSceneNode()
 {
 	if (IsVisible)
 	{
 		SceneManager->registerNodeForRendering(this, scene::ESNRP_SHADOW);
-		ISceneNode::OnPreRender();
+		ISceneNode::OnRegisterSceneNode();
 	}
 }
 

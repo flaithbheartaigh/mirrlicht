@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -12,8 +12,8 @@ namespace scene
 
 //! constructor
 CSceneNodeAnimatorTexture::CSceneNodeAnimatorTexture(const core::array<video::ITexture*>& textures, 
-						 s32 timePerFrame, bool loop, u32 now)
-: Loop(loop), StartTime(now), TimePerFrame(timePerFrame)
+					 s32 timePerFrame, bool loop, u32 now)
+: TimePerFrame(timePerFrame), StartTime(now), Loop(loop)
 {
 	#ifdef _DEBUG
 	setDebugName("CSceneNodeAnimatorTexture");

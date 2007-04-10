@@ -71,7 +71,7 @@ void loadModel(const c8* fn)
 	core::stringc filename ( fn );
 
 	core::stringc extension;
-	getExtension ( extension, filename );
+	core::getFileNameExtension ( extension, filename );
 	extension.make_lower();
 
 	// if a texture is loaded apply it to the current model..
@@ -104,21 +104,6 @@ void loadModel(const c8* fn)
 		return;
 	}
 
-/*
-
-	//c8 filename[1024];
-	//strcpy(filename, fn);
-	c8* found = 0;
-
-	if (found = strstr(filename.c_str(), ".pk3"))
-	{
-		Device->getFileSystem()->addZipFileArchive( filename.c_str () );
-		strcpy(found +1, "bsp");
-	}
-*/
-	// if file is a texture apply it to a current model
-
-
 	// load a model into the engine
 
 	if (Model)
@@ -143,7 +128,8 @@ void loadModel(const c8* fn)
 
 	Model = Device->getSceneManager()->addAnimatedMeshSceneNode(m);
 	Model->setMaterialFlag(video::EMF_LIGHTING, false);
-	Model->setDebugDataVisible(scene::EDS_FULL);
+//	Model->setMaterialFlag(video::EMF_BACK_FACE_CULLING, false);
+	Model->setDebugDataVisible(scene::EDS_OFF);
 	Model->setAnimationSpeed(30);
 }
 
@@ -170,7 +156,6 @@ void createToolBox()
 		core::rect<s32>(2,20,800-602,480-7), wnd, true, true);
 
 	IGUITab* t1 = tab->addTab(L"Scale");
-	IGUITab* t2 = tab->addTab(L"Empty Tab");
 
 	// add some edit boxes and a button to tab one
 	env->addEditBox(L"1.0", core::rect<s32>(40,50,130,70), true, t1, 901);
@@ -337,6 +322,7 @@ public:
 						{
 							Model->setMaterialFlag(video::EMF_ANISOTROPIC_FILTER, true);
 						}
+						break;
 						case 4:
 						if (Model)
 						{
@@ -422,7 +408,7 @@ int main()
 		case 'b': driverType = video::EDT_DIRECT3D8;break;
 		case 'c': driverType = video::EDT_OPENGL;   break;
 		case 'd': driverType = video::EDT_SOFTWARE; break;
-		case 'e': driverType = video::EDT_SOFTWARE2;break;
+		case 'e': driverType = video::EDT_BURNINGSVIDEO;break;
 		case 'f': driverType = video::EDT_NULL;     break;
 		default: return 1;
 	}	
@@ -446,9 +432,10 @@ int main()
 
 	driver->setTextureCreationFlag(video::ETCF_ALWAYS_32_BIT, true);
 
+	smgr->addLightSceneNode();
+	smgr->addLightSceneNode(0, core::vector3df(50,-50,100), video::SColorf(1.0f,1.0f,1.0f),20000);
 	// add our media directory as "search path"
 	Device->getFileSystem()->addFolderFileArchive ( "../../media/" );
-
 
 	/*
 		The next step is to read the configuration file. It is stored in the xml 
@@ -509,7 +496,7 @@ int main()
 	// set a nicer font
 
 	IGUISkin* skin = env->getSkin();
-	IGUIFont* font = env->getFont("fontlucida.png");
+	IGUIFont* font = env->getFont("fonthaettenschweiler.bmp");
 	if (font)
 		skin->setFont(font);
 
@@ -553,19 +540,6 @@ int main()
 	// create toolbar
 
 	gui::IGUIToolBar* bar = env->addToolBar();
-/*
-	video::ITexture* image = driver->getTexture("../../media/open.bmp");
-	driver->makeColorKeyTexture(image, core::position2d<s32>(0,0));
-	bar->addButton(1102, 0, image, 0, false, true);
-
-	image = driver->getTexture("../../media/help.bmp");
-	driver->makeColorKeyTexture(image, core::position2d<s32>(0,0));
-	bar->addButton(1103, 0, image, 0, false, true);
-
-	image = driver->getTexture("../../media/tools.bmp");
-	driver->makeColorKeyTexture(image, core::position2d<s32>(0,0));
-	bar->addButton(1104, 0, image, 0, false, true);
-*/
 
 	video::ITexture* image = driver->getTexture("open.png");
 	bar->addButton(1102, 0, L"Open a model",image, 0, false, true);
@@ -575,7 +549,6 @@ int main()
 
 	image = driver->getTexture("zip.png");
 	bar->addButton(1105, 0, L"Set Model Archive",image, 0, false, true);
-
 
 	image = driver->getTexture("help.png");
 	bar->addButton(1103, 0, L"Open Help", image, 0, false, true);
@@ -597,21 +570,21 @@ int main()
 	*/
 
 	// disable alpha
-/*
+
 	for (s32 i=0; i<gui::EGDC_COUNT ; ++i)
 	{
 		video::SColor col = env->getSkin()->getColor((gui::EGUI_DEFAULT_COLOR)i);
 		col.setAlpha(255);
 		env->getSkin()->setColor((gui::EGUI_DEFAULT_COLOR)i, col);
 	}
-*/
+
 	// add a tabcontrol
 
 	createToolBox();
 
 	// create fps text 
 
-	IGUIStaticText* fpstext = env->addStaticText(L"", core::rect<s32>(400,4,470,23), true, false, bar);
+	IGUIStaticText* fpstext = env->addStaticText(L"", core::rect<s32>(400,4,570,23), true, false, bar);
 
 	// set window caption
 
@@ -655,6 +628,7 @@ int main()
 	// draw everything
 
 	while(Device->run() && driver)
+	{
 		if (Device->isWindowActive())
 		{
 			driver->beginScene(true, true, video::SColor(150,50,50,50));
@@ -664,10 +638,15 @@ int main()
 
 			driver->endScene();
 
-			core::stringw str = L"FPS: ";
-			str += driver->getFPS();
+			core::stringw str(L"FPS: ");
+			str.append(core::stringw(driver->getFPS()));
+			str += L" Tris: ";
+			str.append(core::stringw(driver->getPrimitiveCountDrawn()));
 			fpstext->setText(str.c_str());
 		}
+		else
+			Device->yield();
+	}
 
 	Device->drop();
 	return 0;

@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -16,6 +16,8 @@
 #include "IMeshBuffer.h"
 #include "CFPSCounter.h"
 #include "S3DVertex.h"
+#include "SLight.h"
+#include "SExposedVideoData.h"
 
 namespace irr
 {
@@ -90,6 +92,10 @@ namespace video
 		virtual void drawIndexedTriangleFan(const S3DVertex2TCoords* vertices,
 			u32 vertexCount, const u16* indexList, u32 triangleCount);
 
+		//! Draws an indexed triangle fan.
+		inline void drawIndexedTriangleFan(const S3DVertexTangents* vertices,
+			u32 vertexCount, const u16* indexList, u32 triangleCount);
+
 		//! Draws a 3d line.
 		virtual void draw3DLine(const core::vector3df& start,
 			const core::vector3df& end, SColor color = SColor(255,255,255,255));
@@ -99,7 +105,7 @@ namespace video
 			SColor color = SColor(255,255,255,255));
 
 		//! Draws a 3d axis aligned box.
-		virtual void draw3DBox(const core::aabbox3d<f32> box,
+		virtual void draw3DBox(const core::aabbox3d<f32>& box,
 			SColor color = SColor(255,255,255,255));
 
 		//! draws an 2d image
@@ -126,9 +132,10 @@ namespace video
 				const core::position2d<s32>& pos,
 				const core::array<core::rect<s32> >& sourceRects,
 				const core::array<s32>& indices,
-				s32 kerningWidth,
-				const core::rect<s32>* clipRect, SColor color,
-				bool useAlphaChannelOfTexture);
+				s32 kerningWidth = 0,
+				const core::rect<s32>* clipRect = 0,
+				SColor color=SColor(255,255,255,255),
+				bool useAlphaChannelOfTexture=false);
 
 		//! draws an 2d image, using a color (if color is other then Color(255,255,255,255)) and the alpha channel of the texture if wanted.
 		virtual void draw2DImage(video::ITexture* texture, const core::position2d<s32>& destPos, 
@@ -150,8 +157,8 @@ namespace video
 
 		//! Draws a 2d line. 
 		virtual void draw2DLine(const core::position2d<s32>& start,
-								const core::position2d<s32>& end, 
-								SColor color=SColor(255,255,255,255));
+					const core::position2d<s32>& end,
+					SColor color=SColor(255,255,255,255));
 
 		//! Draws a non filled concyclic reqular 2d polyon.
 		virtual void draw2DPolygon(core::position2d<s32> center, 
@@ -172,7 +179,7 @@ namespace video
 
 		//! returns amount of primitives (mostly triangles) were drawn in the last frame.
 		//! very useful method for statistics.
-		virtual u32 getPrimitiveCountDrawn();
+		virtual u32 getPrimitiveCountDrawn( u32 param = 0 );
 
 		//! deletes all dynamic lights there are
 		virtual void deleteAllDynamicLights();
@@ -246,7 +253,7 @@ namespace video
 		//! Returns the maximum amount of primitives (mostly vertices) which
 		//! the device is able to render with one drawIndexedTriangleList
 		//! call.
-		virtual s32 getMaximalPrimitiveCount();
+		virtual u32 getMaximalPrimitiveCount();
 
 		//! Enables or disables a texture creation flag.
 		virtual void setTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag, bool enabled);
@@ -276,10 +283,11 @@ namespace video
 		virtual void OnResize(const core::dimension2d<s32>& size);
 
 		//! Adds a new material renderer to the video device.
-		virtual s32 addMaterialRenderer(IMaterialRenderer* renderer, const char* name = 0);
+		virtual s32 addMaterialRenderer(IMaterialRenderer* renderer,
+				const char* name = 0);
 
 		//! Returns driver and operating system specific data about the IVideoDriver.
-		virtual SExposedVideoData getExposedVideoData();
+		virtual const SExposedVideoData& getExposedVideoData();
 
 		//! Returns type of video driver
 		virtual E_DRIVER_TYPE getDriverType();
@@ -369,13 +377,13 @@ namespace video
 		virtual IImage* createScreenShot();
 
 		//! Writes the provided image to disk file
-		virtual bool writeImageToFile(IImage* image, const char* filename);
+		virtual bool writeImageToFile(IImage* image, const char* filename, u32 param = 0);
 
 		//! Sets the name of a material renderer. 
 		virtual void setMaterialRendererName(s32 idx, const char* name);
 
 		//! Creates material attributes list from a material, usable for serialization and more.
-		virtual io::IAttributes* createAttributesFromMaterial(video::SMaterial& material);
+		virtual io::IAttributes* createAttributesFromMaterial(const video::SMaterial& material);
 
 		//! Fills an SMaterial structure from attributes.
 		virtual void fillMaterialStructureFromAttributes(video::SMaterial& outMaterial, io::IAttributes* attributes);

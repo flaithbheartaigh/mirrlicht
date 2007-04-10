@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 //
@@ -336,7 +336,7 @@ for (u32 p=0; p<nToRead; p++)
                 GetLightMap = true;
             }
 
-			core::stringc Name = name;
+		core::stringc Name = name;
             int pos2 = Name.findLast('.');
             core::stringc  LightingMapStr = "LightingMap";
             int ls = LightingMapStr.size();
@@ -350,7 +350,7 @@ for (u32 p=0; p<nToRead; p++)
 				bool oldMipMapState = Driver->getTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS);
 				Driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, false);
 
-				texFName = texturePath.size() ? texturePath : WorkDir;
+				texFName = texturePath.size() ? texturePath : core::stringc(WorkDir);
                 texFName.append("Lightmaps/"); 
 				texFName.append(Name);
 				me.Texture2FileName = texFName;
@@ -370,7 +370,7 @@ for (u32 p=0; p<nToRead; p++)
 			else 
 			if (!GetLightMap&&GetMainMap)
 			{
-				texFName = texturePath.size() ? texturePath : WorkDir;
+				texFName = texturePath.size() ? texturePath : core::stringc(WorkDir);
 				texFName.append(Name);
 				me.Texture2FileName = texFName;
 
@@ -390,7 +390,7 @@ for (u32 p=0; p<nToRead; p++)
 				me.Texture1FileName = texFName;
                 if (Name.size()>0)
 				{
-                    me.Texture1 = Driver->getTexture(texFName.c_str());
+                    			me.Texture1 = Driver->getTexture(texFName.c_str());
 					texCount++;
 				}
 
@@ -602,7 +602,7 @@ for (u32 p=0; p<nToRead; p++)
 		SMeshBufferLightMap* buffer = getMeshBufferByMaterialIndex(meshHeader.MatIndex);
 
 		if (!buffer ||
-			((int)buffer->Vertices.size()+vertsNum) > Driver->getMaximalPrimitiveCount())
+			(buffer->Vertices.size()+vertsNum) > Driver->getMaximalPrimitiveCount())
 		{
 			// creating new mesh buffer for this material
 			buffer = new scene::SMeshBufferLightMap();
@@ -619,13 +619,13 @@ for (u32 p=0; p<nToRead; p++)
 				if (buffer->Material.MaterialType == video::EMT_REFLECTION_2_LAYER)
 				{
 					buffer->Material.Lighting = true;
-					buffer->Material.Texture2 = matEnt->Texture1;
-					buffer->Material.Texture1 = matEnt->Texture2;
+					buffer->Material.Textures[1] = matEnt->Texture1;
+					buffer->Material.Textures[0] = matEnt->Texture2;
 				}
 				else
 				{
-					buffer->Material.Texture1 = matEnt->Texture1;
-					buffer->Material.Texture2 = matEnt->Texture2;
+					buffer->Material.Textures[0] = matEnt->Texture1;
+					buffer->Material.Textures[1] = matEnt->Texture2;
 				}
 
 				if (buffer->Material.MaterialType == video::EMT_TRANSPARENT_ALPHA_CHANNEL)
@@ -658,8 +658,8 @@ for (u32 p=0; p<nToRead; p++)
 			}
 			else
 	        {
-			buffer->Material.Texture1 = NULL;
-		        buffer->Material.Texture2 = NULL;
+			buffer->Material.Textures[0] = 0;
+		        buffer->Material.Textures[1] = 0;
 
 			buffer->Material.AmbientColor = video::SColor(255, 255, 255, 255);
 			buffer->Material.DiffuseColor =	video::SColor(255, 255, 255, 255);
@@ -683,7 +683,7 @@ for (u32 p=0; p<nToRead; p++)
 				}
 	        }
 			else if (
-				!buffer->Material.Texture2 &&
+				!buffer->Material.Textures[1] &&
 				buffer->Material.MaterialType != video::EMT_TRANSPARENT_ALPHA_CHANNEL &&
 				buffer->Material.MaterialType != video::EMT_SPHERE_MAP
 				)

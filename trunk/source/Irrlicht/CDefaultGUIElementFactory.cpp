@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -27,34 +27,6 @@ namespace irr
 {
 namespace gui
 {
-
-//! Names for gui element types
-const c8* const GUIElementTypeNames[] =
-{
-	"button",
-	"checkBox",
-	"comboBox",
-	"contextMenu",
-	"menu",
-	"editBox",
-	"fileOpenDialog",
-	"colorSelectDialog",
-	"inOutFader",
-	"image",
-	"listBox",
-	"meshViewer",
-	"messageBox",
-	"modalScreen",
-	"scrollBar",
-	"staticText",
-	"tab",
-	"tabControl",
-	"toolBar",
-	"window",
-	0
-};
-
-
 
 CDefaultGUIElementFactory::CDefaultGUIElementFactory(IGUIEnvironment* env)
 : Environment(env)

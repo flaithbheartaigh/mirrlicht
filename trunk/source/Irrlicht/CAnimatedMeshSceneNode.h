@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -30,13 +30,11 @@ namespace scene
 		//! sets the current frame. from now on the animation is played from this frame.
 		virtual void setCurrentFrame(s32 frame);
 
-		//! OnPostRender() is called just after rendering the whole scene.
-		//virtual void OnPostRender(u32 timeMs);
-
 		//! frame
-		virtual void OnPreRender();
+		virtual void OnRegisterSceneNode();
 
-		virtual void OnPostRender(u32 timeMs);
+		//! OnAnimate() is called just before rendering the whole scene.
+		virtual void OnAnimate(u32 timeMs);
 
 		//! renders the node.
 		virtual void render();
@@ -57,7 +55,7 @@ namespace scene
 		virtual void setAnimationEndCallback(IAnimationEndCallBack* callback=0);
 
 		//! sets the speed with witch the animation is played
-		virtual void setAnimationSpeed(s32 framesPerSecond);
+		virtual void setAnimationSpeed(f32 framesPerSecond);
 
 		//! returns the material based on the zero based index i. To get the amount
 		//! of materials used by this scene node, use getMaterialCount().
@@ -98,7 +96,11 @@ namespace scene
 		virtual bool setMD2Animation(const c8* animationName);
 
 		//! Returns the current displayed frame number.
-		virtual s32 getFrameNr();
+		virtual s32 getFrameNr() const;
+		//! Returns the current start frame number.
+		virtual s32 getStartFrame() const;
+		//! Returns the current end frame number.
+		virtual s32 getEndFrame() const;
 
 		//! Sets if the scene node should not copy the materials of the mesh but use them in a read only style.
 		/* In this way it is possible to change the materials a mesh causing all mesh scene nodes
@@ -121,10 +123,18 @@ namespace scene
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0);
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_ANIMATED_MESH; }
+		virtual ESCENE_NODE_TYPE getType() const { return ESNT_ANIMATED_MESH; }
 
+		// returns the absolute transformation for a special MD3 Tag if the mesh is a md3 mesh,
+		// or the absolutetransformation if it's a normal scenenode
+		const SMD3QuaterionTag& getAbsoluteTransformation( const core::stringc & tagname);
+
+		//! updates the absolute position based on the relative and the parents position
+		virtual void updateAbsolutePosition();
 
 	private:
+
+		u32 buildFrameNr( u32 timeMs);
 
 		core::array<video::SMaterial> Materials;
 		core::aabbox3d<f32> Box;
@@ -133,11 +143,9 @@ namespace scene
 		u32 BeginFrameTime;
 		s32 StartFrame;
 		s32 EndFrame;
-		s32 FramesPerSecond;
+		f32 FramesPerSecond;
 
 		s32 CurrentFrameNr;
-		u32 buildFrameNr( u32 timeMs);
-
 
 		bool Looping;
 		bool ReadOnlyMaterials;
@@ -148,6 +156,13 @@ namespace scene
 		IShadowVolumeSceneNode* Shadow;
 
 		core::array<IDummyTransformationSceneNode* > JointChildSceneNodes;
+
+		struct SMD3Special
+		{
+			core::stringc Tagname;
+			SMD3QuaterionTagList AbsoluteTagList;
+		};
+		SMD3Special MD3Special;
 
 	};
 

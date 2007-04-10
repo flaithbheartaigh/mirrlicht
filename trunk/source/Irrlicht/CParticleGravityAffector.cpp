@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -14,7 +14,7 @@ namespace scene
 //! constructor
 CParticleGravityAffector::CParticleGravityAffector(
 	const core::vector3df& gravity, u32 timeForceLost)
-	: IParticleAffector(), Gravity(gravity), TimeForceLost((f32)timeForceLost)
+	: IParticleAffector(), TimeForceLost((f32)timeForceLost), Gravity(gravity)
 {
 }
 
