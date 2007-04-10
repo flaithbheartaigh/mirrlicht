@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -38,7 +38,7 @@ public:
 	virtual s32 deserializeAttributes(s32 startIndex, io::IAttributes* in, io::SAttributeReadWriteOptions* options);
 
 	//! Get emitter type
-	virtual E_PARTICLE_AFFECTOR_TYPE getType() { return EPAT_GRAVITY; }
+	virtual E_PARTICLE_AFFECTOR_TYPE getType() const { return EPAT_GRAVITY; }
 
 private:
 

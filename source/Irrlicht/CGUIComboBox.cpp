@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -8,8 +8,6 @@
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
 #include "IGUIFont.h"
-#include "GUIIcons.h"
-#include "IGUIListBox.h"
 #include "CGUIListBox.h"
 #include "os.h"
 
@@ -21,8 +19,8 @@ namespace gui
 //! constructor
 CGUIComboBox::CGUIComboBox(IGUIEnvironment* environment, IGUIElement* parent,
 	s32 id, core::rect<s32> rectangle)
-	: IGUIComboBox(environment, parent, id, rectangle), Selected(-1), 
-	ListBox(0)
+	: IGUIComboBox(environment, parent, id, rectangle),
+	ListButton(0), ListBox(0), Selected(-1)
 {
 	#ifdef _DEBUG
 	setDebugName("CGUICheckBox");
@@ -30,7 +28,9 @@ CGUIComboBox::CGUIComboBox(IGUIEnvironment* environment, IGUIElement* parent,
 
 	IGUISkin* skin = Environment->getSkin();
 
-	s32 width = skin->getSize(EGDS_WINDOW_BUTTON_WIDTH);
+	s32 width = 15;
+	if (skin)
+		width = skin->getSize(EGDS_WINDOW_BUTTON_WIDTH);
 
 	core::rect<s32> r;
 	r.UpperLeftCorner.X = rectangle.getWidth() - width - 2;
@@ -39,9 +39,16 @@ CGUIComboBox::CGUIComboBox(IGUIEnvironment* environment, IGUIElement* parent,
 	r.UpperLeftCorner.Y = 2;
 	r.LowerRightCorner.Y = rectangle.getHeight() - 2;
 
-	ListButton = Environment->addButton(r, this, -1, GUI_ICON_CURSOR_DOWN);
+	ListButton = Environment->addButton(r, this, -1, L"");
+	if (skin && skin->getSpriteBank())
+	{
+		ListButton->setSpriteBank(skin->getSpriteBank());
+		ListButton->setSprite(EGBS_BUTTON_UP, skin->getIcon(EGDI_CURSOR_DOWN), skin->getColor(EGDC_WINDOW_SYMBOL));
+		ListButton->setSprite(EGBS_BUTTON_DOWN, skin->getIcon(EGDI_CURSOR_DOWN), skin->getColor(EGDC_WINDOW_SYMBOL));
+	}
 	ListButton->setSubElement(true);
-	ListButton->setOverrideFont(Environment->getBuiltInFont());
+
+	setNotClipped(true);
 }
 
 
@@ -64,6 +71,12 @@ const wchar_t* CGUIComboBox::getItem(s32 idx)
 		return 0;
 
 	return Items[idx].c_str();
+}
+
+//! Returns caption of this element.
+const wchar_t* CGUIComboBox::getText()
+{
+	return getItem(Selected);
 }
 
 
@@ -164,7 +177,7 @@ bool CGUIComboBox::OnEvent(SEvent event)
 					return true;
 		
 				// check if it is outside
-				if (!AbsoluteRect.isPointInside(p))
+				if (!AbsoluteClippingRect.isPointInside(p))
 				{
 					Environment->removeFocus(this);
 					return false;
@@ -182,7 +195,7 @@ bool CGUIComboBox::OnEvent(SEvent event)
 				else
 					openCloseMenu();
 				
-				if (!AbsoluteRect.isPointInside(p))
+				if (!AbsoluteClippingRect.isPointInside(p))
 				{
 					Environment->removeFocus(this);
 					return false;
@@ -235,9 +248,11 @@ void CGUIComboBox::draw()
 		frameRect = AbsoluteRect;
 		frameRect.UpperLeftCorner.X += 2;
 
-		skin->getFont()->draw(Items[Selected].c_str(), frameRect, 
-			skin->getColor(EGDC_BUTTON_TEXT),
-			false, true, &AbsoluteClippingRect);
+		IGUIFont* font = skin->getFont();
+		if (font)
+			font->draw(Items[Selected].c_str(), frameRect, 
+				skin->getColor(EGDC_BUTTON_TEXT),
+				false, true, &AbsoluteClippingRect);
 	}
 
 	// draw buttons
@@ -266,7 +281,9 @@ void CGUIComboBox::openCloseMenu()
 		if (h == 0)
 			h = 1;
 
-		h *= (skin->getFont()->getDimension(L"A").Height + 4);
+		IGUIFont* font = skin->getFont();
+		if (font)
+			h *= (font->getDimension(L"A").Height + 4);
 
 		// open list box
 		core::rect<s32> r(0, AbsoluteRect.getHeight(),

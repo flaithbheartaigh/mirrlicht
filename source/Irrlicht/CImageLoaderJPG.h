@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 #include "IrrCompileConfig.h"
+#include <stdio.h> // required for jpeglib.h
 #ifdef _IRR_COMPILE_WITH_LIBJPEG_
 extern "C" {
 	#ifndef _IRR_USE_NON_SYSTEM_JPEG_LIB_

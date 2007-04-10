@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -36,6 +36,9 @@ namespace gui
 
 		//! deletes all items in the combo box
 		virtual void clear();
+
+		//! returns the text of the currently selected item
+		virtual const wchar_t* getText();
 
 		//! returns id of selected item. returns -1 if no item is selected.
 		virtual s32 getSelected();

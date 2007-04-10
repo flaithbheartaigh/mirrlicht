@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine" and the "irrXML" project.
 // For conditions of distribution and use, see copyright notice in irrlicht.h and irrXML.h
 
@@ -13,7 +13,7 @@ namespace irr
 namespace core
 {
 
-const float fast_atof_table[] =	{
+const float fast_atof_table[16] =	{  // we write [16] here instead of [] to work around a swig bug
 										0.f,
 										0.1f,
 										0.01f,
@@ -108,7 +108,7 @@ inline float fast_atof(const char* c)
 }
 
 } // end namespace core
-}// end namespace irr
+} // end namespace irr
 
 #endif
 

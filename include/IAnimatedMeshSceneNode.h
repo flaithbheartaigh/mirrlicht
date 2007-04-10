@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -7,6 +7,7 @@
 
 #include "ISceneNode.h"
 #include "IAnimatedMeshMD2.h"
+#include "IAnimatedMeshMD3.h"
 #include "IShadowVolumeSceneNode.h"
 
 namespace irr
@@ -64,7 +65,7 @@ namespace scene
 
 		//! Sets the speed with witch the animation is played.
 		//! \param framesPerSecond: Frames per second played.
-		virtual void setAnimationSpeed(s32 framesPerSecond) = 0;
+		virtual void setAnimationSpeed(f32 framesPerSecond) = 0;
 
 		//! Creates shadow volume scene node as child of this node
 		//! and returns a pointer to it.  The shadow can be rendered using the ZPass
@@ -164,7 +165,11 @@ namespace scene
 		virtual bool setMD2Animation(const c8* animationName) = 0;
 
 		//! Returns the current displayed frame number.
-		virtual s32 getFrameNr() = 0;
+		virtual s32 getFrameNr() const = 0;
+		//! Returns the current start frame number.
+		virtual s32 getStartFrame() const = 0;
+		//! Returns the current end frame number.
+		virtual s32 getEndFrame() const = 0;
 
 		//! Sets looping mode which is on by default. If set to false,
 		//! animations will not be played looped.
@@ -189,6 +194,10 @@ namespace scene
 
 		//! Returns the current mesh
 		virtual IAnimatedMesh* getMesh(void) = 0;
+
+		// returns the absolute transformation for a special MD3 Tag if the mesh is a md3 mesh,
+		// or the absolutetransformation if it's a normal scenenode
+		virtual const SMD3QuaterionTag& getAbsoluteTransformation( const core::stringc & tagname) = 0;
 
 	};
 

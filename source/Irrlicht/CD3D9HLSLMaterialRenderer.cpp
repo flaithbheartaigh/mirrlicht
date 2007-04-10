@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -71,8 +71,8 @@ CD3D9HLSLMaterialRenderer::~CD3D9HLSLMaterialRenderer()
 
 
 bool CD3D9HLSLMaterialRenderer::createHLSLVertexShader(const char* vertexShaderProgram,
-													   const char* shaderEntryPointName,
-													   const char* shaderTargetName)
+			   const char* shaderEntryPointName,
+			   const char* shaderTargetName)
 {
 	if (!vertexShaderProgram)
 		return true;

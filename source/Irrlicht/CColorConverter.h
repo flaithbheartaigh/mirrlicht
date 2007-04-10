@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -49,15 +49,18 @@ public:
 	//! \param dP pointer to destination data buffer. must be big enough
 	//! to hold sN pixels in the output format.
 	static void convert_A1R5G5B5toR8G8B8(const void* sP, s32 sN, void* dP);
+	static void convert_A1R5G5B5toB8G8R8(const void* sP, s32 sN, void* dP);
 	static void convert_A1R5G5B5toA8R8G8B8(const void* sP, s32 sN, void* dP);
 	static void convert_A1R5G5B5toA1R5G5B5(const void* sP, s32 sN, void* dP);
 	static void convert_A1R5G5B5toR5G6B5(const void* sP, s32 sN, void* dP);
 
 	static void convert_A8R8G8B8toR8G8B8(const void* sP, s32 sN, void* dP);
+	static void convert_A8R8G8B8toB8G8R8(const void* sP, s32 sN, void* dP);
 	static void convert_A8R8G8B8toA8R8G8B8(const void* sP, s32 sN, void* dP);
 	static void convert_A8R8G8B8toA1R5G5B5(const void* sP, s32 sN, void* dP);
 	static void convert_A8R8G8B8toR5G6B5(const void* sP, s32 sN, void* dP);
 
+	static void convert_A8R8G8B8toR3G3B2(const void* sP, s32 sN, void* dP);
 	static void convert_R8G8B8toR8G8B8(const void* sP, s32 sN, void* dP);
 	static void convert_R8G8B8toA8R8G8B8(const void* sP, s32 sN, void* dP);
 	static void convert_R8G8B8toA1R5G5B5(const void* sP, s32 sN, void* dP);
@@ -65,6 +68,7 @@ public:
 
 	static void convert_R5G6B5toR5G6B5(const void* sP, s32 sN, void* dP);
 	static void convert_R5G6B5toR8G8B8(const void* sP, s32 sN, void* dP);
+	static void convert_R5G6B5toB8G8R8(const void* sP, s32 sN, void* dP);
 	static void convert_R5G6B5toA8R8G8B8(const void* sP, s32 sN, void* dP);
 	static void convert_R5G6B5toA1R5G5B5(const void* sP, s32 sN, void* dP);
 };

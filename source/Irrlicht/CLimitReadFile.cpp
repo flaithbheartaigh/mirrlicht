@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -12,7 +12,7 @@ namespace io
 
 
 CLimitReadFile::CLimitReadFile(IReadFile* alreadyOpenedFile, s32 areaSize, const c8* name)
-: AreaSize(areaSize), File(alreadyOpenedFile), Filename(name)
+: Filename(name), AreaSize(areaSize), AreaStart(0), AreaEnd(0), File(alreadyOpenedFile)
 {
 	#ifdef _DEBUG
 	setDebugName("CLimitReadFile");
@@ -45,14 +45,14 @@ CLimitReadFile::~CLimitReadFile()
 
 
 //! returns how much was read
-s32 CLimitReadFile::read(void* buffer, s32 sizeToRead)
+s32 CLimitReadFile::read(void* buffer, u32 sizeToRead)
 {
 	s32 pos = File->getPos();
 
 	if (pos >= AreaEnd)
 		return 0;
 
-	if (pos + sizeToRead >= AreaEnd)
+	if (pos + (s32)sizeToRead >= AreaEnd)
 		sizeToRead = AreaEnd - pos;
 
 	return File->read(buffer, sizeToRead);

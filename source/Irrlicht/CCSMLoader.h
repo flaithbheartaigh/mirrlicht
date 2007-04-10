@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 //
@@ -72,8 +72,8 @@ namespace scene
 		scene::IMesh* createIrrlichtMesh(const CSMFile* csmFile,
 			core::stringc textureRoot, const c8* lmprefix);
 
-		scene::ISceneManager* SceneManager;
 		io::IFileSystem* FileSystem;
+		scene::ISceneManager* SceneManager;
 	};
 
 } // end namespace

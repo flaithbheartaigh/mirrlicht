@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt / Thomas Alten
+// Copyright (C) 2002-2007 Nikolaus Gebhardt / Thomas Alten
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -264,9 +264,9 @@ enum e4DVertexFlag
 	VERTEX4D_PROJECTED	= 0x00000100,
 
 	VERTEX4D_FORMAT_MASK	= 0xFFFF0000,
-	VERTEX4D_FORMAT_0		= 0x00010000,
-	VERTEX4D_FORMAT_1		= VERTEX4D_FORMAT_0 | 0x00020000,
-	VERTEX4D_FORMAT_2		= VERTEX4D_FORMAT_1 | 0x00040000,
+	VERTEX4D_FORMAT_0	= 0x00010000,
+	VERTEX4D_FORMAT_1	= VERTEX4D_FORMAT_0 | 0x00020000,
+	VERTEX4D_FORMAT_2	= VERTEX4D_FORMAT_1 | 0x00040000
 };
 
 // dummy Vertex
@@ -328,7 +328,8 @@ struct SAlignedVertex
 	{
 		u32 byteSize = (ElementSize << SIZEOF_SVERTEX_LOG2 ) + aligned;
 		mem = new u8 [ byteSize ];
-		data = (s4DVertex*) ((PointerAsValue ( mem ) + (aligned-1) ) & ~ ( aligned - 1 ) );
+		//data = (s4DVertex*) ((PointerAsValue ( mem ) + (aligned-1) ) & ~ ( aligned - 1 ) );
+		data = (s4DVertex*) mem;
 	}
 
 	virtual ~SAlignedVertex ()
@@ -393,21 +394,9 @@ struct SVertexCache
 // swap 2 pointer
 inline void swapVertexPointer(const s4DVertex** v1, const s4DVertex** v2)
 {
-#if 0
-	u32 a = PointerAsValue ( *v1 );
-	u32 b = PointerAsValue ( *v2 );
-
-	a ^= b;
-	b ^= a;
-	a ^= b;
-
-	*v1 = (s4DVertex*) a;
-	*v2 = (s4DVertex*) b;
-#else
 	const s4DVertex* b = *v1;
 	*v1 = *v2;
 	*v2 = b;
-#endif
 }
 
 

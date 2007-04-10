@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -67,7 +67,7 @@ protected:
 
 	HRESULT stubD3DXAssembleShaderFromFile(LPCSTR pSrcFile,
 				        CONST D3DXMACRO* pDefines, LPD3DXINCLUDE  pInclude, DWORD Flags,
-						LPD3DXBUFFER* ppShader, LPD3DXBUFFER* ppErrorMsgs);
+					LPD3DXBUFFER* ppShader, LPD3DXBUFFER* ppErrorMsgs);
 
 	HRESULT stubD3DXCompileShader(LPCSTR pSrcData, UINT SrcDataLen, CONST D3DXMACRO* pDefines,
 								  LPD3DXINCLUDE pInclude, LPCSTR pFunctionName,

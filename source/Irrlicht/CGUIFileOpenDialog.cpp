@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -9,7 +9,7 @@
 #include "IGUIButton.h"
 #include "IGUIStaticText.h"
 #include "IGUIFont.h"
-#include "GUIIcons.h"
+#include "IGUIFontBitmap.h"
 #include "IFileList.h"
 #include "os.h"
 
@@ -23,13 +23,13 @@ const s32 FOD_HEIGHT = 250;
 
 
 //! constructor
-CGUIFileOpenDialog::CGUIFileOpenDialog(io::IFileSystem* fs, const wchar_t* title, IGUIEnvironment* environment, IGUIElement* parent, s32 id)
+CGUIFileOpenDialog::CGUIFileOpenDialog(const wchar_t* title, IGUIEnvironment* environment, IGUIElement* parent, s32 id)
 : IGUIFileOpenDialog(environment, parent, id,
  core::rect<s32>((parent->getAbsolutePosition().getWidth()-FOD_WIDTH)/2,
 					(parent->getAbsolutePosition().getHeight()-FOD_HEIGHT)/2,	
 					(parent->getAbsolutePosition().getWidth()-FOD_WIDTH)/2+FOD_WIDTH,
 					(parent->getAbsolutePosition().getHeight()-FOD_HEIGHT)/2+FOD_HEIGHT)),	
-  Dragging(false), FileNameText(0), FileSystem(fs), FileList(0)
+  Dragging(false), FileNameText(0), FileList(0)
 {
 	#ifdef _DEBUG
 	IGUIElement::setDebugName("CGUIFileOpenDialog");
@@ -37,30 +37,55 @@ CGUIFileOpenDialog::CGUIFileOpenDialog(io::IFileSystem* fs, const wchar_t* title
 
 	Text = title;
 
+	IGUISkin* skin = Environment->getSkin();
+	IGUISpriteBank* sprites = 0;
+	video::SColor color(255,255,255,255);
+	if (skin)
+	{
+		sprites = skin->getSpriteBank();
+		color = skin->getColor(EGDC_WINDOW_SYMBOL);
+	}
+
 	s32 buttonw = environment->getSkin()->getSize(EGDS_WINDOW_BUTTON_WIDTH);
 	s32 posx = RelativeRect.getWidth() - buttonw - 4;
 
-	CloseButton = Environment->addButton(core::rect<s32>(posx, 3, posx + buttonw, 3 + buttonw), this, -1, GUI_ICON_WINDOW_CLOSE);
+	CloseButton = Environment->addButton(core::rect<s32>(posx, 3, posx + buttonw, 3 + buttonw), this, -1, 
+		L"", skin ? skin->getDefaultText(EGDT_MSG_BOX_OK) : L"Close");
 	CloseButton->setSubElement(true);
-	CloseButton->setOverrideFont(Environment->getBuiltInFont());
+	if (sprites)
+	{
+		CloseButton->setSpriteBank(sprites);
+		CloseButton->setSprite(EGBS_BUTTON_UP, skin->getIcon(EGDI_WINDOW_CLOSE), color);
+		CloseButton->setSprite(EGBS_BUTTON_DOWN, skin->getIcon(EGDI_WINDOW_CLOSE), color);
+	}
+	CloseButton->setAlignment(EGUIA_LOWERRIGHT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_UPPERLEFT);
 	CloseButton->grab();
 
-	OKButton = Environment->addButton(core::rect<s32>(RelativeRect.getWidth()-80, 30, RelativeRect.getWidth()-10, 50), this, -1, L"OK");
+	OKButton = Environment->addButton(
+		core::rect<s32>(RelativeRect.getWidth()-80, 30, RelativeRect.getWidth()-10, 50), 
+		this, -1, skin ? skin->getDefaultText(EGDT_MSG_BOX_OK) : L"OK");
 	OKButton->setSubElement(true);
+	OKButton->setAlignment(EGUIA_LOWERRIGHT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_UPPERLEFT);
 	OKButton->grab();
 
-	CancelButton = Environment->addButton(core::rect<s32>(RelativeRect.getWidth()-80, 55, RelativeRect.getWidth()-10, 75), this, -1, L"Cancel");
+	CancelButton = Environment->addButton(
+		core::rect<s32>(RelativeRect.getWidth()-80, 55, RelativeRect.getWidth()-10, 75), 
+		this, -1, skin ? skin->getDefaultText(EGDT_MSG_BOX_CANCEL) : L"Cancel");
 	CancelButton->setSubElement(true);
+	CancelButton->setAlignment(EGUIA_LOWERRIGHT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_UPPERLEFT);
 	CancelButton->grab();
 
 	FileBox = Environment->addListBox(core::rect<s32>(10, 55, RelativeRect.getWidth()-90, 230), this, -1, true);
 	FileBox->setSubElement(true);
+	FileBox->setAlignment(EGUIA_UPPERLEFT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_LOWERRIGHT);
 	FileBox->grab();
-	//Environment->setFocus(FileBox);
 
 	FileNameText = Environment->addStaticText(0, core::rect<s32>(10, 30, RelativeRect.getWidth()-90, 50), true, false, this);
 	FileNameText->setSubElement(true);
+	FileNameText->setAlignment(EGUIA_UPPERLEFT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_UPPERLEFT);
 	FileNameText->grab();
+
+	FileSystem = Environment->getFileSystem();
 
 	if (FileSystem)
 		FileSystem->grab();
@@ -182,6 +207,15 @@ bool CGUIFileOpenDialog::OnEvent(SEvent event)
 		case EMIE_MOUSE_MOVED:
 			if (Dragging)
 			{
+				// gui window should not be dragged outside its parent
+				if (Parent)
+					if (event.MouseInput.X < Parent->getAbsolutePosition().UpperLeftCorner.X +1 ||
+						event.MouseInput.Y < Parent->getAbsolutePosition().UpperLeftCorner.Y +1 ||
+						event.MouseInput.X > Parent->getAbsolutePosition().LowerRightCorner.X -1 ||
+						event.MouseInput.Y > Parent->getAbsolutePosition().LowerRightCorner.Y -1)
+
+						return true;
+
 				move(core::position2d<s32>(event.MouseInput.X - DragStart.X, event.MouseInput.Y - DragStart.Y));
 				DragStart.X = event.MouseInput.X;
 				DragStart.Y = event.MouseInput.Y;
@@ -226,7 +260,9 @@ void CGUIFileOpenDialog::draw()
 //! fills the listbox with files.
 void CGUIFileOpenDialog::fillListBox()
 {
-	if (!FileSystem || !FileBox)
+	IGUISkin *skin = Environment->getSkin();
+
+	if (!FileSystem || !FileBox || !skin)
 		return;
 
 	if (FileList)
@@ -240,7 +276,7 @@ void CGUIFileOpenDialog::fillListBox()
 	for (s32 i=0; i<FileList->getFileCount(); ++i)
 	{
 		s = FileList->getFileName(i);
-		FileBox->addItem(s.c_str(), FileList->isDirectory(i) ? GUI_ICON_DIRECTORY : GUI_ICON_FILE);
+		FileBox->addItem(s.c_str(), skin->getIcon(FileList->isDirectory(i) ? EGDI_DIRECTORY : EGDI_FILE));
 	}
 
 	if (FileNameText)

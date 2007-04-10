@@ -1,6 +1,6 @@
 /* irrlicht.h -- interface of the 'Irrlicht Engine'
 
-  Copyright (C) 2002-2006 Nikolaus Gebhardt
+  Copyright (C) 2002-2007 Nikolaus Gebhardt
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,7 +32,7 @@
 #include "IrrCompileConfig.h"
 #include "aabbox3d.h"
 #include "irrArray.h"
-//#include "irrMap.h"
+#include "irrMap.h"
 #include "SColor.h"
 #include "SLight.h"
 #include "dimension2d.h"
@@ -42,6 +42,7 @@
 #include "IAttributeExchangingObject.h"
 #include "IAnimatedMesh.h"
 #include "IAnimatedMeshMD2.h"
+#include "IAnimatedMeshMD3.h"
 #include "IAnimatedMeshMS3D.h"
 #include "IAnimatedMeshMS3D.h"
 #include "IQ3LevelMesh.h"
@@ -63,7 +64,7 @@
 #include "IGUIFileOpenDialog.h"
 #include "IGUIColorSelectDialog.h"
 #include "IGUIFont.h"
-#include "IGUIFontASCII.h"
+#include "IGUIFontBitmap.h"
 #include "IGUIImage.h"
 #include "IGUIInOutFader.h"
 #include "IGUIListBox.h"
@@ -127,6 +128,7 @@
 #include "rect.h"
 #include "S3DVertex.h"
 #include "SAnimatedMesh.h"
+#include "SExposedVideoData.h"
 #include "SKeyMap.h"
 #include "SMaterial.h"
 #include "SMesh.h"
@@ -135,9 +137,9 @@
 #include "SMeshBufferTangents.h"
 #include "SViewFrustum.h"
 #include "irrTypes.h"
+#include "coreutil.h"
 
-
-/*! \mainpage Irrlicht Engine 1.2 API documentation
+/*! \mainpage Irrlicht Engine 1.3 API documentation
  *
  * <div align="center"><img src="logobig.png" ></div>
  *
@@ -148,7 +150,7 @@
  * the Irrlicht Engine. If you are looking for a tutorial on how to start, you'll
  * find some on the homepage of the Irrlicht Engine at 
  * <A HREF="http://irrlicht.sourceforge.net" >irrlicht.sourceforge.net</A> 
- * or inside the SDK in the directory \examples.
+ * or inside the SDK in the examples directory.
  *
  * The Irrlicht Engine is intended to be an easy-to-use 3d engine, so
  * this documentation is an important part of it. If you have any questions or
@@ -257,7 +259,7 @@ namespace irr
 	/** If you need more parameters to be passed to the creation of the Irrlicht Engine device,
 	use the createDeviceEx() function.
 	\param deviceType: Type of the device. This can currently be video::EDT_NULL, 
-	video::EDT_SOFTWARE, video::EDT_SOFTWARE2, video::EDT_DIRECT3D8, video::EDT_DIRECT3D9 and video::EDT_OPENGL.
+	video::EDT_SOFTWARE, video::EDT_BURNINGSVIDEO, video::EDT_DIRECT3D8, video::EDT_DIRECT3D9 and video::EDT_OPENGL.
 	\param windowSize: Size of the window or the video mode in fullscreen mode.
 	\param bits: Bits per pixel in fullscreen mode. Ignored if windowed mode.
 	\param fullscreen: Should be set to true if the device should run in fullscreen. Otherwise

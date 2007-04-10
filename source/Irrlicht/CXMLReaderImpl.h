@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine" and the "irrXML" project.
 // For conditions of distribution and use, see copyright notice in irrlicht.h and/or irrXML.h
 
@@ -31,7 +31,7 @@ public:
 
 	//! Constructor
 	CXMLReaderImpl(IFileReadCallBack* callback, bool deleteCallBack = true)
-		: TextData(0), P(0), TextSize(0), TextBegin(0), CurrentNodeType(EXN_NONE),
+		: TextData(0), P(0), TextBegin(0), TextSize(0), CurrentNodeType(EXN_NONE),
 		SourceFormat(ETF_ASCII), TargetFormat(ETF_ASCII)
 	{
 		if (!callback)
@@ -506,7 +506,7 @@ private:
 
 		core::string<char_type> newstr;
 
-		while(pos != -1 && pos < origstr.size()-2)
+		while(pos != -1 && pos < (int)origstr.size()-2)
 		{
 			// check if it is one of the special characters
 
@@ -539,7 +539,7 @@ private:
 			pos = origstr.findNext(L'&', pos);		
 		}
 
-		if (oldPos < origstr.size()-1)
+		if (oldPos < (int)origstr.size()-1)
 			newstr.append(origstr.subString(oldPos, origstr.size()-oldPos));
 
 		return newstr;

@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -21,10 +21,13 @@ namespace core
 	{
 	public:
 
-		//! Determinates if the triangle is totally inside a bounding box.
+		triangle3d() {}
+		triangle3d(vector3d<T> v1, vector3d<T> v2, vector3d<T> v3) : pointA(v1), pointB(v2), pointC(v3) {}
+
+		//! Determines if the triangle is totally inside a bounding box.
 		//! \param box: Box to check.
 		//! \return Returns true if the triangle is withing the box,
-		//! and false if it is not.
+		//! and false otherwise.
 		bool isTotalInsideBox(const aabbox3d<T>& box) const
 		{
 			return (box.isPointInside(pointA) && 
@@ -98,7 +101,7 @@ namespace core
 			vector3d<T> bminusa = b - a;
 			vector3d<T> cp1 = bminusa.crossProduct(p1 - a);
 			vector3d<T> cp2 = bminusa.crossProduct(p2 - a);
-			return (cp1.dotProduct(cp2) >= core::ROUNDING_ERROR_32);
+			return (cp1.dotProduct(cp2) >= 0.0f);
 		}
 
 

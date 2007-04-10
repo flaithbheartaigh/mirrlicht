@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -42,6 +42,14 @@ public:
 	//! \param index: Index value, must be between 0 and getAttributeCount()-1.
 	virtual E_ATTRIBUTE_TYPE getAttributeType(s32 index);
 
+	//! Returns the type string of the attribute
+	//! \param attributeName: String for the attribute type
+	virtual const wchar_t* getAttributeTypeString(const c8* attributeName);
+
+	//! Returns the type string of the attribute by index. 
+	//! \param index: Index value, must be between 0 and getAttributeCount()-1.
+	virtual const wchar_t* getAttributeTypeString(s32 index);
+
 	//! Returns if an attribute with a name exists
 	virtual bool existsAttribute(const c8* attributeName);
 
@@ -57,7 +65,7 @@ public:
 	virtual bool read(irr::io::IXMLReader* reader, bool readCurrentElementOnly=false);
 
 	//! Write these attributes into a xml file
-	virtual bool write(io::IXMLWriter* writer);
+	virtual bool write(io::IXMLWriter* writer, bool writeXMLHeader=false);
 
 
 	/*
@@ -170,6 +178,29 @@ public:
 	//! \param attributeName: Name for the attribute
 	virtual void setAttribute(s32 index, const wchar_t* value);
 
+	/*
+
+		Binary Data Attribute
+
+	*/
+
+	//! Adds an attribute as binary data
+	virtual void addBinary(const c8* attributeName, void* data, s32 dataSizeInBytes);
+
+	//! Sets an attribute as binary data
+	virtual void setAttribute(const c8* attributeName, void* data, s32 dataSizeInBytes);
+
+	//! Gets an attribute as binary data
+	//! \param attributeName: Name of the attribute to get.
+	virtual void getAttributeAsBinaryData(const c8* attributeName, void* outData, s32 maxSizeInBytes);
+
+	//! Gets an attribute as binary data
+	//! \param index: Index value, must be between 0 and getAttributeCount()-1.
+	virtual void getAttributeAsBinaryData(s32 index, void* outData, s32 maxSizeInBytes);
+
+	//! Sets an attribute as binary data
+	virtual void setAttribute(s32 index, void* data, s32 dataSizeInBytes);
+
 
 	/*
 
@@ -215,7 +246,7 @@ public:
 	//! \return Returns value of the attribute previously set by setAttribute() 
 	virtual bool getAttributeAsBool(const c8* attributeName);
 
-    //! Gets an attribute as boolean value
+	//! Gets an attribute as boolean value
 	//! \param index: Index value, must be between 0 and getAttributeCount()-1.
 	virtual bool getAttributeAsBool(s32 index);
 
@@ -278,7 +309,6 @@ public:
 
 	//! Adds an attribute as color
 	virtual void addColor(const c8* attributeName, video::SColor value);
-
 
 	//! Sets a attribute as color
 	virtual void setAttribute(const c8* attributeName, video::SColor color);
@@ -392,28 +422,177 @@ public:
 	//! Sets an attribute as rectangle
 	virtual void setAttribute(s32 index, core::rect<s32> v);
 
+
 	/*
 
-		Binary Data Attribute
+		matrix attribute
+
+	*/ 
+
+	//! Adds an attribute as matrix
+	virtual void addMatrix(const c8* attributeName, core::matrix4 v);
+
+	//! Sets an attribute as matrix
+	virtual void setAttribute(const c8* attributeName, core::matrix4 v);
+
+	//! Gets an attribute as a matrix4
+	//! \param attributeName: Name of the attribute to get.
+	//! \return Returns value of the attribute previously set by setAttribute()
+	virtual core::matrix4 getAttributeAsMatrix(const c8* attributeName);
+
+	//! Gets an attribute as matrix
+	//! \param index: Index value, must be between 0 and getAttributeCount()-1.
+	virtual core::matrix4 getAttributeAsMatrix(s32 index);
+
+	//! Sets an attribute as matrix
+	virtual void setAttribute(s32 index, core::matrix4 v);
+
+	/*
+		quaternion attribute
 
 	*/
 
-	//! Adds an attribute as binary data
-	virtual void addBinary(const c8* attributeName, void* data, s32 dataSizeInBytes);
+	//! Adds an attribute as quaternion
+	virtual void addQuaternion(const c8* attributeName, core::quaternion v);
 
-	//! Sets an attribute as binary data
-	virtual void setAttribute(const c8* attributeName, void* data, s32 dataSizeInBytes );
+	//! Sets an attribute as quaternion
+	virtual void setAttribute(const c8* attributeName, core::quaternion v);
 
-	//! Gets an attribute as binary data
+	//! Gets an attribute as a quaternion
 	//! \param attributeName: Name of the attribute to get.
-	virtual void getAttributeAsBinaryData(const c8* attributeName, void* outData, s32 maxSizeInBytes);
+	//! \return Returns value of the attribute previously set by setAttribute()
+	virtual core::quaternion getAttributeAsQuaternion(const c8* attributeName);
 
-	//! Gets an attribute as binary data
+	//! Gets an attribute as quaternion
 	//! \param index: Index value, must be between 0 and getAttributeCount()-1.
-	virtual void getAttributeAsBinaryData(s32 index, void* outData, s32 maxSizeInBytes);
+	virtual core::quaternion getAttributeAsQuaternion(s32 index);
 
-	//! Sets an attribute as binary data
-	virtual void setAttribute(s32 index, void* data, s32 dataSizeInBytes );
+	//! Sets an attribute as quaternion
+	virtual void setAttribute(s32 index, core::quaternion v);
+
+	/*
+
+		3d bounding box
+
+	*/
+
+	//! Adds an attribute as axis aligned bounding box
+	virtual void addBox3d(const c8* attributeName, core::aabbox3df v);
+
+	//! Sets an attribute as axis aligned bounding box
+	virtual void setAttribute(const c8* attributeName, core::aabbox3df v);
+
+	//! Gets an attribute as a axis aligned bounding box
+	//! \param attributeName: Name of the attribute to get.
+	//! \return Returns value of the attribute previously set by setAttribute()
+	virtual core::aabbox3df getAttributeAsBox3d(const c8* attributeName);
+
+	//! Gets an attribute as axis aligned bounding box
+	//! \param index: Index value, must be between 0 and getAttributeCount()-1.
+	virtual core::aabbox3df getAttributeAsBox3d(s32 index);
+
+	//! Sets an attribute as axis aligned bounding box
+	virtual void setAttribute(s32 index, core::aabbox3df v);
+
+	/*
+
+		plane
+
+	*/
+
+	//! Adds an attribute as 3d plane
+	virtual void addPlane3d(const c8* attributeName, core::plane3df v);
+
+	//! Sets an attribute as 3d plane
+	virtual void setAttribute(const c8* attributeName, core::plane3df v);
+
+	//! Gets an attribute as a 3d plane
+	//! \param attributeName: Name of the attribute to get.
+	//! \return Returns value of the attribute previously set by setAttribute()
+	virtual core::plane3df getAttributeAsPlane3d(const c8* attributeName);
+
+	//! Gets an attribute as 3d plane
+	//! \param index: Index value, must be between 0 and getAttributeCount()-1.
+	virtual core::plane3df getAttributeAsPlane3d(s32 index);
+
+	//! Sets an attribute as 3d plane
+	virtual void setAttribute(s32 index, core::plane3df v);
+
+
+	/*
+
+		3d triangle
+
+	*/
+
+	//! Adds an attribute as 3d triangle
+	virtual void addTriangle3d(const c8* attributeName, core::triangle3df v);
+
+	//! Sets an attribute as 3d trianle
+	virtual void setAttribute(const c8* attributeName, core::triangle3df v);
+
+	//! Gets an attribute as a 3d triangle
+	//! \param attributeName: Name of the attribute to get.
+	//! \return Returns value of the attribute previously set by setAttribute()
+	virtual core::triangle3df getAttributeAsTriangle3d(const c8* attributeName);
+
+	//! Gets an attribute as 3d triangle
+	//! \param index: Index value, must be between 0 and getAttributeCount()-1.
+	virtual core::triangle3df getAttributeAsTriangle3d(s32 index);
+
+	//! Sets an attribute as 3d triangle
+	virtual void setAttribute(s32 index, core::triangle3df v);
+
+
+	/*
+
+		line 2d
+
+	*/
+
+	//! Adds an attribute as a 2d line
+	virtual void addLine2d(const c8* attributeName, core::line2df v);
+
+	//! Sets an attribute as a 2d line
+	virtual void setAttribute(const c8* attributeName, core::line2df v);
+
+	//! Gets an attribute as a 2d line
+	//! \param attributeName: Name of the attribute to get.
+	//! \return Returns value of the attribute previously set by setAttribute()
+	virtual core::line2df getAttributeAsLine2d(const c8* attributeName);
+
+	//! Gets an attribute as a 2d line
+	//! \param index: Index value, must be between 0 and getAttributeCount()-1.
+	virtual core::line2df getAttributeAsLine2d(s32 index);
+
+	//! Sets an attribute as a 2d line
+	virtual void setAttribute(s32 index, core::line2df v);
+
+
+	/*
+
+		line 3d
+
+	*/
+
+	//! Adds an attribute as a 3d line
+	virtual void addLine3d(const c8* attributeName, core::line3df v);
+
+	//! Sets an attribute as a 3d line
+	virtual void setAttribute(const c8* attributeName, core::line3df v);
+
+	//! Gets an attribute as a 3d line
+	//! \param attributeName: Name of the attribute to get.
+	//! \return Returns value of the attribute previously set by setAttribute()
+	virtual core::line3df getAttributeAsLine3d(const c8* attributeName);
+
+	//! Gets an attribute as a 3d line
+	//! \param index: Index value, must be between 0 and getAttributeCount()-1.
+	virtual core::line3df getAttributeAsLine3d(s32 index);
+
+	//! Sets an attribute as a 3d line
+	virtual void setAttribute(s32 index, core::line3df v);
+
 
 	/*
 
@@ -447,10 +626,6 @@ protected:
 	IAttribute* getAttributeP(const c8* attributeName);
 
 	video::IVideoDriver* Driver;
-
-	static wchar_t	tmpBufferW[1024];
-	static c8		tmpBuffer [1024];
-
 };
 
 
@@ -460,28 +635,35 @@ public:
 
 	virtual ~IAttribute() {};
 
-	virtual s32 getInt()					{ return 0; }
-	virtual f32 getFloat()					{ return 0; }
+	virtual s32 getInt()				{ return 0; }
+	virtual f32 getFloat()				{ return 0; }
 	virtual video::SColorf getColorf()		{ return video::SColorf(1.0f,1.0f,1.0f,1.0f); }
 	virtual video::SColor getColor()		{ return video::SColor(255,255,255,255); }
-	virtual void getString(char* target)	{ target[0] = 0; };
-	virtual void getString(wchar_t* target) 
-	{ 
-		c8 tmp[1024];
-		getString(tmp);
-		wcscpy(target,core::stringw(tmp).c_str());
-	}
+	virtual core::stringc getString()		{ return core::stringc(getStringW().c_str()); }
+	virtual core::stringw getStringW()		{ return core::stringw(); }
 	virtual core::array<core::stringw> getArray()	{ return core::array<core::stringw>(); };
-	virtual bool getBool()					{ return false; }
+	virtual bool getBool()				{ return false; }
 	virtual void getBinary(void* outdata, s32 maxLength) {};
 	virtual core::vector3df getVector()		{ return core::vector3df(); }
 	virtual core::position2di getPosition()	{ return core::position2di(); }
 	virtual core::rect<s32> getRect()		{ return core::rect<s32>(); }
-	virtual video::ITexture* getTexture()	{ return 0; }
-	virtual gui::IGUIFont*	getFont()		{ return 0; }
+	virtual core::quaternion getQuaternion(){ return core::quaternion(); }
+	virtual core::matrix4 getMatrix()		{ return core::matrix4(); }
+	virtual core::triangle3df getTriangle()		{ return core::triangle3df(); }
+	virtual core::vector2df getVector2d()		{ return core::vector2df(); }
+	virtual core::vector2di getVector2di()		{ return core::vector2di(); }
+	virtual core::line2df getLine2d()		{ return core::line2df(); }
+	virtual core::line2di getLine2di()		{ return core::line2di(); }
+	virtual core::line3df getLine3d()		{ return core::line3df(); }
+	virtual core::line3di getLine3di()		{ return core::line3di(); }
+	virtual core::dimension2di getDimension2d()	{ return core::dimension2di(); }
+	virtual core::aabbox3d<f32> getBBox()		{ return core::aabbox3d<f32>(); }
+	virtual core::plane3df getPlane()		{ return core::plane3df(); }
+
+	virtual video::ITexture* getTexture()		{ return 0; }
 	virtual const char* getEnum()			{ return 0; }
 
-	virtual void setInt(s32 intValue)			{};
+	virtual void setInt(s32 intValue)		{};
 	virtual void setFloat(f32 floatValue)		{};
 	virtual void setString(const char* text)	{};
 	virtual void setString(const wchar_t* text){ setString(core::stringc(text).c_str()); };
@@ -493,14 +675,26 @@ public:
 	virtual void setVector(core::vector3df v)	{};
 	virtual void setPosition(core::position2di v)	{};
 	virtual void setRect(core::rect<s32> v)		{};
+	virtual void setQuaternion(core::quaternion v) {};
+	virtual void setMatrix(core::matrix4 v) {};
+	virtual void setTriangle(core::triangle3df v) {};
+	virtual void setVector2d(core::vector2df v) {};
+	virtual void setVector2d(core::vector2di v) {};
+	virtual void setLine2d(core::line2df v) {};
+	virtual void setLine2d(core::line2di v) {};
+	virtual void setLine3d(core::line3df v) {};
+	virtual void setLine3d(core::line3di v) {};
+	virtual void setDimension2d(core::dimension2di v) {};
+	virtual void setBBox(core::aabbox3d<f32> v) {};
+	virtual void setPlane(core::plane3df v) {};
+
 	virtual void setEnum(const char* enumValue, const char* const* enumerationLiterals) {};
 	virtual void setTexture(video::ITexture*)	{};
-	virtual void setFont(gui::IGUIFont*)		{};
 
 	core::stringc Name;
 
-	virtual E_ATTRIBUTE_TYPE getType() = 0;
-	virtual const wchar_t* getTypeString() = 0;
+	virtual E_ATTRIBUTE_TYPE getType() const = 0;
+	virtual const wchar_t* getTypeString() const = 0;
 };
 
 } // end namespace io

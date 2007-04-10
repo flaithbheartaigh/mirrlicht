@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -23,7 +23,7 @@ namespace io
 		//! \param buffer: Pointer to buffer where to read bytes will be written to.
 		//! \param sizeToRead: Amount of bytes to read from the file.
 		//! \return Returns how much bytes were read.
-		virtual s32 read(void* buffer, s32 sizeToRead) = 0;
+		virtual s32 read(void* buffer, u32 sizeToRead) = 0;
 
 		//! Changes position in file, returns true if successful.
 		//! \param finalPos: Destination position in the file.
@@ -53,8 +53,8 @@ namespace io
 	//! Internal function, please do not use.
 	IReadFile* createMemoryReadFile(void* memory, s32 size, const c8* fileName, bool deleteMemoryWhenDropped);
 
-} // end namespace irr
 } // end namespace io
+} // end namespace irr
 
 #endif
 

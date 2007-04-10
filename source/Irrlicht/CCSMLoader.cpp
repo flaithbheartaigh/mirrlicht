@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 //
@@ -454,8 +454,8 @@ namespace scene
 				lmapName += "LMAP_";
 				lmapName += (int)surface->getLightMapId();
 
-				buffer->Material.Texture1 = texture;
-				buffer->Material.Texture2 = driver->getTexture(lmapName.c_str());
+				buffer->Material.Textures[0] = texture;
+				buffer->Material.Textures[1] = driver->getTexture(lmapName.c_str());
 				buffer->Material.Lighting = false;
 				buffer->Material.MaterialType = video::EMT_LIGHTMAP_M4;
 

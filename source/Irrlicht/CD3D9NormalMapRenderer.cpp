@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -9,6 +9,7 @@
 #include "IVideoDriver.h"
 #include "IMaterialRendererServices.h"
 #include "os.h"
+#include "SLight.h"
 
 namespace irr
 {
@@ -190,15 +191,13 @@ namespace video
 		video::IVideoDriver* driver = services->getVideoDriver();
 
 		// set transposed world matrix
-		const core::matrix4& tWorld = driver->getTransform(video::ETS_WORLD).getTransposed();
-		services->setVertexShaderConstant(&tWorld.M[0], 0, 4);
+		services->setVertexShaderConstant(driver->getTransform(video::ETS_WORLD).getTransposed().pointer(), 0, 4);
 
 		// set transposed worldViewProj matrix
 		core::matrix4 worldViewProj(driver->getTransform(video::ETS_PROJECTION));
 		worldViewProj *= driver->getTransform(video::ETS_VIEW);
 		worldViewProj *= driver->getTransform(video::ETS_WORLD);
-		core::matrix4 tr(worldViewProj.getTransposed());
-		services->setVertexShaderConstant(&tr.M[0], 8, 4);
+		services->setVertexShaderConstant(worldViewProj.getTransposed().pointer(), 8, 4);
 
 		// here we've got to fetch the fixed function lights from the driver
 		// and set them as constants
@@ -207,7 +206,7 @@ namespace video
 
 		for (u32 i=0; i<2; ++i)
 		{
-			video::SLight light; 
+			SLight light; 
 
 			if (i<cnt)
 				light = driver->getDynamicLight(i);

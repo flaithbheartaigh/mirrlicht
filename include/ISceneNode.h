@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -39,7 +39,7 @@ namespace scene
 					const core::vector3df& scale = core::vector3df(1.0f, 1.0f, 1.0f))
 			: RelativeTranslation(position), RelativeRotation(rotation), RelativeScale(scale),
 				Parent(parent), ID(id), SceneManager(mgr), TriangleSelector(0),
-				AutomaticCullingState(EAC_OFF), IsVisible(true),
+				AutomaticCullingState(EAC_BOX), IsVisible(true),
 				DebugDataVisible(EDS_OFF), IsDebugObject(false)
 		{
 			if (Parent)
@@ -67,26 +67,37 @@ namespace scene
 
 
 		//! This method is called just before the rendering process of the whole scene.
-		//! Nodes may register themselves in the render pipeline during this call,
-		//! precalculate the geometry which should be renderered, and prevent their
-		//! children from being able to register them selfes if they are clipped by simply
-		//! not calling their OnPreRender-Method.
-		virtual void OnPreRender()
+		/** Nodes may register themselves in the render pipeline during this call,
+		 precalculate the geometry which should be renderered, and prevent their
+		 children from being able to register them selfes if they are clipped by simply
+		 not calling their OnRegisterSceneNode-Method. 
+		 If you are implementing your own scene node, you should overwrite this method
+		 with an implementtion code looking like this:
+		 \code
+		 if (IsVisible)
+			SceneManager->registerNodeForRendering(this);
+
+		 ISceneNode::OnRegisterSceneNode();
+		 \endcode
+	    */
+		virtual void OnRegisterSceneNode()
 		{
 			if (IsVisible)
 			{
 				core::list<ISceneNode*>::Iterator it = Children.begin();
 				for (; it != Children.end(); ++it)
-					(*it)->OnPreRender();
+					(*it)->OnRegisterSceneNode();
 			}
 		}
 
 
-		//! OnPostRender() is called just after rendering the whole scene.
+		//! OnAnimate() is called just before rendering the whole scene.
 		//! Nodes may calculate or store animations here, and may do other useful things,
-		//! dependent on what they are.
+		//! dependent on what they are. Also, OnAnimate() should be called for all
+		//! child scene nodes here. This method will called once per frame, independent
+		//! of if the scene node is visible or not.
 		//! \param timeMs: Current time in milli seconds.
-		virtual void OnPostRender(u32 timeMs)
+		virtual void OnAnimate(u32 timeMs)
 		{
 			if (IsVisible)
 			{
@@ -103,7 +114,7 @@ namespace scene
 
 				core::list<ISceneNode*>::Iterator it = Children.begin();
 				for (; it != Children.end(); ++it)
-					(*it)->OnPostRender(timeMs);
+					(*it)->OnAnimate(timeMs);
 			}
 		}
 
@@ -147,7 +158,7 @@ namespace scene
 		}
 
 
-		//! returns the absolute transformation of the node. Is recalculated every OnPostRender()-call.
+		//! returns the absolute transformation of the node. Is recalculated every OnAnimate()-call.
 		const core::matrix4& getAbsoluteTransformation() const
 		{
 			return AbsoluteTransformation;
@@ -178,7 +189,7 @@ namespace scene
 
 		//! Returns true if the node is visible. This is only an option, set by the user and has
 		//! nothing to do with geometry culling
-		virtual bool isVisible()
+		virtual bool isVisible() const
 		{
 			_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 			return IsVisible;
@@ -193,7 +204,7 @@ namespace scene
 
 
 		//! Returns the id of the scene node. This id can be used to identify the node.
-		virtual s32 getID()
+		virtual s32 getID() const
 		{
 			return ID;
 		}
@@ -332,7 +343,7 @@ namespace scene
 		void setMaterialFlag(video::E_MATERIAL_FLAG flag, bool newvalue)
 		{
 			for (u32 i=0; i<getMaterialCount(); ++i)
-				getMaterial(i).Flags[flag] = newvalue;
+				getMaterial(i).setFlag(flag, newvalue);
 		}
 
 
@@ -341,9 +352,9 @@ namespace scene
 		//! \param textureLayer: Layer of texture to be set. Must be a value greater or
 		//! equal than 0 and smaller than MATERIAL_MAX_TEXTURES.
 		//! \param texture: Texture to be used.
-		void setMaterialTexture(s32 textureLayer, video::ITexture* texture)
+		void setMaterialTexture(u32 textureLayer, video::ITexture* texture)
 		{
-			if (textureLayer<0 || textureLayer>= video::MATERIAL_MAX_TEXTURES)
+			if (textureLayer>= video::MATERIAL_MAX_TEXTURES)
 				return;
 
 			for (u32 i=0; i<getMaterialCount(); ++i)
@@ -426,9 +437,8 @@ namespace scene
 		/** Automatic culling is enabled by default. Note that not
 		all SceneNodes support culling (the billboard scene node for example)
 		and that some nodes always cull their geometry because it is their
-		only reason for existance, for example the OctreeSceneNode.
-		\param enabled: If true, automatic culling is enabled.
-		If false, it is disabled. */
+		only reason for existence, for example the OctreeSceneNode.
+		\param state: The culling state to be used. */
 		void setAutomaticCulling( E_CULLING_TYPE state)
 		{
 			AutomaticCullingState = state;
@@ -447,13 +457,13 @@ namespace scene
 
 		//! Sets if debug data like bounding boxes should be drawn.
 		/** Please note that not all scene nodes support this feature. */
-		void setDebugDataVisible(E_DEBUG_SCENE_TYPE visible)
+		virtual void setDebugDataVisible(E_DEBUG_SCENE_TYPE visible)
 		{
 			DebugDataVisible = visible;
 		}
 
 		//! Returns if debug data like bounding boxes are drawed.
-		E_DEBUG_SCENE_TYPE isDebugDataVisible()
+		E_DEBUG_SCENE_TYPE isDebugDataVisible() const
 		{
 			_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 			return DebugDataVisible;
@@ -530,34 +540,30 @@ namespace scene
 				TriangleSelector->drop();
 
 			TriangleSelector = selector;
-			TriangleSelector->grab();
+			if (TriangleSelector)
+				TriangleSelector->grab();
 		}
 
 		//! updates the absolute position based on the relative and the parents position
 		virtual void updateAbsolutePosition()
 		{
-			if (Parent && SceneManager && (Parent != SceneManager->getRootSceneNode()))
+			if (Parent )
 			{
-				AbsoluteTransformation.setbyproduct (	Parent->getAbsoluteTransformation(),
-														getRelativeTransformation()
-													);
-/*														
 				AbsoluteTransformation =
 					Parent->getAbsoluteTransformation() * getRelativeTransformation();
-*/
 			}
 			else
 				AbsoluteTransformation = getRelativeTransformation();
 		}
 
 		//! Returns the parent of this scene node
-		scene::ISceneNode* getParent()
+		scene::ISceneNode* getParent() const
 		{
 			return Parent;
 		}
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType()
+		virtual ESCENE_NODE_TYPE getType() const
 		{
 			return ESNT_UNKNOWN;
 		}
@@ -574,7 +580,7 @@ namespace scene
 			out->addVector3d("Scale", RelativeScale );
 			out->addBool	("Visible", IsVisible );
 			out->addEnum	("AutomaticCulling", AutomaticCullingState, AutomaticCullingNames);
-			out->addInt		("DebugDataVisible", DebugDataVisible );
+			out->addInt	("DebugDataVisible", DebugDataVisible );
 			out->addBool	("IsDebugObject", IsDebugObject );
 		}
 
@@ -597,7 +603,53 @@ namespace scene
 			updateAbsolutePosition();
 		}
 
+		//! Creates a clone of this scene node and its children.
+		virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0) 
+		{ 
+			return 0; // to be implemented by derived classes
+		}
+
 	protected:
+
+		//! this method can be used by clone() implementations of derived classes
+		void cloneMembers(ISceneNode* toCopyFrom, ISceneManager* newManager)
+		{
+			Name = toCopyFrom->Name;
+			AbsoluteTransformation = toCopyFrom->AbsoluteTransformation;
+			RelativeTranslation = toCopyFrom->RelativeTranslation;
+			RelativeRotation = toCopyFrom->RelativeRotation;
+			RelativeScale = toCopyFrom->RelativeScale;			
+			ID = toCopyFrom->ID;
+			setTriangleSelector(toCopyFrom->TriangleSelector);
+			AutomaticCullingState = toCopyFrom->AutomaticCullingState;
+			DebugDataVisible = toCopyFrom->DebugDataVisible;
+			IsVisible = toCopyFrom->IsVisible;
+			IsDebugObject = toCopyFrom->IsDebugObject;
+
+			if (newManager)
+				SceneManager = newManager;
+			else
+				SceneManager = toCopyFrom->SceneManager;
+
+			// clone children
+
+			core::list<ISceneNode*>::Iterator it = toCopyFrom->Children.begin();
+			for (; it != toCopyFrom->Children.end(); ++it)
+				(*it)->clone(this, newManager);
+
+			// clone animators
+
+			core::list<ISceneNodeAnimator*>::Iterator ait = toCopyFrom->Animators.begin();
+			for (; ait != toCopyFrom->Animators.end(); ++ait)
+			{
+				ISceneNodeAnimator* anim = (*ait)->createClone(this, SceneManager);
+				if (anim)
+				{
+					addAnimator(anim);
+					anim->drop();
+				}
+			}
+		}
 
 		//! name of the scene node.
 		core::stringc Name;

@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -94,6 +94,7 @@ bool CImageLoaderTGA::isALoadableFileFormat(irr::io::IReadFile* file)
 		return false;
 
 	STGAFooter footer;
+	memset(&footer, 0, sizeof(STGAFooter));
 	file->seek(file->getSize()-sizeof(STGAFooter));
 	file->read(&footer, sizeof(STGAFooter));
 	return (!strcmp(footer.Signature,"TRUEVISION-XFILE.")); // very old tgas are refused.

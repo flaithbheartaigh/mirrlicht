@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt / Thomas Alten
+// Copyright (C) 2002-2007 Nikolaus Gebhardt / Thomas Alten
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -12,55 +12,6 @@ namespace scene
 {
 
 
-
-/*
-	quake3 doesn't care much about tga & jpg
-	load one or multiple files stored in name started at startPos to the texture array textures
-	if texture is not loaded 0 will be added ( to find missing textures easier)
-*/
-
-void getTextures (	quake3::tTexArray &textures ,
-					const core::stringc &name, u32 &startPos,
-					io::IFileSystem *fileSystem,
-					video::IVideoDriver* driver
-				)
-{
-	static const char * extension[2] = 
-	{
-		".jpg",
-		".tga"
-	};
-
-	quake3::tStringList stringList;
-	quake3::getAsStringList ( stringList, -1, name, startPos );
-
-	textures.clear();
-
-	core::stringc loadFile;
-	for ( u32 i = 0; i!= stringList.size (); ++i )
-	{
-		video::ITexture* texture = 0;
-		for ( u32 g = 0; g != 2 ; ++g )
-		{
-			cutExtension ( loadFile, stringList[i] ).append ( extension[g] );
-
-			if ( fileSystem->existFile ( loadFile.c_str() ) )
-			{
-				texture = driver->getTexture( loadFile.c_str () );
-				if ( texture )
-				{
-					break;
-				}
-			}
-		}
-		// take 0 Texture
-		textures.push_back(texture);
-	}
-
-}
-
-/*
-*/
 CQuake3ShaderSceneNode::CQuake3ShaderSceneNode(scene::ISceneNode* parent, scene::ISceneManager* mgr,s32 id,
 									   io::IFileSystem *fileSystem, 
 									   scene::IMeshBuffer *buffer, const quake3::SShader * shader
@@ -83,7 +34,6 @@ CQuake3ShaderSceneNode::CQuake3ShaderSceneNode(scene::ISceneNode* parent, scene:
 
 	// load all Textures in all stages
 	loadTextures ( fileSystem );
-
 }
 
 /*
@@ -122,7 +72,7 @@ void CQuake3ShaderSceneNode::clone ( scene::SMeshBufferLightMap * buffer )
 
 	MeshBuffer.recalculateBoundingBox ();
 	// used for sorting
-	MeshBuffer.Material.Texture1 = (video::ITexture*) Shader;
+	MeshBuffer.Material.Textures[0] = (video::ITexture*) Shader;
 }
 
 
@@ -156,12 +106,12 @@ void CQuake3ShaderSceneNode::loadTextures ( io::IFileSystem * fileSystem )
 		// our lightmap is passed in material.Texture[2]
 		if ( mapname == "$lightmap" )
 		{
-			Q3Texture [i].Texture.push_back ( Original.getMaterial().Texture2 );
+			Q3Texture [i].Texture.push_back ( Original.getMaterial().Textures[1] );
 		}
 		else
 		{
 			pos = 0;
-			getTextures ( Q3Texture [i].Texture, mapname, pos, fileSystem, SceneManager->getVideoDriver() );
+			quake3::getTextures ( Q3Texture [i].Texture, mapname, pos, fileSystem, SceneManager->getVideoDriver() );
 		}
 	}
 
@@ -181,7 +131,7 @@ void CQuake3ShaderSceneNode::loadTextures ( io::IFileSystem * fileSystem )
 		pos = 0;
 		Q3Texture [i].TextureFrequency = core::max_ ( 0.0001f, quake3::getAsFloat ( animmap, pos ) );
 
-		getTextures ( Q3Texture [i].Texture, animmap, pos,fileSystem, SceneManager->getVideoDriver() );
+		quake3::getTextures ( Q3Texture [i].Texture, animmap, pos,fileSystem, SceneManager->getVideoDriver() );
 	}
 
 	// get clamp map
@@ -196,17 +146,16 @@ void CQuake3ShaderSceneNode::loadTextures ( io::IFileSystem * fileSystem )
 		if ( 0 == clampmap.size () )
 			continue;
 
-		Q3Texture [i].TextureAddressMode = 0;
+		Q3Texture [i].TextureAddressMode = video::ETC_CLAMP;
 		pos = 0;
-		getTextures ( Q3Texture [i].Texture, clampmap, pos,fileSystem, SceneManager->getVideoDriver() );
+		quake3::getTextures ( Q3Texture [i].Texture, clampmap, pos,fileSystem, SceneManager->getVideoDriver() );
 	}
-
 }
 
 /*
 	Register each texture stage, if first is visible
 */
-void CQuake3ShaderSceneNode::OnPreRender()
+void CQuake3ShaderSceneNode::OnRegisterSceneNode()
 {
 	PassedCulling = 0;
 	StageCall = 0;
@@ -232,7 +181,6 @@ void CQuake3ShaderSceneNode::OnPreRender()
 		{
 			SceneManager->registerNodeForRendering(this, time );
 		}
-
 	}
 }
 
@@ -255,7 +203,7 @@ void CQuake3ShaderSceneNode::render()
 
 	// advance current stage
 	core::matrix4 texture;
-	u32 textureTransform = animate ( stage, texture );
+	animate ( stage, texture );
 
 	// stage 1 finished, no drawing stage ( vertex transform only )
 	if ( stage == 1 )
@@ -268,8 +216,8 @@ void CQuake3ShaderSceneNode::render()
 	SQ3Texture &q = Q3Texture [ stage];
 
 	material.Lighting = false;
-	material.Texture1 = q.Texture [ q.TextureIndex ];
-	material.Texture2 = 0;
+	material.Textures[0] = q.Texture [ q.TextureIndex ];
+	material.Textures[1] = 0;
 	material.ZBuffer = quake3::getDepthFunction ( group->get ( "depthfunc" ) );
 	material.ZWriteEnable = (0 == StageCall );
 	material.NormalizeNormals = false;
@@ -287,10 +235,10 @@ void CQuake3ShaderSceneNode::render()
 		transformtex ( texture, q.TextureAddressMode );
 	}
 */
-	material.TextureWrap = q.TextureAddressMode;
+	material.TextureWrap[0] = q.TextureAddressMode;
+	material.TextureWrap[1] = material.TextureWrap[0];
 	driver->setTransform ( video::ETS_TEXTURE_0, texture );
 
-	//material.Wireframe = true;
 	driver->setMaterial( material );
 
 	if ( 0 == StageCall )
@@ -327,7 +275,6 @@ void CQuake3ShaderSceneNode::vertextransform_wave ( f32 dt, quake3::SModifierFun
 		dst.Pos.Y = src.Pos.Y + f * src.Normal.Y;
 		dst.Pos.Z = src.Pos.Z + f * src.Normal.Z;
 	}
-
 }
 
 /*!
@@ -362,7 +309,7 @@ void CQuake3ShaderSceneNode::vertextransform_bulge ( f32 dt, quake3::SModifierFu
 void CQuake3ShaderSceneNode::vertextransform_autosprite ( f32 dt, quake3::SModifierFunction &function )
 {
 	const core::matrix4 &m = SceneManager->getActiveCamera()->getViewFrustum()->Matrices [ video::ETS_VIEW ];
-	const core::vector3df view ( -m.M[2], -m.M[6] , -m.M[10] );
+	const core::vector3df view ( -m[2], -m[6] , -m[10] );
 
 	const u32 vsize = MeshBuffer.Vertices.size();
 
@@ -382,8 +329,8 @@ void CQuake3ShaderSceneNode::vertextransform_autosprite ( f32 dt, quake3::SModif
 		f32 sh = 0.5f * ( box.MaxEdge.Z - box.MinEdge.Z );
 		f32 sv = 0.5f * ( box.MaxEdge.Y - box.MinEdge.Y );
 
-		const core::vector3df h ( m.M[0] * sh, m.M[4] * sh, m.M[8] * sh );
-		const core::vector3df v ( m.M[1] * sv, m.M[5] * sv, m.M[9] * sv );
+		const core::vector3df h ( m[0] * sh, m[4] * sh, m[8] * sh );
+		const core::vector3df v ( m[1] * sv, m[5] * sv, m[9] * sv );
 
 		MeshBuffer.Vertices[ i + 0 ].Pos = c + h + v;
 		MeshBuffer.Vertices[ i + 1 ].Pos = c - h - v;
@@ -394,9 +341,7 @@ void CQuake3ShaderSceneNode::vertextransform_autosprite ( f32 dt, quake3::SModif
 		MeshBuffer.Vertices[ i + 1 ].Normal = view;
 		MeshBuffer.Vertices[ i + 2 ].Normal = view;
 		MeshBuffer.Vertices[ i + 3 ].Normal = view;
-
 	}
-
 }
 
 /*
@@ -460,7 +405,7 @@ u32 CQuake3ShaderSceneNode::tcgen ( f32 dt, quake3::SModifierFunction &function,
 
 			// using eye linear, sphere map may be cooler;-)
 			// modelmatrix is identity
-			const core::matrix4 &view		 = SceneManager->getActiveCamera()->getViewFrustum()->Matrices [ video::ETS_VIEW ];
+			const core::matrix4 &view = SceneManager->getActiveCamera()->getViewFrustum()->Matrices [ video::ETS_VIEW ];
 			const core::matrix4 &viewinverse = SceneManager->getActiveCamera()->getViewFrustum()->Matrices [ SViewFrustum::ETS_VIEW_MODEL_INVERSE_3 ];
 
 			// eyePlane
@@ -487,12 +432,10 @@ u32 CQuake3ShaderSceneNode::tcgen ( f32 dt, quake3::SModifierFunction &function,
 			ret = 0;
 
 		} break;
-
 	}
 
 	return ret;
 }
-
 
 
 
@@ -507,16 +450,14 @@ void CQuake3ShaderSceneNode::transformtex ( const core::matrix4 &m, const u32 ad
 	f32 tx1;
 	f32 ty1;
 
-	const f32 *M =  m.M;
-
 	if ( addressMode )
 	{
 		for ( i = 0; i != vsize; ++i )
 		{
 			core::vector2df &tx = MeshBuffer.Vertices[i].TCoords;
 
-			tx1 = M[0] * tx.X + M[4] * tx.Y + M[8];
-			ty1 = M[1] * tx.X + M[5] * tx.Y + M[9];
+			tx1 = m[0] * tx.X + m[4] * tx.Y + m[8];
+			ty1 = m[1] * tx.X + m[5] * tx.Y + m[9];
 
 			tx.X = tx1;
 			tx.Y = ty1;
@@ -529,8 +470,8 @@ void CQuake3ShaderSceneNode::transformtex ( const core::matrix4 &m, const u32 ad
 		{
 			core::vector2df &tx = MeshBuffer.Vertices[i].TCoords;
 
-			tx1 = M[0] * tx.X + M[4] * tx.Y + M[8];
-			ty1 = M[1] * tx.X + M[5] * tx.Y + M[9];
+			tx1 = m[0] * tx.X + m[4] * tx.Y + m[8];
+			ty1 = m[1] * tx.X + m[5] * tx.Y + m[9];
 
 			tx.X = tx1 <= 0.f ? 0.f : tx1 >= 1.f ? 1.f : tx1;
 			tx.Y = ty1 <= 0.f ? 0.f : ty1 >= 1.f ? 1.f : ty1;
@@ -538,9 +479,7 @@ void CQuake3ShaderSceneNode::transformtex ( const core::matrix4 &m, const u32 ad
 			//tx.X = core::clamp ( tx1, 0.f, 1.f );
 			//tx.Y = core::clamp ( ty1, 0.f, 1.f );
 		}
-
 	}
-
 }
 
 
@@ -729,14 +668,14 @@ u32 CQuake3ShaderSceneNode::animate( u32 stage,core::matrix4 &texture )
 
 	if ( textureMatrixFound )
 	{
-		texturem.getTransposed ( texture.M );
+		texturem.getTransposed ( texture );
 	}
 
 	return textureMatrixFound;
 }
 
 
-void CQuake3ShaderSceneNode::OnPostRender(u32 timeMs)
+void CQuake3ShaderSceneNode::OnAnimate(u32 timeMs)
 {
 	TimeAbs = f32( timeMs ) * ( 1.f/1000.f);
 }
@@ -755,9 +694,9 @@ u32 CQuake3ShaderSceneNode::getMaterialCount()
 video::SMaterial& CQuake3ShaderSceneNode::getMaterial(u32 i)
 {
 	video::SMaterial& m = MeshBuffer.getMaterial();
-	m.Texture1 = 0;
+	m.Textures[0] = 0;
 	if ( Q3Texture [ i ].TextureIndex )
-		m.Texture1 = Q3Texture [ i ].Texture [ Q3Texture [ i ].TextureIndex ];
+		m.Textures[0] = Q3Texture [ i ].Texture [ Q3Texture [ i ].TextureIndex ];
 	return m;
 }	
 

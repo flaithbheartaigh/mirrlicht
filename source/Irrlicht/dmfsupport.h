@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 // 
@@ -23,7 +23,7 @@
 using namespace irr;
 using namespace video;
 
-#include <irrString.h>
+#include "irrString.h"
 
 /** A structure representing some DeleD infos. 
  This structure contains data about DeleD level file like: version, ambient colour, number of objects etc...*/
@@ -106,7 +106,7 @@ This function converts an hex string (i.e. FF) to its int value (i.e. 255).
 \return An int representing the hex input value.*/
 int axtoi(const char *hexStg)
 {
-  int intValue = 0;  // integer value of hex string
+  unsigned int intValue = 0;  // integer value of hex string
 
   sscanf(hexStg, "%x", &intValue);
   return (intValue);

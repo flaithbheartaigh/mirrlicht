@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine" and the "irrXML" project.
 // For conditions of distribution and use, see copyright notice in irrlicht.h and/or irrXML.h
 
@@ -119,7 +119,7 @@
 	The irrXML license is based on the zlib license. Basicly, this means you can do with
 	irrXML whatever you want:
 
-	Copyright (C) 2002-2006 Nikolaus Gebhardt
+	Copyright (C) 2002-2007 Nikolaus Gebhardt
 
 	This software is provided 'as-is', without any express or implied
 	warranty.  In no event will the authors be held liable for any damages
@@ -346,7 +346,7 @@ namespace io
 		data and it is of type EXN_TEXT or EXN_UNKNOWN. */
 		virtual const char_type* getNodeData() const = 0;
 
-		//! Returns if an element is an empty element, like <foo />
+		//! Returns if an element is an empty element, like &lt;foo />
 		virtual bool isEmptyElement() const = 0;
 
 		//! Returns format of the source xml file. 

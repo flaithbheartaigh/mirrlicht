@@ -1,8 +1,11 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt / Thomas Alten
+// Copyright (C) 2002-2007 Nikolaus Gebhardt / Thomas Alten
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
+#include "IrrCompileConfig.h"
 #include "IBurningShader.h"
+
+#ifdef _IRR_COMPILE_WITH_BURNINGSVIDEO_
 
 // compile flag for this file
 #undef USE_ZBUFFER
@@ -222,7 +225,7 @@ void CTRTextureGouraudNoZ2::scanline_bilinear ( )
 			tx0 = f32_to_fixPoint ( line.t0[0].x );
 			ty0 = f32_to_fixPoint ( line.t0[0].y );
 #endif
-			dst[i] = getTexel_plain ( &IT[0], tx0, ty0 );
+			dst[i] = irr::getTexel_plain ( &IT[0], tx0, ty0 );
 
 /*
 			getSample_texture ( r0, g0, b0, &IT[0], tx0, ty0 );
@@ -646,14 +649,24 @@ void CTRTextureGouraudNoZ2::drawTriangle ( const s4DVertex *a,const s4DVertex *b
 }
 
 
+} // end namespace video
+} // end namespace irr
 
+#endif // _IRR_COMPILE_WITH_BURNINGSVIDEO_
 
-
+namespace irr
+{
+namespace video
+{
 
 //! creates a flat triangle renderer
 IBurningShader* createTRTextureGouraudNoZ2()
 {
+	#ifdef _IRR_COMPILE_WITH_BURNINGSVIDEO_
 	return new CTRTextureGouraudNoZ2( 0 );
+	#else
+	return 0;
+	#endif // _IRR_COMPILE_WITH_BURNINGSVIDEO_
 }
 
 

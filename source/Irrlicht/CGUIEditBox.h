@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -19,8 +19,7 @@ namespace gui
 
 		//! constructor
 		CGUIEditBox(const wchar_t* text, bool border, IGUIEnvironment* environment,
-			IGUIElement* parent, s32 id, const core::rect<s32>& rectangle,
-			IOSOperator* op);
+			IGUIElement* parent, s32 id, const core::rect<s32>& rectangle);
 
 		//! destructor
 		~CGUIEditBox();
@@ -67,7 +66,6 @@ namespace gui
 		bool MouseMarking;
 		bool Border;
 		bool OverrideColorEnabled;
-		bool WordWrap;
 		s32 MarkBegin;
 		s32 MarkEnd;
 

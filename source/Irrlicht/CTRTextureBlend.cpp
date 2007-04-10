@@ -1,8 +1,11 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt / Thomas Alten
+// Copyright (C) 2002-2007 Nikolaus Gebhardt / Thomas Alten
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
+#include "IrrCompileConfig.h"
 #include "IBurningShader.h"
+
+#ifdef _IRR_COMPILE_WITH_BURNINGSVIDEO_
 
 // compile flag for this file
 #undef USE_ZBUFFER
@@ -201,9 +204,7 @@ void CTRTextureBlend::scanline_bilinear ()
 #endif
 
 
-#ifdef INVERSE_W
-	f32 inversew;
-#endif
+	f32 inversew = 	FIX_POINT_F32_MUL;
 
 	tFixPoint r0, g0, b0;
 	tFixPoint r1, g1, b1;
@@ -225,7 +226,9 @@ void CTRTextureBlend::scanline_bilinear ()
 			z[i] = line.w[0];
 #endif
 
+#ifdef INVERSEW
 		inversew = fix_inverse32 ( line.w[0] );
+#endif
 
 		getSample_texture ( r0, g0, b0, 
 							&IT[0],
@@ -263,8 +266,9 @@ void CTRTextureBlend::scanline_bilinear ()
 			z[i] = line.w[0];
 #endif
 
+#ifdef INVERSEW
 		inversew = fix_inverse32 ( line.w[0] );
-
+#endif
 		getSample_texture ( r0, g0, b0, 
 							&IT[0],
 							f32_to_fixPoint ( line.t0[0].x,inversew),
@@ -681,19 +685,28 @@ void CTRTextureBlend::drawTriangle ( const s4DVertex *a,const s4DVertex *b,const
 }
 
 
+} // end namespace video
+} // end namespace irr
 
+#endif // _IRR_COMPILE_WITH_BURNINGSVIDEO_
 
-
+namespace irr
+{
+namespace video
+{
 
 //! creates a flat triangle renderer
 IBurningShader* createTRTextureBlend(IDepthBuffer* zbuffer)
 {
+	#ifdef _IRR_COMPILE_WITH_BURNINGSVIDEO_
 	return new CTRTextureBlend(zbuffer);
+	#else
+	return 0;
+	#endif // _IRR_COMPILE_WITH_BURNINGSVIDEO_
 }
 
 
 } // end namespace video
 } // end namespace irr
-
 
 

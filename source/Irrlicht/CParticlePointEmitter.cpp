@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -20,8 +20,8 @@ CParticlePointEmitter::CParticlePointEmitter(
  : Direction(direction), MinParticlesPerSecond(minParticlesPerSecond),
 	MaxParticlesPerSecond(maxParticlesPerSecond), 
 	MinStartColor(minStartColor), MaxStartColor(maxStartColor),
-	MinLifeTime(lifeTimeMin), MaxLifeTime(lifeTimeMax), Time(0), Emitted(0),
-	MaxAngleDegrees(maxAngleDegrees)
+	MinLifeTime(lifeTimeMin), MaxLifeTime(lifeTimeMax),
+	MaxAngleDegrees(maxAngleDegrees), Time(0), Emitted(0)
 {
 
 }

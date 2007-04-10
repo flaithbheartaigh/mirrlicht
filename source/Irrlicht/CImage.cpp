@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt / Thomas Alten
+// Copyright (C) 2002-2007 Nikolaus Gebhardt / Thomas Alten
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -8,7 +8,6 @@
 
 namespace irr
 {
-
 
 	struct SBlitJob
 	{
@@ -79,12 +78,11 @@ inline u32 GetClipCode ( const AbsRectangle &r, const core::position2d<s32> &p )
 	@return: 1 if valid
 */
 
-static int ClipLine (	const AbsRectangle &clipping,
-				core::position2d<s32> &p0,
-				core::position2d<s32> &p1,
-				const core::position2d<s32>& p0_in,
-				const core::position2d<s32>& p1_in
-			)
+static int ClipLine (const AbsRectangle &clipping,
+			core::position2d<s32> &p0,
+			core::position2d<s32> &p1,
+			const core::position2d<s32>& p0_in,
+			const core::position2d<s32>& p1_in)
 {
 	u32 code0;
 	u32 code1;
@@ -100,7 +98,7 @@ static int ClipLine (	const AbsRectangle &clipping,
 	while ( code0 | code1 )
 	{
 		s32 x=0;
-        s32 y=0;
+		s32 y=0;
 
 		// trivial reject
 		if ( code0 & code1 )
@@ -162,12 +160,11 @@ static int ClipLine (	const AbsRectangle &clipping,
 	}
 
 	return 1;
-
 }
 
 /*
 */
-inline void GetClip ( AbsRectangle &clipping, video::IImage * t)
+inline void GetClip(AbsRectangle &clipping, video::IImage * t)
 {
 	clipping.x0 = 0;
 	clipping.y0 = 0;
@@ -177,10 +174,10 @@ inline void GetClip ( AbsRectangle &clipping, video::IImage * t)
 
 /*
 */
-static void RenderLine32_Decal (	video::IImage *t,
-							const core::position2d<s32> &p0,
-							const core::position2d<s32> &p1,
-							u32 argb )
+static void RenderLine32_Decal(video::IImage *t,
+				const core::position2d<s32> &p0,
+				const core::position2d<s32> &p1,
+				u32 argb )
 {
 	s32 dx = p1.X - p0.X;
 	s32 dy = p1.Y - p0.Y;
@@ -202,7 +199,6 @@ static void RenderLine32_Decal (	video::IImage *t,
 	if ( dy < 0 )
 	{
 		yInc = -yInc;
-
 		dy = -dy;
 	}
 
@@ -211,8 +207,13 @@ static void RenderLine32_Decal (	video::IImage *t,
 
 	if ( dy > dx )
 	{
-		swap_xor ( dx, dy );
-		swap_xor ( xInc, yInc );
+		s32 tmp;
+		tmp = dx;
+		dx = dy;
+		dy = tmp;
+		tmp = xInc;
+		xInc = yInc;
+		yInc = tmp;
 	}
 
 	c = dx << 1;
@@ -239,12 +240,10 @@ static void RenderLine32_Decal (	video::IImage *t,
 
 /*
 */
-static void RenderLine32_Blend (	video::IImage *t,
-							const core::position2d<s32> &p0,
-							const core::position2d<s32> &p1,
-							u32 argb,
-							u32 alpha
-						)
+static void RenderLine32_Blend(video::IImage *t,
+				const core::position2d<s32> &p0,
+				const core::position2d<s32> &p1,
+				u32 argb, u32 alpha)
 {
 	s32 dx = p1.X - p0.X;
 	s32 dy = p1.Y - p0.Y;
@@ -266,7 +265,6 @@ static void RenderLine32_Blend (	video::IImage *t,
 	if ( dy < 0 )
 	{
 		yInc = -yInc;
-
 		dy = -dy;
 	}
 
@@ -275,8 +273,13 @@ static void RenderLine32_Blend (	video::IImage *t,
 
 	if ( dy > dx )
 	{
-		swap_xor ( dx, dy );
-		swap_xor ( xInc, yInc );
+		s32 tmp;
+		tmp = dx;
+		dx = dy;
+		dy = tmp;
+		tmp = xInc;
+		xInc = yInc;
+		yInc = tmp;
 	}
 
 	c = dx << 1;
@@ -335,8 +338,13 @@ static void RenderLine16_Decal (video::IImage *t,
 
 	if ( dy > dx )
 	{
-		swap_xor ( dx, dy );
-		swap_xor ( xInc, yInc );
+		s32 tmp;
+		tmp = dx;
+		dx = dy;
+		dy = tmp;
+		tmp = xInc;
+		xInc = yInc;
+		yInc = tmp;
 	}
 
 	c = dx << 1;
@@ -388,7 +396,6 @@ static void RenderLine16_Blend (video::IImage *t,
 	if ( dy < 0 )
 	{
 		yInc = -yInc;
-
 		dy = -dy;
 	}
 
@@ -397,8 +404,13 @@ static void RenderLine16_Blend (video::IImage *t,
 
 	if ( dy > dx )
 	{
-		swap_xor ( dx, dy );
-		swap_xor ( xInc, yInc );
+		s32 tmp;
+		tmp = dx;
+		dx = dy;
+		dy = tmp;
+		tmp = xInc;
+		xInc = yInc;
+		yInc = tmp;
 	}
 
 	c = dx << 1;
@@ -541,7 +553,7 @@ static void executeBlit_TextureBlend_16_to_16 ( const SBlitJob * job )
 
 
 	const u32 rdx = job->width >> 1;
-	const u32 off = if_c_a_else_b ( job->width & 1 ,job->width - 1, 0 );
+	const u32 off = core::if_c_a_else_b ( job->width & 1 ,job->width - 1, 0 );
 
 
 	if ( 0 == off )
@@ -727,7 +739,6 @@ static tExecuteBlit getBlitter ( eBlitter operation,const video::IImage * dest,c
 	if ( dest )
 		destFormat = dest->getColorFormat ();
 
-
 	switch ( operation )
 	{
 		case BLITTER_TEXTURE:
@@ -787,6 +798,8 @@ static tExecuteBlit getBlitter ( eBlitter operation,const video::IImage * dest,c
 
 		} break;
 
+		case BLITTER_INVALID:
+		break;
 	}
 /*
 	char buf[64];
@@ -911,7 +924,7 @@ namespace video
 
 //! constructor
 CImage::CImage(ECOLOR_FORMAT format, const core::dimension2d<s32>& size)
-: Format(format), Size(size), Data(0),DeleteMemory ( 1 )
+:Data(0), Size(size), Format(format), DeleteMemory(true)
 {
 	initData();	
 }
@@ -920,7 +933,7 @@ CImage::CImage(ECOLOR_FORMAT format, const core::dimension2d<s32>& size)
 //! constructor
 CImage::CImage(ECOLOR_FORMAT format, const core::dimension2d<s32>& size, void* data,
 			   bool ownForeignMemory, bool deleteForeignMemory)
-: Format(format), Size(size), Data(0), DeleteMemory ( deleteForeignMemory )
+: Data(0), Size(size), Format(format), DeleteMemory(deleteForeignMemory)
 {
 	if (ownForeignMemory)
 	{
@@ -940,7 +953,7 @@ CImage::CImage(ECOLOR_FORMAT format, const core::dimension2d<s32>& size, void* d
 
 //! constructor 
 CImage::CImage(ECOLOR_FORMAT format, IImage* imageToCopy)
-: Format(format), Data(0),DeleteMemory ( 1 )
+: Data(0), Format(format), DeleteMemory(true)
 {
 	if (!imageToCopy)
 		return;
@@ -958,7 +971,7 @@ CImage::CImage(ECOLOR_FORMAT format, IImage* imageToCopy)
 //! constructor
 CImage::CImage(IImage* imageToCopy, const core::position2d<s32>& pos,
 		   const core::dimension2d<s32>& size)
- : Data(0), Size(0,0),DeleteMemory ( 1 )
+ : Data(0), Size(0,0), DeleteMemory(true)
 {
 	if (!imageToCopy)
 		return;
@@ -1318,10 +1331,10 @@ inline SColor CImage::getPixelBox ( s32 x, s32 y, s32 fx, s32 fy, s32 bias )
 
 	s32 sdiv = s32_log2_s32(fx * fy);
 
-	a = s32_clamp ( ( a >> sdiv ) + bias, 0, 255 );
-	r = s32_clamp ( ( r >> sdiv ) + bias, 0, 255 );
-	g = s32_clamp ( ( g >> sdiv ) + bias, 0, 255 );
-	b = s32_clamp ( ( b >> sdiv ) + bias, 0, 255 );
+	a = core::s32_clamp ( ( a >> sdiv ) + bias, 0, 255 );
+	r = core::s32_clamp ( ( r >> sdiv ) + bias, 0, 255 );
+	g = core::s32_clamp ( ( g >> sdiv ) + bias, 0, 255 );
+	b = core::s32_clamp ( ( b >> sdiv ) + bias, 0, 255 );
 
 	c.set ( a, r, g, b );
 	return c;

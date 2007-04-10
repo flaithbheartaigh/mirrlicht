@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -20,7 +20,7 @@ namespace gui
 	public:
 
 		//! constructor
-		CGUIFileOpenDialog(io::IFileSystem* fs, const wchar_t* title, IGUIEnvironment* environment, IGUIElement* parent, s32 id);
+		CGUIFileOpenDialog(const wchar_t* title, IGUIEnvironment* environment, IGUIElement* parent, s32 id);
 
 		//! destructor
 		virtual ~CGUIFileOpenDialog();
@@ -34,7 +34,7 @@ namespace gui
 		//! draws the element and its children
 		virtual void draw();
 
-	private:
+	protected:
 
 		//! fills the listbox with files.
 		void fillListBox();
@@ -53,6 +53,7 @@ namespace gui
 		IGUIButton* CancelButton;
 		IGUIListBox* FileBox;
 		IGUIElement* FileNameText;
+		IGUIElement* EventParent;
 		io::IFileSystem* FileSystem;
 
 		io::IFileList* FileList;

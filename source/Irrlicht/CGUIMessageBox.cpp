@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -17,8 +17,9 @@ namespace gui
 CGUIMessageBox::CGUIMessageBox(IGUIEnvironment* environment, const wchar_t* caption,
 	const wchar_t* text, s32 flags,
 	IGUIElement* parent, s32 id, core::rect<s32> rectangle)
-: CGUIWindow(environment, parent, id, rectangle), StaticText(0),
-  OkButton(0), YesButton(0), NoButton(0), CancelButton(0), Flags(flags), MessageText(text)
+: CGUIWindow(environment, parent, id, rectangle),
+	OkButton(0), CancelButton(0), YesButton(0), NoButton(0), StaticText(0),
+	Flags(flags), MessageText(text)
 {
 	#ifdef _DEBUG
 	setDebugName("CGUIMessageBox");
@@ -38,13 +39,13 @@ CGUIMessageBox::CGUIMessageBox(IGUIEnvironment* environment, const wchar_t* capt
 	if (caption)
 		setText(caption);
 
-	refreshControls();
+	Environment->setFocus(this);
 
+	refreshControls();
 }
 
 void CGUIMessageBox::refreshControls()
 {
-
 	IGUISkin* skin = Environment->getSkin();
 
 	s32 buttonHeight = skin->getSize(EGDS_BUTTON_HEIGHT);
@@ -124,7 +125,8 @@ void CGUIMessageBox::refreshControls()
 		btnRect.LowerRightCorner.X += buttonWidth + buttonDistance;
 		btnRect.UpperLeftCorner.X += buttonWidth + buttonDistance;
 
-		Environment->setFocus(OkButton);
+		if (Environment->getFocus() == this)
+			Environment->setFocus(OkButton);
 	}
 	else if (OkButton)
 	{

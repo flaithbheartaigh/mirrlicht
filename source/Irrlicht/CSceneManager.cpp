@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -10,6 +10,7 @@
 #include "IWriteFile.h"
 #include "IXMLWriter.h"
 #include "ISceneUserDataSerializer.h"
+#include "IGUIEnvironment.h"
 
 #include "os.h"
 
@@ -26,6 +27,7 @@
 #include "CDMFLoader.h"
 #include "COgreMeshFileLoader.h"
 #include "COBJMeshFileLoader.h"
+#include "CMD3MeshFileLoader.h"
 
 #include "CCubeSceneNode.h"
 #include "CSphereSceneNode.h"
@@ -78,10 +80,10 @@ namespace scene
 CSceneManager::CSceneManager(video::IVideoDriver* driver, io::IFileSystem* fs,
 							 gui::ICursorControl* cursorControl, CMeshCache* cache,
 							 gui::IGUIEnvironment * gui)
-: ISceneNode(0, 0), Driver(driver), FileSystem(fs), ActiveCamera(0),
-	CursorControl(cursorControl), CollisionManager(0),
-	ShadowColor(150,0,0,0), MeshManipulator(0), CurrentRendertime(ESNRP_COUNT),
-	MeshCache(cache), AmbientLight(0,0,0,0), GUIEnvironment ( gui ),
+: ISceneNode(0, 0), Driver(driver), FileSystem(fs), GUIEnvironment(gui),
+	CursorControl(cursorControl), CollisionManager(0), MeshManipulator(0),
+	ActiveCamera(0), ShadowColor(150,0,0,0), AmbientLight(0,0,0,0),
+	MeshCache(cache), CurrentRendertime(ESNRP_COUNT),
 	IRR_XML_FORMAT_SCENE(L"irr_scene"), IRR_XML_FORMAT_NODE(L"node"), IRR_XML_FORMAT_NODE_ATTR_TYPE(L"type")
 {
 	#ifdef _DEBUG
@@ -99,7 +101,7 @@ CSceneManager::CSceneManager(video::IVideoDriver* driver, io::IFileSystem* fs,
 		CursorControl->grab();
 
 	if ( GUIEnvironment )
-		GUIEnvironment->grab ();
+		GUIEnvironment->grab();
 
 	// create mesh cache if not there already
 	if (!MeshCache)
@@ -126,6 +128,7 @@ CSceneManager::CSceneManager(video::IVideoDriver* driver, io::IFileSystem* fs,
 	MeshLoaderList.push_back(new CDMFLoader(Driver, this));
 	MeshLoaderList.push_back(new COgreMeshFileLoader(MeshManipulator, FileSystem, Driver));
 	MeshLoaderList.push_back(new COBJMeshFileLoader(FileSystem, Driver));
+	MeshLoaderList.push_back(new CMD3MeshFileLoader(FileSystem, Driver));
 	// factories
 
 	ISceneNodeFactory* factory = new CDefaultSceneNodeFactory(this);
@@ -184,12 +187,10 @@ CSceneManager::~CSceneManager()
 //! gets an animateable mesh. loads it if needed. returned pointer must not be dropped.
 IAnimatedMesh* CSceneManager::getMesh(const c8* filename)
 {
-	IAnimatedMesh* msh = 0;
-
 	core::stringc name = filename;
 	name.make_lower();
 
-	msh = MeshCache->findMesh(name.c_str());
+	IAnimatedMesh* msh = MeshCache->findMesh(name.c_str());
 	if (msh)
 		return msh;
 
@@ -202,6 +203,7 @@ IAnimatedMesh* CSceneManager::getMesh(const c8* filename)
 
 	s32 count = MeshLoaderList.size();
 	for (s32 i=count-1; i>=0; --i)
+	{
 		if (MeshLoaderList[i]->isALoadableFileExtension(name.c_str()))
 		{
 			// reset file to avoid side effects of previous calls to createMesh
@@ -214,6 +216,7 @@ IAnimatedMesh* CSceneManager::getMesh(const c8* filename)
 				break;
 			}
 		}
+	}
 
 	file->drop();
 
@@ -237,7 +240,6 @@ gui::IGUIEnvironment* CSceneManager::getGUIEnvironment ()
 {
 	return GUIEnvironment;
 }
-
 //! Adds a text scene node, which is able to display
 //! 2d text at a position in three dimensional space
 ITextSceneNode* CSceneManager::addTextSceneNode(gui::IGUIFont* font, const wchar_t* text,
@@ -259,9 +261,9 @@ ITextSceneNode* CSceneManager::addTextSceneNode(gui::IGUIFont* font, const wchar
 }
 
 //! Adds a text scene node, which uses billboards
-ITextSceneNode* CSceneManager::addTextSceneNode2(gui::IGUIFontASCII* font, const wchar_t* text,
+ITextSceneNode* CSceneManager::addBillboardTextSceneNode(gui::IGUIFont* font, const wchar_t* text,
 			ISceneNode* parent,
-			const core::dimension2d<f32>& size,f32 kerning,
+			const core::dimension2d<f32>& size, 
 			const core::vector3df& position, s32 id,
 			video::SColor shade_top, video::SColor shade_down)
 {
@@ -271,7 +273,7 @@ ITextSceneNode* CSceneManager::addTextSceneNode2(gui::IGUIFontASCII* font, const
 	if (!parent)
 		parent = this;
 
-	ITextSceneNode* node = new CTextSceneNode2(parent, this, id, font, text,position, size,kerning,
+	ITextSceneNode* node = new CBillboardTextSceneNode(parent, this, id, font, text, position, size,
 		shade_top, shade_down);
 	node->drop();
 
@@ -280,7 +282,7 @@ ITextSceneNode* CSceneManager::addTextSceneNode2(gui::IGUIFontASCII* font, const
 }
 
 
-//! Adds a text scene node, which uses billboards
+//! Adds a scene node, which can render a quake3 shader
 ISceneNode* CSceneManager::addQuake3SceneNode(	IMeshBuffer* meshBuffer,
 												const quake3::SShader * shader,
 												ISceneNode* parent,
@@ -445,7 +447,7 @@ ICameraSceneNode* CSceneManager::addCameraSceneNode(ISceneNode* parent,
 
 	ICameraSceneNode* node = new CCameraSceneNode(parent, this, id, position, lookat);
 	node->drop();
-
+ 
 	setActiveCamera(node);
 
 	return node;
@@ -711,12 +713,14 @@ IAnimatedMesh* CSceneManager::addTerrainMesh(const c8* name,
 }
 
 //! Adds an arrow mesh to the mesh pool.
-IAnimatedMesh* CSceneManager::addArrowMesh(const c8* name, u32 tesselation, f32 width, f32 height, video::SColor vtxColor)
+IAnimatedMesh* CSceneManager::addArrowMesh(const c8* name,u32 tesselationCylinder, u32 tesselationCone, f32 height, f32 cylinderHeight, f32 width0,f32 width1, video::SColor vtxColor0, video::SColor vtxColor1)
 {
+	
 	if (!name || MeshCache->isMeshLoaded(name))
 		return 0;
 
-	IAnimatedMesh* animatedMesh = CGeometryCreator::createArrowMesh( tesselation, width, height, vtxColor );
+	IAnimatedMesh* animatedMesh = CGeometryCreator::createArrowMesh(
+		tesselationCylinder, tesselationCone, height, cylinderHeight, width0,width1, vtxColor0, vtxColor1);
 
 	if (!animatedMesh)
 		return 0;
@@ -792,7 +796,6 @@ bool CSceneManager::isCulled(ISceneNode* node)
 	if (!cam)
 		return false;
 
-
 	switch ( node->getAutomaticCulling() )
 	{
 		// can be seen by a bounding box ?
@@ -800,13 +803,15 @@ bool CSceneManager::isCulled(ISceneNode* node)
 		{
 			core::aabbox3d<f32> tbox = node->getBoundingBox();
 			node->getAbsoluteTransformation().transformBox(tbox);
-			return !(tbox.intersectsWithBox(cam->getViewFrustum()->boundingBox));
-		} break;
+			return !(tbox.intersectsWithBox(cam->getViewFrustum()->getBoundingBox() ));
+		};
+		break;
 
 		// can be seen by a bounding sphere
 		case scene::EAC_FRUSTUM_SPHERE:
 		{
-		} break;
+		};
+		break;
 
 		// can be seen by cam pyramid planes ?
 		case scene::EAC_FRUSTUM_BOX:
@@ -823,22 +828,20 @@ bool CSceneManager::isCulled(ISceneNode* node)
 			node->getBoundingBox().getEdges(edges);
 
 			bool visible = true;
-
-			s32 i;
-			for (i=0; i<scene::SViewFrustum::VF_PLANE_COUNT; ++i)
+			for (s32 i=0; i<scene::SViewFrustum::VF_PLANE_COUNT; ++i)
 			{
-				bool boxInFrustrum = false;
+				bool boxInFrustum = false;
 
-				for (int j=0; j<8; ++j)
+				for (u32 j=0; j<8; ++j)
 				{
 					if (frust.planes[i].isFrontFacing(edges[j]) )
 					{
-						boxInFrustrum = true;
+						boxInFrustum = true;
 						break;
 					}
 				}
 
-				if (!boxInFrustrum)
+				if (!boxInFrustum)
 				{
 					visible = false;
 					break;
@@ -847,8 +850,10 @@ bool CSceneManager::isCulled(ISceneNode* node)
 			}
 
 			return !visible;
-
-		} break;
+		}
+		break;
+		case scene::EAC_OFF:
+		break;
 	}
 
 	return false;
@@ -992,7 +997,6 @@ void CSceneManager::drawAll()
 	Parameters.setAttribute ( "calls", 0 );
 	Parameters.setAttribute ( "drawn", 0 );
 
-
 	// reset all transforms
 	video::IVideoDriver* driver = getVideoDriver();
 	if ( driver )
@@ -1003,25 +1007,26 @@ void CSceneManager::drawAll()
 		driver->setTransform ( video::ETS_WORLD, identity );
 		driver->setTransform ( video::ETS_TEXTURE_0, identity );
 		driver->setTransform ( video::ETS_TEXTURE_1, identity );
+		driver->setTransform ( video::ETS_TEXTURE_2, identity );
+		driver->setTransform ( video::ETS_TEXTURE_3, identity );
 	}
 
 	// do animations and other stuff.
-	OnPostRender(os::Timer::getTime());
-
+	OnAnimate(os::Timer::getTime());
 
 	/*!
 		First Scene Node for prerendering should be the active camera
-		consisten Camera is needed for culling
+		consistent Camera is needed for culling
 	*/
 	camWorldPos.set(0,0,0);
 	if ( ActiveCamera )
 	{
-		ActiveCamera->OnPreRender();
+		ActiveCamera->OnRegisterSceneNode();
 		camWorldPos = ActiveCamera->getAbsolutePosition();
 	}
 
-	// let all nodes register themselfes
-	OnPreRender();
+	// let all nodes register themselves
+	OnRegisterSceneNode();
 
 	u32 i; // new ISO for scoping problem in some compilers
 
@@ -1099,7 +1104,6 @@ void CSceneManager::drawAll()
 		TransparentNodeList.clear();
 	}
 
-
 	// render shader objects.
 	{
 		for ( u32 g = 0; g!= ESNRP_SHADER_10 - ESNRP_SHADER_0 + 1; ++g )
@@ -1117,10 +1121,6 @@ void CSceneManager::drawAll()
 			ShaderNodeList[g].clear();
 		}
 	}
-
-
-	// do animations and other stuff.
-	//OnPostRender(os::Timer::getTime());
 
 	clearDeletionList();
 
@@ -1156,9 +1156,8 @@ ISceneNodeAnimator* CSceneManager::createRotationAnimator(const core::vector3df&
 
 //! creates a fly circle animator, which lets the attached scene node fly around a center.
 ISceneNodeAnimator* CSceneManager::createFlyCircleAnimator(const core::vector3df& normal,
-														   f32 radius, f32 speed,
-														   const core::vector3df& direction
-														   )
+					   f32 radius, f32 speed,
+					   const core::vector3df& direction)
 {
 	ISceneNodeAnimator* anim = new CSceneNodeAnimatorFlyCircle(os::Timer::getTime(), normal,
 			radius, speed, direction);
@@ -1379,6 +1378,48 @@ ISceneNode* CSceneManager::getSceneNodeFromId(s32 id, ISceneNode* start)
 }
 
 
+//! Returns the first scene node with the specified type.
+ISceneNode* CSceneManager::getSceneNodeFromType(scene::ESCENE_NODE_TYPE type, ISceneNode* start)
+{
+	if (start == 0)
+		start = getRootSceneNode();
+
+	if (start->getType() == type)
+		return start;
+
+	ISceneNode* node = 0;
+
+	const core::list<ISceneNode*>& list = start->getChildren();
+	core::list<ISceneNode*>::Iterator it = list.begin();
+	for (; it!=list.end(); ++it)
+	{
+		node = getSceneNodeFromType(type, *it);
+		if (node)
+			return node;
+	}
+
+	return 0;
+}
+
+//! returns scene nodes by type.
+void CSceneManager::getSceneNodesFromType(ESCENE_NODE_TYPE type, core::array<scene::ISceneNode*>& outNodes, ISceneNode* start)
+{
+	if (start == 0)
+		start = getRootSceneNode();
+
+	if (start->getType() == type)
+		outNodes.push_back(start);
+
+	const core::list<ISceneNode*>& list = start->getChildren();
+	core::list<ISceneNode*>::Iterator it = list.begin();
+
+	for (; it!=list.end(); ++it)
+	{
+		getSceneNodesFromType(type, outNodes, *it);
+	}
+}
+
+
 //! Posts an input event to the environment. Usually you do not have to
 //! use this method, it is used by the internal engine.
 bool CSceneManager::postEventFromUser(SEvent event)
@@ -1431,9 +1472,14 @@ IMeshCache* CSceneManager::getMeshCache()
 
 
 //! Creates a new scene manager.
-ISceneManager* CSceneManager::createNewSceneManager()
+ISceneManager* CSceneManager::createNewSceneManager(bool cloneContent)
 {
-	return new CSceneManager(Driver, FileSystem, CursorControl, MeshCache);
+	CSceneManager* manager = new CSceneManager(Driver, FileSystem, CursorControl, MeshCache);
+
+	if (cloneContent)
+		manager->cloneMembers(this, manager);
+
+	return manager;
 }
 
 
@@ -1669,7 +1715,8 @@ void CSceneManager::readSceneNode(io::IXMLReader* reader, ISceneNode* parent, IS
 				os::Printer::log("Found unknown element in irrlicht scene file",
 								 core::stringc(reader->getNodeName()).c_str());
 			}
-
+			break;
+		default:
 			break;
 		}
 
@@ -1711,6 +1758,8 @@ void CSceneManager::readMaterials(io::IXMLReader* reader, ISceneNode* node)
 				++nr;
 			}
 			break;
+		default:
+			break;
 		}
 	}
 }
@@ -1719,8 +1768,6 @@ void CSceneManager::readMaterials(io::IXMLReader* reader, ISceneNode* node)
 //! reads animators of a node
 void CSceneManager::readAnimators(io::IXMLReader* reader, ISceneNode* node)
 {
-	s32 cnt = 0;
-
 	while(reader->read())
 	{
 		const wchar_t* name = reader->getNodeName();
@@ -1754,8 +1801,9 @@ void CSceneManager::readAnimators(io::IXMLReader* reader, ISceneNode* node)
 				}
 
 				attr->drop();
-				++cnt;
 			}
+			break;
+		default:
 			break;
 		}
 	}
@@ -1790,6 +1838,8 @@ void CSceneManager::readUserData(io::IXMLReader* reader, ISceneNode* node, IScen
 				attr->drop();
 			}
 			break;
+		default:
+			break;
 		}
 	}
 }
@@ -1801,7 +1851,7 @@ void CSceneManager::writeSceneNode(io::IXMLWriter* writer, ISceneNode* node, ISc
 	if (!writer || !node || node->isDebugObject())
 		return;
 
-	const wchar_t* name = 0;
+	const wchar_t* name;
 
 	if (node == this)
 	{
@@ -1942,9 +1992,9 @@ void CSceneManager::serializeAttributes(io::IAttributes* out, io::SAttributeRead
 //! Reads attributes of the scene node.
 void CSceneManager::deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options)
 {
-	Name =			in->getAttributeAsString("Name");
-	ID =			in->getAttributeAsInt("Id");
-	AmbientLight =	in->getAttributeAsColorf("AmbientLight");
+	Name = in->getAttributeAsString("Name");
+	ID = in->getAttributeAsInt("Id");
+	AmbientLight = in->getAttributeAsColorf("AmbientLight");
 
 	RelativeTranslation.set(0,0,0);
 	RelativeRotation.set(0,0,0);

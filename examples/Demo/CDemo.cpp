@@ -2,17 +2,17 @@
 // This file is not documentated.
 
 #include "CDemo.h"
-#include <stdio.h>
-
-
 
 CDemo::CDemo(bool f, bool m, bool s, bool a, bool v, video::E_DRIVER_TYPE d)
 : fullscreen(f), driverType(d), currentScene(-2),
- model1(0), model2(0), music(m), 
-shadows(s), quakeLevelMesh(0), quakeLevelNode(0), timeForThisScene(0),
-skyboxNode(0), mapSelector(0), metaSelector(0), campFire(0), device(0),
-additive(a), vsync(v)
+ model1(0), model2(0), music(m),
+ shadows(s), quakeLevelMesh(0), quakeLevelNode(0), timeForThisScene(0),
+ skyboxNode(0), mapSelector(0), metaSelector(0), campFire(0), device(0),
+ additive(a), vsync(v)
 {
+#ifdef USE_IRRKLANG
+	irrKlang = 0;
+#endif
 }
 
 
@@ -35,7 +35,7 @@ void CDemo::run()
 {
 	core::dimension2d<s32> resolution ( 800, 600 );
 
-	if ( driverType == video::EDT_SOFTWARE2 || driverType == video::EDT_SOFTWARE )
+	if ( driverType == video::EDT_BURNINGSVIDEO || driverType == video::EDT_SOFTWARE )
 	{
 		resolution.Width = 640;
 		resolution.Height = 480;
@@ -72,7 +72,7 @@ void CDemo::run()
 			// update 3D position for sound engine
 			scene::ICameraSceneNode* cam = smgr->getActiveCamera();
 			if (cam && irrKlang)
-				irrKlang->setListenerPosition(cam->getAbsolutePosition(), cam->getTarget()); 
+				irrKlang->setListenerPosition(cam->getAbsolutePosition(), cam->getTarget());
 			#endif
 
 			// load next scene if necessary
@@ -93,10 +93,10 @@ void CDemo::run()
 			static s32 lastfps = 0;
 			s32 nowfps = driver->getFPS();
 
-			swprintf(tmp, 255, L"%ls fps:%3d triangle:%0.3f million", 
+			swprintf(tmp, 255, L"%ls fps:%3d triangles:%0.3f mio", 
 								driver->getName(),
 								driver->getFPS(),
-								(f32) driver->getPrimitiveCountDrawn() * ( 1.f / 1000000.f )
+								(f32) driver->getPrimitiveCountDrawn( 1 ) * ( 1.f / 1000000.f )
 								);
 
 			statusText->setText(tmp);
@@ -135,7 +135,7 @@ bool CDemo::OnEvent(SEvent event)
 		event.MouseInput.Event == EMIE_LMOUSE_LEFT_UP) &&
 		currentScene == 3)
 	{
-		// shoot 
+		// shoot
 		shoot();
 	}
 	else
@@ -150,6 +150,7 @@ bool CDemo::OnEvent(SEvent event)
 			device->getVideoDriver()->writeImageToFile(image, "screenshot.png");
 			device->getVideoDriver()->writeImageToFile(image, "screenshot.tga");
 			device->getVideoDriver()->writeImageToFile(image, "screenshot.ppm");
+			device->getVideoDriver()->writeImageToFile(image, "screenshot.jpg");
 			image->drop();
 		}
 	}
@@ -199,9 +200,9 @@ void CDemo::switchToNextScene()
 			currentScene += 1;
 			//camera = sm->addCameraSceneNode(0, core::vector3df(0,0,0), core::vector3df(-586,708,52));
 			//camera->setTarget(core::vector3df(0,400,0));
-			
+
 			core::array<core::vector3df> points;
-		 
+
 			points.push_back(core::vector3df(-931.473755f, 138.300003f, 987.279114f)); // -49873
 			points.push_back(core::vector3df(-847.902222f, 136.757553f, 915.792725f)); // -50559
 			points.push_back(core::vector3df(-748.680420f, 152.254501f, 826.418945f)); // -51964
@@ -247,25 +248,26 @@ void CDemo::switchToNextScene()
 			camera = sm->addCameraSceneNode(0, points[0], core::vector3df(0 ,400,0));
 			//camera->setTarget(core::vector3df(0,400,0));
 
-			sa = sm->createFollowSplineAnimator(device->getTimer()->getTime(), 
+			sa = sm->createFollowSplineAnimator(device->getTimer()->getTime(),
 				points);
 			camera->addAnimator(sa);
-			sa->drop();			
+			sa->drop();
 
 			model1->setVisible(false);
 			model2->setVisible(false);
 			campFire->setVisible(false);
 			inOutFader->fadeIn(7000);
-		}break;
+		}
+		break;
 
 	case 2:	// down fly anim camera
 		camera = sm->addCameraSceneNode(0, core::vector3df(100,40,-80), core::vector3df(844,670,-885));
-		sa = sm->createFlyStraightAnimator(	core::vector3df(94, 1002, 127),
+		sa = sm->createFlyStraightAnimator(core::vector3df(94, 1002, 127),
 			core::vector3df(108, 15, -60), 10000, true);
 		camera->addAnimator(sa);
 		timeForThisScene = 9900;
 		model1->setVisible(true);
-		model2->setVisible(false);		
+		model2->setVisible(false);
 		campFire->setVisible(false);
 		sa->drop();
 		break;
@@ -282,17 +284,17 @@ void CDemo::switchToNextScene()
 			keyMap[0].KeyCode = KEY_UP;
 			keyMap[1].Action = EKA_MOVE_FORWARD;
 			keyMap[1].KeyCode = KEY_KEY_W;
-	        
+
 			keyMap[2].Action = EKA_MOVE_BACKWARD;
 			keyMap[2].KeyCode = KEY_DOWN;
 			keyMap[3].Action = EKA_MOVE_BACKWARD;
 			keyMap[3].KeyCode = KEY_KEY_S;
-	        
+
 			keyMap[4].Action = EKA_STRAFE_LEFT;
 			keyMap[4].KeyCode = KEY_LEFT;
 			keyMap[5].Action = EKA_STRAFE_LEFT;
 			keyMap[5].KeyCode = KEY_KEY_A;
-	        
+
 			keyMap[6].Action = EKA_STRAFE_RIGHT;
 			keyMap[6].KeyCode = KEY_RIGHT;
 			keyMap[7].Action = EKA_STRAFE_RIGHT;
@@ -303,13 +305,13 @@ void CDemo::switchToNextScene()
 
 			camera = sm->addCameraSceneNodeFPS(0, 100.0f, 400.0f, -1, keyMap, 9, false, 0.f);
 			camera->setPosition(core::vector3df(108,140,-140));
-			
-			scene::ISceneNodeAnimatorCollisionResponse* collider = 
+
+			scene::ISceneNodeAnimatorCollisionResponse* collider =
 				sm->createCollisionResponseAnimator(
-				metaSelector, camera, core::vector3df(25,50,25), 
-				core::vector3df(0, quakeLevelMesh ? -2.5f : 0.0f,0), 
+				metaSelector, camera, core::vector3df(25,50,25),
+				core::vector3df(0, quakeLevelMesh ? -2.5f : 0.0f,0),
 					core::vector3df(0,45,0), 0.005f);
-		    
+
 			camera->addAnimator(collider);
 			collider->drop();
 		}
@@ -329,7 +331,7 @@ void CDemo::loadSceneData()
 	scene::ISceneManager* sm = device->getSceneManager();
 
 	quakeLevelMesh = (scene::IQ3LevelMesh*) sm->getMesh("maps/20kdm2.bsp");
-	
+
 	if (quakeLevelMesh)
 	{
 		u32 i;
@@ -350,7 +352,7 @@ void CDemo::loadSceneData()
 		{
 			//quakeLevelNode->setPosition(core::vector3df(-1300,-70,-1249));
 			quakeLevelNode->setVisible(true);
-			
+
 			// create map triangle selector
 			mapSelector = sm->createOctTreeTriangleSelector(quakeLevelMesh->getMesh(0),
 				quakeLevelNode, 128);
@@ -365,7 +367,7 @@ void CDemo::loadSceneData()
 		}
 
 		// the additional mesh can be quite huge and is unoptimized
-		scene::IMesh * additional_mesh = quakeLevelMesh->getMesh ( scene::E_Q3_MESH_ITEMS );
+		scene::IMesh * additional_mesh = quakeLevelMesh->getMesh ( scene::quake3::E_Q3_MESH_ITEMS );
 
 		for ( i = 0; i!= additional_mesh->getMeshBufferCount (); ++i )
 		{
@@ -386,7 +388,7 @@ void CDemo::loadSceneData()
 		}
 
 		// original mesh is not needed anymore
-		quakeLevelMesh->releaseMesh ( scene::E_Q3_MESH_ITEMS );
+		quakeLevelMesh->releaseMesh ( scene::quake3::E_Q3_MESH_ITEMS );
 
 	}
 
@@ -445,7 +447,7 @@ void CDemo::loadSceneData()
 
 	if (model2)
 	{
-		anim = device->getSceneManager()->createFlyStraightAnimator(waypoint[0], 
+		anim = device->getSceneManager()->createFlyStraightAnimator(waypoint[0],
 			waypoint[1], 2000, true);
 		model2->addAnimator(anim);
 		anim->drop();
@@ -486,7 +488,6 @@ void CDemo::loadSceneData()
 
 	light = sm->addLightSceneNode(0,
 		core::vector3df(0,0,0),	video::SColorf(1.0f, 1.0f, 1.f, 1.0f), 500.f);
-	light->setDebugDataVisible ( scene::EDS_FULL );
 
 	anim = sm->createFlyCircleAnimator(
 		core::vector3df(100,150,80), 80.0f, 0.0005f);
@@ -513,7 +514,7 @@ void CDemo::loadSceneData()
 	campFire->setParticleSize(core::dimension2d<f32>(20.0f, 10.0f));
 
 	scene::IParticleEmitter* em = campFire->createBoxEmitter(
-		core::aabbox3d<f32>(-7,0,-7,7,1,7), 
+		core::aabbox3d<f32>(-7,0,-7,7,1,7),
 		core::vector3df(0.0f,0.06f,0.0f),
 		80,100, video::SColor(0,255,255,255),video::SColor(0,255,255,255), 800,2000);
 
@@ -568,7 +569,7 @@ void CDemo::createLoadingScreen()
 	const int lheight = 16;
 
 	core::rect<int> pos(10, size.Height-lheight-10, 10+lwidth, size.Height-10);
-	
+
 	device->getGUIEnvironment()->addImage(pos);
 	statusText = device->getGUIEnvironment()->addStaticText(L"Loading...",	pos, true);
 	statusText->setOverrideColor(video::SColor(255,205,200,200));
@@ -576,7 +577,7 @@ void CDemo::createLoadingScreen()
 	// load bigger font
 
 	device->getGUIEnvironment()->getSkin()->setFont(
-		device->getGUIEnvironment()->getFont("../../media/fontlucida.png"));
+		device->getGUIEnvironment()->getFont("../../media/fonthaettenschweiler.bmp"));
 
 	// set new font color
 
@@ -594,7 +595,7 @@ void CDemo::shoot()
 	if (!camera || !mapSelector)
 		return;
 
-	SParticleImpact imp; 
+	SParticleImpact imp;
 	imp.when = 0;
 
 	// get line of camera
@@ -604,7 +605,6 @@ void CDemo::shoot()
 	end.normalize();
 	start += end*8.0f;
 	end = start + (end * camera->getFarValue());
-	
 
 	core::triangle3df triangle;
 
@@ -641,7 +641,7 @@ void CDemo::shoot()
 	node->setMaterialFlag(video::EMF_LIGHTING, false);
 	node->setMaterialTexture(0, device->getVideoDriver()->getTexture("../../media/fireball.bmp"));
 	node->setMaterialType(video::EMT_TRANSPARENT_ADD_COLOR);
-		
+
 	f32 length = (f32)(end - start).getLength();
 	const f32 speed = 0.6f;
 	u32 time = (u32)(length / speed);
@@ -651,7 +651,7 @@ void CDemo::shoot()
 	// set flight line
 
 	anim = sm->createFlyStraightAnimator(start, end, time);
-	node->addAnimator(anim);	
+	node->addAnimator(anim);
 	anim->drop();
 
 	anim = sm->createDeleteAnimator(time);
@@ -713,23 +713,32 @@ void CDemo::createParticleImpacts()
 			pas->addAnimator(anim);
 			anim->drop();
 
-			// delete entry
-			Impacts.erase(i);
-			i--;			
-
 			// play impact sound
 			#ifdef USE_IRRKLANG
 			if (irrKlang)
-				irrKlang->play3D(impactSound, Impacts[i].pos);
+			{
+				audio::ISound* sound = 
+					irrKlang->play3D(impactSound, Impacts[i].pos, false, false, true);
+
+				if (sound)
+				{
+					// adjust max value a bit to make to sound of an impact louder
+					sound->setMinDistance(200);
+					sound->drop();
+				}
+			}
 			#endif
 
 			#ifdef USE_SDL_MIXER
 			if (impactSound)
 				playSound(impactSound);
 			#endif
+
+			// delete entry
+			Impacts.erase(i);
+			i--;
 		}
 }
-
 
 
 
@@ -741,11 +750,11 @@ void CDemo::startIrrKlang()
 	if (!irrKlang)
 		return;
 
-	// play music 
+	// play music
 
-	audio::ISound* snd = irrKlang->play2D("IrrlichtTheme.ogg", true, false, true);
+	audio::ISound* snd = irrKlang->play2D("../../media/IrrlichtTheme.ogg", true, false, true);
 	if ( !snd )
-		snd = irrKlang->play2D("../../media/IrrlichtTheme.ogg", true, false, true);
+		snd = irrKlang->play2D("IrrlichtTheme.ogg", true, false, true);
 
 	if (snd)
 	{
@@ -755,7 +764,7 @@ void CDemo::startIrrKlang()
 
 	// preload both sound effects
 
-    ballSound = irrKlang->getSoundSource("../../media/ball.wav");
+	ballSound = irrKlang->getSoundSource("../../media/ball.wav");
 	impactSound = irrKlang->getSoundSource("../../media/impact.wav");
 }
 #endif

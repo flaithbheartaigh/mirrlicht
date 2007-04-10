@@ -91,7 +91,7 @@ int main()
 		case 'b': driverType = video::EDT_DIRECT3D8;break;
 		case 'c': driverType = video::EDT_OPENGL;   break;
 		case 'd': driverType = video::EDT_SOFTWARE; break;
-		case 'e': driverType = video::EDT_SOFTWARE2;break;
+		case 'e': driverType = video::EDT_BURNINGSVIDEO;break;
 		case 'f': driverType = video::EDT_NULL;     break;
 		default: return 0;
 	}	
@@ -192,7 +192,7 @@ int main()
 	Add a colorful irrlicht logo
 	*/
 	device->getGUIEnvironment()->addImage(
-		driver->getTexture("../../media/irrlichtlogo2.png"),
+		driver->getTexture("../../media/irrlichtlogoalpha2.tga"),
 		core::position2d<s32>(10,10));
 
 	/*

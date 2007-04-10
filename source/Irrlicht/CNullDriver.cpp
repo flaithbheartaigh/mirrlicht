@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -88,8 +88,8 @@ const char* const sBuiltInMaterialTypeNames[] =
 
 //! constructor
 CNullDriver::CNullDriver(io::IFileSystem* io, const core::dimension2d<s32>& screenSize)
-: ScreenSize(screenSize), ViewPort(0,0,0,0),
- FileSystem(io), PrimitivesDrawn(0), TextureCreationFlags(0)
+: FileSystem(io), ViewPort(0,0,0,0), ScreenSize(screenSize),
+ PrimitivesDrawn(0), TextureCreationFlags(0)
 {
 	#ifdef _DEBUG
 	setDebugName("CNullDriver");
@@ -293,7 +293,7 @@ ITexture* CNullDriver::getTexture(const c8* filename)
 		if (texture)
 		{
 			addTexture(texture);
-			texture->drop(); // drop it becaus we created it, one grab to much
+			texture->drop(); // drop it becaus we created it, one grab too much
 		}
 	}
 	else
@@ -327,7 +327,7 @@ ITexture* CNullDriver::getTexture(io::IReadFile* file)
 		if (texture)
 		{
 			addTexture(texture);
-			texture->drop(); // drop it because we created it, one grab to much
+			texture->drop(); // drop it because we created it, one grab too much
 		}
 	}
 
@@ -437,7 +437,11 @@ ITexture* CNullDriver::addTexture(const core::dimension2d<s32>& size,
 //! THIS METHOD HAS TO BE OVERRIDDEN BY DERIVED DRIVERS WITH OWN TEXTURES
 ITexture* CNullDriver::createDeviceDependentTexture(IImage* surface, const char* name)
 {
+	#ifdef _IRR_COMPILE_WITH_SOFTWARE_
 	return new CSoftwareTexture(surface, name);
+	#else
+	return 0;
+	#endif
 }
 
 
@@ -516,6 +520,15 @@ inline void CNullDriver::drawIndexedTriangleFan(const S3DVertex2TCoords* vertice
 
 
 
+//! Draws an indexed triangle fan.
+inline void CNullDriver::drawIndexedTriangleFan(const S3DVertexTangents* vertices,
+	u32 vertexCount, const u16* indexList, u32 triangleCount)
+{
+	drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_TANGENTS, scene::EPT_TRIANGLE_FAN);
+}
+
+
+
 //! Draws a 3d line.
 void CNullDriver::draw3DLine(const core::vector3df& start,
 				const core::vector3df& end, SColor color)
@@ -535,7 +548,7 @@ void CNullDriver::draw3DTriangle(const core::triangle3df& triangle, SColor color
 
 
 //! Draws a 3d axis aligned box.
-void CNullDriver::draw3DBox(const core::aabbox3d<f32> box, SColor color)
+void CNullDriver::draw3DBox(const core::aabbox3d<f32>& box, SColor color)
 {
 	core::vector3df edges[8];
 	box.getEdges(edges);
@@ -692,9 +705,9 @@ s32 CNullDriver::getFPS()
 
 //! returns amount of primitives (mostly triangles) were drawn in the last frame.
 //! very useful method for statistics.
-u32 CNullDriver::getPrimitiveCountDrawn()
+u32 CNullDriver::getPrimitiveCountDrawn( u32 param )
 {
-	return FPSCounter.getPrimitve();
+	return (0 == param) ? FPSCounter.getPrimitive() : (1 == param) ? FPSCounter.getPrimitiveAverage() : FPSCounter.getPrimitiveTotal();
 }
 
 
@@ -1037,9 +1050,9 @@ void CNullDriver::makeNormalMapTexture(video::ITexture* texture, f32 amplitude)
 //! Returns the maximum amount of primitives (mostly vertices) which
 //! the device is able to render with one drawIndexedTriangleList
 //! call.
-s32 CNullDriver::getMaximalPrimitiveCount()
+u32 CNullDriver::getMaximalPrimitiveCount()
 {
-	return (1<<30)-1;
+	return 0xFFFFFFFF;
 }
 
 
@@ -1088,6 +1101,9 @@ bool CNullDriver::getTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag)
 //! Creates a software image from a file.
 IImage* CNullDriver::createImageFromFile(const char* filename)
 {
+	if (!filename)
+		return 0;
+
 	IImage* image = 0;
 	io::IReadFile* file = FileSystem->createAndOpenFile(filename);
 
@@ -1106,6 +1122,9 @@ IImage* CNullDriver::createImageFromFile(const char* filename)
 //! Creates a software image from a file.
 IImage* CNullDriver::createImageFromFile(io::IReadFile* file)
 {
+	if (!file)
+		return 0;
+
 	IImage* image = 0;
 
 	u32 i;
@@ -1143,7 +1162,7 @@ IImage* CNullDriver::createImageFromFile(io::IReadFile* file)
 
 
 //! Writes the provided image to disk file
-bool CNullDriver::writeImageToFile(IImage* image, const char* filename)
+bool CNullDriver::writeImageToFile(IImage* image, const char* filename,u32 param)
 {
 	for (u32 i=0; i<SurfaceWriter.size(); ++i)
 	{
@@ -1152,7 +1171,7 @@ bool CNullDriver::writeImageToFile(IImage* image, const char* filename)
 			io::IWriteFile* file = FileSystem->createAndWriteFile(filename);
 			if (file)
 			{
-				bool written = SurfaceWriter[i]->writeImage(file, image);
+				bool written = SurfaceWriter[i]->writeImage(file, image, param);
 				file->drop();
 				if (written)
 					return true;
@@ -1258,13 +1277,12 @@ void CNullDriver::setMaterialRendererName(s32 idx, const char* name)
 
 
 //! Creates material attributes list from a material, usable for serialization and more.
-io::IAttributes* CNullDriver::createAttributesFromMaterial(video::SMaterial& material)
+io::IAttributes* CNullDriver::createAttributesFromMaterial(const video::SMaterial& material)
 {
 	io::CAttributes* attr = new io::CAttributes(this);
 
 	const char** materialNames = new const char*[MaterialRenderers.size()+1];
-	u32 i;
-	for ( i=0; i < MaterialRenderers.size(); ++i)
+	for (u32 i=0; i < MaterialRenderers.size(); ++i)
 		materialNames[i] = MaterialRenderers[i].Name.c_str();
 
 	materialNames[MaterialRenderers.size()] = 0;
@@ -1282,10 +1300,10 @@ io::IAttributes* CNullDriver::createAttributesFromMaterial(video::SMaterial& mat
 	attr->addFloat("Param1", material.MaterialTypeParam);
 	attr->addFloat("Param2", material.MaterialTypeParam2);
 
-	attr->addTexture("Texture1", material.Texture1);
-	attr->addTexture("Texture2", material.Texture2);
-	attr->addTexture("Texture3", material.Texture3);
-	attr->addTexture("Texture4", material.Texture4);
+	attr->addTexture("Texture1", material.Textures[0]);
+	attr->addTexture("Texture2", material.Textures[1]);
+	attr->addTexture("Texture3", material.Textures[2]);
+	attr->addTexture("Texture4", material.Textures[3]);
 
 	attr->addBool("Wireframe", material.Wireframe);
 	attr->addBool("GouraudShading", material.GouraudShading);
@@ -1299,7 +1317,10 @@ io::IAttributes* CNullDriver::createAttributesFromMaterial(video::SMaterial& mat
 	attr->addBool("NormalizeNormals", material.NormalizeNormals);
 
 	attr->addInt("ZBuffer", material.ZBuffer);
-	attr->addInt("TextureWrap", material.TextureWrap);
+	attr->addEnum("TextureWrap1", material.TextureWrap[0], aTextureClampNames);
+	attr->addEnum("TextureWrap2", material.TextureWrap[1], aTextureClampNames);
+	attr->addEnum("TextureWrap3", material.TextureWrap[2], aTextureClampNames);
+	attr->addEnum("TextureWrap4", material.TextureWrap[3], aTextureClampNames);
 
 	return attr;
 }
@@ -1330,10 +1351,10 @@ void CNullDriver::fillMaterialStructureFromAttributes(video::SMaterial& outMater
 	outMaterial.MaterialTypeParam = attr->getAttributeAsFloat("Param1");
 	outMaterial.MaterialTypeParam2 = attr->getAttributeAsFloat("Param2");
 
-	outMaterial.Texture1 = attr->getAttributeAsTexture("Texture1");
-	outMaterial.Texture2 = attr->getAttributeAsTexture("Texture2");
-	outMaterial.Texture3 = attr->getAttributeAsTexture("Texture3");
-	outMaterial.Texture4 = attr->getAttributeAsTexture("Texture4");
+	outMaterial.Textures[0] = attr->getAttributeAsTexture("Texture1");
+	outMaterial.Textures[1] = attr->getAttributeAsTexture("Texture2");
+	outMaterial.Textures[2] = attr->getAttributeAsTexture("Texture3");
+	outMaterial.Textures[3] = attr->getAttributeAsTexture("Texture4");
 
 	outMaterial.Wireframe = attr->getAttributeAsBool("Wireframe");
 	outMaterial.GouraudShading = attr->getAttributeAsBool("GouraudShading");
@@ -1347,13 +1368,15 @@ void CNullDriver::fillMaterialStructureFromAttributes(video::SMaterial& outMater
 	outMaterial.NormalizeNormals = attr->getAttributeAsBool("NormalizeNormals");
 
 	outMaterial.ZBuffer = attr->getAttributeAsInt("ZBuffer");
-	outMaterial.TextureWrap = attr->getAttributeAsInt("TextureWrap");
-
+	outMaterial.TextureWrap[0] = (E_TEXTURE_CLAMP)attr->getAttributeAsEnumeration("TextureWrap1", aTextureClampNames);
+	outMaterial.TextureWrap[1] = (E_TEXTURE_CLAMP)attr->getAttributeAsEnumeration("TextureWrap2", aTextureClampNames);
+	outMaterial.TextureWrap[2] = (E_TEXTURE_CLAMP)attr->getAttributeAsEnumeration("TextureWrap3", aTextureClampNames);
+	outMaterial.TextureWrap[3] = (E_TEXTURE_CLAMP)attr->getAttributeAsEnumeration("TextureWrap4", aTextureClampNames);
 }
 
 
 //! Returns driver and operating system specific data about the IVideoDriver.
-SExposedVideoData CNullDriver::getExposedVideoData()
+const SExposedVideoData& CNullDriver::getExposedVideoData()
 {
 	return ExposedData;
 }

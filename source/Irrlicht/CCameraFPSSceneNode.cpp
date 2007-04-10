@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -7,7 +7,6 @@
 #include "ISceneManager.h"
 #include "os.h"
 #include "Keycodes.h"
-#include "quaternion.h"
 
 namespace irr
 {
@@ -21,8 +20,8 @@ CCameraFPSSceneNode::CCameraFPSSceneNode(ISceneNode* parent, ISceneManager* mgr,
 		gui::ICursorControl* cursorControl, s32 id, f32 rotateSpeed , f32 moveSpeed,f32 jumpSpeed,
 		SKeyMap* keyMapArray, s32 keyMapSize, bool noVerticalMovement)
 : CCameraSceneNode(parent, mgr, id), CursorControl(cursorControl),
-	MoveSpeed(moveSpeed), RotateSpeed(rotateSpeed), JumpSpeed ( jumpSpeed ), firstUpdate(true),
-	NoVerticalMovement(noVerticalMovement),LastAnimationTime ( 0 )
+	MoveSpeed(moveSpeed), RotateSpeed(rotateSpeed), JumpSpeed(jumpSpeed),
+	firstUpdate(true), LastAnimationTime(0), NoVerticalMovement(noVerticalMovement)
 {
 	#ifdef _DEBUG
 	setDebugName("CCameraFPSSceneNode");
@@ -106,10 +105,10 @@ bool CCameraFPSSceneNode::OnEvent(SEvent event)
 
 
 
-//! onPostRender is called just after rendering the whole scene.
+//! OnAnimate() is called just before rendering the whole scene.
 //! nodes may calculate or store animations here, and may do other useful things,
 //! dependent on what they are.
-void CCameraFPSSceneNode::OnPostRender(u32 timeMs)
+void CCameraFPSSceneNode::OnAnimate(u32 timeMs)
 {
 	animate( timeMs );
 
@@ -122,7 +121,7 @@ void CCameraFPSSceneNode::OnPostRender(u32 timeMs)
 
 	core::list<ISceneNode*>::Iterator it = Children.begin();
 				for (; it != Children.end(); ++it)
-					(*it)->OnPostRender(timeMs);
+					(*it)->OnAnimate(timeMs);
 }
 
 
@@ -274,6 +273,30 @@ void CCameraFPSSceneNode::setInputReceiverEnabled(bool enabled)
 
    InputReceiverEnabled = enabled;
 } 
+
+//! Sets the rotation speed
+void CCameraFPSSceneNode::setRotateSpeed(const f32 speed)
+{
+	RotateSpeed = speed;	
+}
+
+//! Sets the movement speed
+void CCameraFPSSceneNode::setMoveSpeed(const f32 speed)
+{
+	MoveSpeed = speed;
+}
+
+//! Gets the rotation speed
+f32 CCameraFPSSceneNode::getRotateSpeed()
+{
+	return RotateSpeed;
+}
+
+// Gets the movement speed
+f32 CCameraFPSSceneNode::getMoveSpeed()
+{
+	return MoveSpeed;
+}
 
 } // end namespace
 } // end namespace

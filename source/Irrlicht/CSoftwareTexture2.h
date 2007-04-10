@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt / Thomas Alten
+// Copyright (C) 2002-2007 Nikolaus Gebhardt / Thomas Alten
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -35,7 +35,7 @@ public:
 	}
 
 	//! unlock function
-	virtual void CSoftwareTexture2::unlock()
+	virtual void unlock()
 	{
 		MipMap[MipMapLOD]->unlock();
 	}
@@ -69,7 +69,7 @@ public:
 	//! returns driver type of texture (=the driver, who created the texture)
 	virtual E_DRIVER_TYPE getDriverType()
 	{
-		return EDT_SOFTWARE2;
+		return EDT_BURNINGSVIDEO;
 	}
 
 	//! returns color format of texture
@@ -96,7 +96,7 @@ public:
 	}
 	
 	//! support mipmaps
-	virtual s32 CSoftwareTexture2::hasMipMaps() const
+	virtual s32 hasMipMaps() const
 	{
 		return HasMipMaps;
 	}

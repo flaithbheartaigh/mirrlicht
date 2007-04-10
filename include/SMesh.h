@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -66,11 +66,10 @@ namespace scene
 			return BoundingBox;
 		}
 
-		//! Returns an axis aligned bounding box of the mesh.
-		//! \return A bounding box of this mesh is returned.
-		virtual core::aabbox3d<f32>& getBoundingBox()
+		//! set user axis aligned bounding box
+		virtual void setBoundingBox( const core::aabbox3df& box)
 		{
-			return BoundingBox;
+			BoundingBox = box;
 		}
 
 		//! recalculates the bounding box
@@ -100,7 +99,7 @@ namespace scene
 		virtual void setMaterialFlag(video::E_MATERIAL_FLAG flag, bool newvalue)
 		{
 			for (u32 i=0; i<MeshBuffers.size(); ++i)
-				MeshBuffers[i]->getMaterial().Flags[flag] = newvalue;
+				MeshBuffers[i]->getMaterial().setFlag(flag, newvalue);
 		}
 
 		core::array<IMeshBuffer*> MeshBuffers;

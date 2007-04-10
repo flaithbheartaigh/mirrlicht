@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -6,10 +6,10 @@
 #define __C_ANIMATED_MESH_MS3D_H_INCLUDED__
 
 #include "IAnimatedMeshMS3D.h"
+#include "IMesh.h"
 #include "IReadFile.h"
 #include "S3DVertex.h"
 #include "irrString.h"
-#include "matrix4.h"
 #include "SMeshBuffer.h"
 
 namespace irr
@@ -17,7 +17,7 @@ namespace irr
 namespace video
 {
 	class IVideoDriver;
-}
+} // end namespace video
 namespace scene
 {
 
@@ -46,11 +46,17 @@ namespace scene
 		//! returns pointer to a mesh buffer
 		virtual IMeshBuffer* getMeshBuffer(u32 nr) const;
 
+		//! Returns pointer to a mesh buffer which fits a material
+ 		/** \param material: material to search for
+		\return Returns the pointer to the mesh buffer or 
+		NULL if there is no such mesh buffer. */
+		virtual IMeshBuffer* getMeshBuffer( const video::SMaterial &material) const;
+
 		//! returns an axis aligned bounding box
 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
 
-		//! returns an axis aligned bounding box
-		virtual core::aabbox3d<f32>& getBoundingBox();
+		//! set user axis aligned bounding box
+		virtual void setBoundingBox( const core::aabbox3df& box);
 
 		//! sets a flag of all contained materials to a new value
 		virtual void setMaterialFlag(video::E_MATERIAL_FLAG flag, bool newvalue);
@@ -142,8 +148,8 @@ namespace scene
 			//! returns an axis aligned bounding box 
 			virtual const core::aabbox3d<f32>& getBoundingBox() const;
 
-			//! returns an axis aligned bounding box 
-			virtual core::aabbox3d<f32>& getBoundingBox();
+			//! set user axis aligned bounding box
+			virtual void setBoundingBox( const core::aabbox3df& box);
 
 			//! returns which type of vertex data is stored. 
 			virtual video::E_VERTEX_TYPE getVertexType() const;
@@ -159,7 +165,8 @@ namespace scene
 		}; 
 
 		void animate(s32 frame);
-		void getKeyframeData(core::array<SKeyframe>& keys, f32 time, core::vector3df& outdata);
+		void getKeyframeData(const core::array<SKeyframe>& keys, f32 time, core::vector3df& outdata) const;
+		void getKeyframeRotation(const core::array<SKeyframe>& keys, f32 time, core::vector3df& outdata) const;
 
 		core::aabbox3d<f32> BoundingBox;
 

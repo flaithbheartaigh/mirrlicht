@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -45,19 +45,17 @@ public:
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		Driver->disableTextures(1);
-		Driver->setTexture(0, material.Texture1);
+		Driver->setTexture(0, material.Textures[0]);
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
 		{
 			// thanks to Murphy, the following line removed some
 			// bugs with several OpenGL implementations.
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-			glDisable(GL_BLEND);
 			glDisable(GL_ALPHA_TEST);
 		}
 		Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 	}
-
 };
 
 
@@ -73,18 +71,17 @@ public:
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		Driver->disableTextures(1);
-		Driver->setTexture(0, material.Texture1);
+		Driver->setTexture(0, material.Textures[0]);
 
+		services->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 
-//		if (material.MaterialType != lastMaterial.MaterialType || 
+//		if (material.MaterialType != lastMaterial.MaterialType ||
 //			material.MaterialTypeParam != lastMaterial.MaterialTypeParam ||
 //			resetAllRenderstates)
 		{
-
 			E_BLEND_FACTOR srcFact,dstFact;
 			E_MODULATE_FUNC modulate;
 			unpack_texureBlendFunc ( srcFact, dstFact, modulate, material.MaterialTypeParam );
-
 
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
 			glTexEnvf(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE);
@@ -102,13 +99,8 @@ public:
 				glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_TEXTURE);
 
 				glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PRIMARY_COLOR_EXT);
-
 			}
 		}
-
-		services->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
-
-
 	}
 
 	virtual void OnUnsetMaterial()
@@ -119,23 +111,22 @@ public:
 		glDisable(GL_BLEND);
 	}
 
-
 	private:
 
 		u32 getGLBlend ( E_BLEND_FACTOR factor ) const
 		{
 			u32 r = 0;
-    		switch ( factor )
+			switch ( factor )
 			{
-				case EBF_ZERO:					r = GL_ZERO; break;
-				case EBF_ONE:					r = GL_ONE; break;
-				case EBF_DST_COLOR:				r = GL_DST_COLOR; break;
+				case EBF_ZERO:			r = GL_ZERO; break;
+				case EBF_ONE:			r = GL_ONE; break;
+				case EBF_DST_COLOR:		r = GL_DST_COLOR; break;
 				case EBF_ONE_MINUS_DST_COLOR:	r = GL_ONE_MINUS_DST_COLOR; break;
-				case EBF_SRC_COLOR:				r = GL_SRC_COLOR; break;
+				case EBF_SRC_COLOR:		r = GL_SRC_COLOR; break;
 				case EBF_ONE_MINUS_SRC_COLOR:	r = GL_ONE_MINUS_SRC_COLOR; break;
-				case EBF_SRC_ALPHA:				r = GL_SRC_ALPHA; break;
+				case EBF_SRC_ALPHA:		r = GL_SRC_ALPHA; break;
 				case EBF_ONE_MINUS_SRC_ALPHA:	r = GL_ONE_MINUS_SRC_ALPHA; break;
-				case EBF_DST_ALPHA:				r = GL_DST_ALPHA; break;
+				case EBF_DST_ALPHA:		r = GL_DST_ALPHA; break;
 				case EBF_ONE_MINUS_DST_ALPHA:	r = GL_ONE_MINUS_DST_ALPHA; break;
 				case EBF_SRC_ALPHA_SATURATE:	r = GL_SRC_ALPHA_SATURATE; break;
 			}
@@ -144,19 +135,18 @@ public:
 
 		u32 getTexelAlpha ( E_BLEND_FACTOR factor ) const
 		{
-			u32 r = 0;
-    		switch ( factor )
+			u32 r;
+			switch ( factor )
 			{
-				case EBF_SRC_ALPHA:				r = 1; break;
+				case EBF_SRC_ALPHA:		r = 1; break;
 				case EBF_ONE_MINUS_SRC_ALPHA:	r = 1; break;
-				case EBF_DST_ALPHA:				r = 1; break;
+				case EBF_DST_ALPHA:		r = 1; break;
 				case EBF_ONE_MINUS_DST_ALPHA:	r = 1; break;
 				case EBF_SRC_ALPHA_SATURATE:	r = 1; break;
+				default:			r = 0; break;
 			}
 			return r;
 		}
-
-
 };
 
 
@@ -172,8 +162,9 @@ public:
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		Driver->disableTextures(2);
-		Driver->setTexture(1, material.Texture2);
-		Driver->setTexture(0, material.Texture1);
+		Driver->setTexture(1, material.Textures[1]);
+		Driver->setTexture(0, material.Textures[0]);
+		Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
 		{
 			if (Driver->queryFeature(EVDF_MULTITEXTURE))
@@ -185,12 +176,8 @@ public:
 			}
 
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-			glDisable(GL_BLEND);
 			glDisable(GL_ALPHA_TEST);
 		}
-
-		Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
-
 	}
 };
 
@@ -207,8 +194,8 @@ public:
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		Driver->disableTextures(1);
-		Driver->setTexture(0, material.Texture1);
-		//if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
+		Driver->setTexture(0, material.Textures[0]);
+		if ((material.MaterialType != lastMaterial.MaterialType) || resetAllRenderstates)
 		{
 			glDisable(GL_ALPHA_TEST);
 
@@ -218,6 +205,11 @@ public:
 		}
 
 		Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
+	}
+
+	virtual void OnUnsetMaterial()
+	{
+		glDisable(GL_BLEND);
 	}
 
 	//! Returns if the material is transparent.
@@ -240,7 +232,7 @@ public:
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		Driver->disableTextures(1);
-		Driver->setTexture(0, material.Texture1);
+		Driver->setTexture(0, material.Textures[0]);
 
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
 		{
@@ -296,7 +288,7 @@ public:
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		Driver->disableTextures(1);
-		Driver->setTexture(0, material.Texture1);
+		Driver->setTexture(0, material.Textures[0]);
 
 		Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 
@@ -350,14 +342,13 @@ public:
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		Driver->disableTextures(1);
-		Driver->setTexture(0, material.Texture1);
+		Driver->setTexture(0, material.Textures[0]);
 
 		Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
 		{
 			glEnable(GL_ALPHA_TEST);
-			glDisable(GL_BLEND);
 
 			glAlphaFunc(GL_GREATER, 0.5);
 
@@ -390,39 +381,40 @@ public:
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		Driver->disableTextures(2);
-		Driver->setTexture(1, material.Texture2);
-		Driver->setTexture(0, material.Texture1);
+		Driver->setTexture(1, material.Textures[1]);
+		Driver->setTexture(0, material.Textures[0]);
+
+		Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
 		{
+			glDisable(GL_ALPHA_TEST);
+
+			// diffuse map
+
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
+			switch (material.MaterialType)
+			{
+				case EMT_LIGHTMAP_LIGHTING:
+				case EMT_LIGHTMAP_LIGHTING_M2:
+				case EMT_LIGHTMAP_LIGHTING_M4:
+					glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE);
+					break;
+				case EMT_LIGHTMAP_ADD:
+				case EMT_LIGHTMAP:
+				case EMT_LIGHTMAP_M2:
+				case EMT_LIGHTMAP_M4:
+				default:
+					glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
+					break;
+			}
+			glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
+			glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PREVIOUS_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR );
+
 			if (Driver->queryFeature(EVDF_MULTITEXTURE))
 			{
-				glDisable(GL_BLEND);
-				glDisable(GL_ALPHA_TEST);
-
-				// diffuse map
-
-				glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
-				switch (material.MaterialType)
-				{
-					case EMT_LIGHTMAP_LIGHTING:
-					case EMT_LIGHTMAP_LIGHTING_M2:
-					case EMT_LIGHTMAP_LIGHTING_M4:
-						glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE);
-						break;
-					case EMT_LIGHTMAP_ADD:
-					case EMT_LIGHTMAP:
-					case EMT_LIGHTMAP_M2:
-					case EMT_LIGHTMAP_M4:
-					default:
-						glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
-						break;
-				}
-				glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
-				glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR);
-				glTexEnvf(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PREVIOUS_EXT);
-				glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR );
-
 				// lightmap
 
 				Driver->extGlActiveTextureARB(GL_TEXTURE1_ARB);
@@ -459,7 +451,15 @@ public:
 				}
 			}
 		}
-		Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
+	}
+
+	virtual void OnUnsetMaterial()
+	{
+		if (Driver->queryFeature(EVDF_MULTITEXTURE))
+		{
+			Driver->extGlActiveTextureARB(GL_TEXTURE1_ARB);
+			glTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 1.f );
+		}
 	}
 };
 
@@ -477,23 +477,22 @@ public:
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		Driver->disableTextures(2);
-		Driver->setTexture(1, material.Texture2);
-		Driver->setTexture(0, material.Texture1);
+		Driver->setTexture(1, material.Textures[1]);
+		Driver->setTexture(0, material.Textures[0]);
 
 		Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
 		{
+			glDisable(GL_ALPHA_TEST);
+
+			// diffuse map
+
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
+			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
+
 			if (Driver->queryFeature(EVDF_MULTITEXTURE))
 			{
-				glDisable(GL_BLEND);
-				glDisable(GL_ALPHA_TEST);
-
-				// diffuse map
-
-				glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
-				glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
-
 				// detailmap
 
 				Driver->extGlActiveTextureARB(GL_TEXTURE1_ARB);
@@ -524,7 +523,7 @@ public:
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		Driver->disableTextures(1);
-		Driver->setTexture(0, material.Texture1);
+		Driver->setTexture(0, material.Textures[0]);
 
 		Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 
@@ -540,7 +539,6 @@ public:
 
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-			glDisable(GL_BLEND);
 			glDisable(GL_ALPHA_TEST);
 #ifndef _IRR_USE_OPENGL_ES_
 			glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
@@ -575,15 +573,14 @@ public:
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		Driver->disableTextures(2);
-		Driver->setTexture(1, material.Texture2);
-		Driver->setTexture(0, material.Texture1);
+		Driver->setTexture(1, material.Textures[1]);
+		Driver->setTexture(0, material.Textures[0]);
 
 		Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
 		{
 			glDisable(GL_ALPHA_TEST);
-			glDisable(GL_BLEND);
 
 			if (Driver->queryFeature(EVDF_MULTITEXTURE))
 			{
@@ -618,8 +615,8 @@ public:
 				glEnable(GL_TEXTURE_GEN_S);
 				glEnable(GL_TEXTURE_GEN_T);
 #endif
-			 }
-		 }
+			}
+		}
 	}
 
 	virtual void OnUnsetMaterial()
@@ -637,14 +634,12 @@ public:
 			glDisable(GL_TEXTURE_GEN_T);
 #endif
 		}
-		else
-		{
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 #ifndef _IRR_USE_OPENGL_ES_
-			glDisable(GL_TEXTURE_GEN_S);
-			glDisable(GL_TEXTURE_GEN_T);
+		glDisable(GL_TEXTURE_GEN_S);
+		glDisable(GL_TEXTURE_GEN_T);
 #endif
-		}
 	}
 };
 
@@ -661,8 +656,8 @@ public:
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		Driver->disableTextures(2);
-		Driver->setTexture(1, material.Texture2);
-		Driver->setTexture(0, material.Texture1);
+		Driver->setTexture(1, material.Textures[1]);
+		Driver->setTexture(0, material.Textures[0]);
 
 		Driver->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 
@@ -706,14 +701,12 @@ public:
 	virtual void OnUnsetMaterial()
 	{
 		if (Driver->queryFeature(EVDF_MULTITEXTURE))
-		{
 			Driver->extGlActiveTextureARB(GL_TEXTURE1_ARB);
+		glDisable(GL_BLEND);
 #ifndef _IRR_USE_OPENGL_ES_
-			glDisable(GL_TEXTURE_GEN_S);
-			glDisable(GL_TEXTURE_GEN_T);
+		glDisable(GL_TEXTURE_GEN_S);
+		glDisable(GL_TEXTURE_GEN_T);
 #endif
-			Driver->extGlActiveTextureARB(GL_TEXTURE0_ARB);
-		}
 	}
 
 	//! Returns if the material is transparent.

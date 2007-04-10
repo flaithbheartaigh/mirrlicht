@@ -1,8 +1,11 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
+#include "IrrCompileConfig.h"
 #include "CTRTextureGouraud.h"
+
+#ifdef _IRR_COMPILE_WITH_SOFTWARE_
 
 namespace irr
 {
@@ -313,11 +316,24 @@ public:
 	}
 };
 
+} // end namespace video
+} // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_SOFTWARE_
+
+namespace irr
+{
+namespace video
+{
 
 //! creates a flat triangle renderer
 ITriangleRenderer* createTriangleRendererTextureFlat(IZBuffer* zbuffer)
 {
+	#ifdef _IRR_COMPILE_WITH_SOFTWARE_
 	return new CTRTextureFlat(zbuffer);
+	#else
+	return 0;
+	#endif // _IRR_COMPILE_WITH_SOFTWARE_
 }
 
 } // end namespace video

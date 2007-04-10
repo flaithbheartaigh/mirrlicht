@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -31,9 +31,9 @@ namespace video
 
 //! rendertarget constructor
 CD3D9Texture::CD3D9Texture(CD3D9Driver* driver, core::dimension2d<s32> size, const char* name)
-: ITexture(name), Image(0), Driver(driver), TextureSize(size),
-	Texture(0), Pitch(0), ImageSize(size), HasMipMaps(0), HardwareMipMaps(0),
-	IsRenderTarget(true), RTTSurface(0)
+: ITexture(name), Image(0), Texture(0), RTTSurface(0), Driver(driver),
+	TextureSize(size), ImageSize(size), Pitch(0), SurfaceHasSameSize(true),
+	HasMipMaps(false), HardwareMipMaps(false), IsRenderTarget(true)
 {
 	#ifdef _DEBUG
 	setDebugName("CD3D9Texture");
@@ -50,9 +50,9 @@ CD3D9Texture::CD3D9Texture(CD3D9Driver* driver, core::dimension2d<s32> size, con
 //! constructor
 CD3D9Texture::CD3D9Texture(IImage* image, CD3D9Driver* driver,
 					   u32 flags, const char* name)
-: ITexture(name), Image(image), Driver(driver), TextureSize(0,0),
-Texture(0), Pitch(0), ImageSize(0,0), HasMipMaps(false), HardwareMipMaps(false),
-IsRenderTarget(false), RTTSurface(0)
+: ITexture(name), Image(image), Texture(0), RTTSurface(0), Driver(driver),
+TextureSize(0,0), ImageSize(0,0), Pitch(0), SurfaceHasSameSize(true),
+HasMipMaps(false), HardwareMipMaps(false), IsRenderTarget(false)
 {
 	#ifdef _DEBUG
 	setDebugName("CD3D9Texture");
@@ -187,7 +187,7 @@ bool CD3D9Texture::createMipMaps(s32 level)
 	HRESULT hr = Texture->GetSurfaceLevel(level-1, &upperSurface);
 	if (FAILED(hr) || !upperSurface)
 	{
-		os::Printer::log("Could get upper surface level for mip map generation", ELL_WARNING);
+		os::Printer::log("Could not get upper surface level for mip map generation", ELL_WARNING);
 		return false;
 	}
 
@@ -195,7 +195,8 @@ bool CD3D9Texture::createMipMaps(s32 level)
 	hr = Texture->GetSurfaceLevel(level, &lowerSurface);
 	if (FAILED(hr) || !lowerSurface)
 	{
-		os::Printer::log("Could get lower surface level for mip map generation", ELL_WARNING);
+		os::Printer::log("Could not get lower surface level for mip map generation", ELL_WARNING);
+		upperSurface->Release();
 		return false;
 	}
 
