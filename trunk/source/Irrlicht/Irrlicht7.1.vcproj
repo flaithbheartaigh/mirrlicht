@@ -348,9 +348,6 @@
 			<File
 				RelativePath=".\..\..\include\SIrrCreationParameters.h">
 			</File>
-			<File
-				RelativePath=".\..\..\include\SKeyMap.h">
-			</File>
 			<Filter
 				Name="video"
 				Filter="">
@@ -392,6 +389,9 @@
 				</File>
 				<File
 					RelativePath=".\..\..\include\SExposedVideoData.h">
+				</File>
+				<File
+					RelativePath=".\..\..\include\SKeyMap.h">
 				</File>
 				<File
 					RelativePath=".\..\..\include\SLight.h">
@@ -501,6 +501,12 @@
 			<Filter
 				Name="scene"
 				Filter="">
+				<File
+					RelativePath="..\..\include\ECullingTypes.h">
+				</File>
+				<File
+					RelativePath="..\..\include\EDebugSceneTypes.h">
+				</File>
 				<File
 					RelativePath=".\..\..\include\ESceneNodeAnimatorTypes.h">
 				</File>

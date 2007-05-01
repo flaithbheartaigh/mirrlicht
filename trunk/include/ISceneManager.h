@@ -663,7 +663,8 @@ namespace scene
 			const core::vector3df& rotation = core::vector3df(0.0f,0.0f,0.0f),
 			const core::vector3df& scale = core::vector3df(1.0f,1.0f,1.0f),
 			video::SColor vertexColor = video::SColor(255,255,255,255),
-			s32 maxLOD=5, E_TERRAIN_PATCH_SIZE patchSize=ETPS_17, s32 smoothFactor=0) = 0;
+			s32 maxLOD=5, E_TERRAIN_PATCH_SIZE patchSize=ETPS_17, s32 smoothFactor=0,
+			bool addAlsoIfHeightmapEmpty = false) = 0;
 
 		//! Adds a terrain scene node to the scene graph.
 		/** Just like the other addTerrainSceneNode() method, but takes an IReadFile
@@ -695,7 +696,8 @@ namespace scene
 			const core::vector3df& rotation = core::vector3df(0.0f,0.0f,0.0f),
 			const core::vector3df& scale = core::vector3df(1.0f,1.0f,1.0f),
 			video::SColor vertexColor = video::SColor(255,255,255,255),
-			s32 maxLOD=5, E_TERRAIN_PATCH_SIZE patchSize=ETPS_17, s32 smoothFactor=0) = 0;
+			s32 maxLOD=5, E_TERRAIN_PATCH_SIZE patchSize=ETPS_17, s32 smoothFactor=0,
+			bool addAlsoIfHeightmapEmpty = false) = 0;
 
 		//! Adds a quake3 scene node to the scene graph.
 		/** A Quake3 Scene renders multiple meshes for a specific HighLanguage Shader (Quake3 Style )
@@ -1138,6 +1140,9 @@ namespace scene
 
 		//! Returns a typename from a scene node type or null if not found
 		virtual const c8* getSceneNodeTypeName(ESCENE_NODE_TYPE type) = 0;
+
+		//! Adds a scene node to the scene by name
+		virtual ISceneNode* addSceneNode(const char* sceneNodeTypeName, ISceneNode* parent) = 0;
 
 		//! Creates a new scene manager.
 		/** This can be used to easily draw and/or store two independent scenes at the same time.

@@ -38,6 +38,11 @@ namespace scene
 		using this method, freeing a lot of memory.	*/
 		virtual void removeMesh(IAnimatedMesh* mesh);
 
+		//! Removes a mesh from the cache.
+		/** After loading a mesh with getMesh(), the mesh can be removed from the cache
+		using this method, freeing a lot of memory.	*/
+		virtual void removeMesh(IMesh* mesh);
+
 		//! Returns amount of loaded meshes in the cache.
 		/** You can load new meshes into the cache using getMesh() and addMesh(). 
 		If you ever need to access the internal mesh cache, you can do this using
@@ -47,11 +52,18 @@ namespace scene
 		//! Returns current index number of the mesh, and -1 if it is not in the cache.
 		virtual s32 getMeshIndex(IAnimatedMesh* mesh);
 
+		//! Returns current index number of the mesh, and -1 if it is not in the cache.
+		virtual s32 getMeshIndex(IMesh* mesh);
+
 		//! Returns a mesh based on its index number.
 		/** \param index: Index of the mesh, number between 0 and getMeshCount()-1. 
 		Note that this number is only valid until a new mesh is loaded or removed *
 		\return Returns pointer to the mesh or 0 if there is none with this number. */
 		virtual IAnimatedMesh* getMeshByIndex(s32 index);
+
+		//! Returns a mesh based on its file name.
+		/** \return Returns pointer to the mesh or 0 if there is none with this number. */
+		virtual IAnimatedMesh* getMeshByFilename(const c8* filename);
 
 		//! Returns name of a mesh based on its index number. 
 		/** \param index: Index of the mesh, number between 0 and getMeshCount()-1. 
@@ -71,6 +83,18 @@ namespace scene
 
 		//! returns an already loaded mesh
 		IAnimatedMesh* findMesh(const c8* lowerMadeFilename);
+
+		//! Renames a loaded mesh, if possible.
+		virtual bool setMeshFilename(s32 index, const c8* filename);
+
+		//! Renames a loaded mesh, if possible.
+		virtual bool setMeshFilename(IAnimatedMesh* mesh, const c8* filename);
+
+		//! Renames a loaded mesh, if possible.
+		virtual bool setMeshFilename(IMesh* mesh, const c8* filename);
+
+		//! Clears the whole mesh cache, removing all meshes.
+		virtual void clear();
 
 	protected:
 

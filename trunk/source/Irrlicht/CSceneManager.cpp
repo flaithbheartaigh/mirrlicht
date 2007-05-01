@@ -240,6 +240,8 @@ gui::IGUIEnvironment* CSceneManager::getGUIEnvironment ()
 {
 	return GUIEnvironment;
 }
+
+
 //! Adds a text scene node, which is able to display
 //! 2d text at a position in three dimensional space
 ITextSceneNode* CSceneManager::addTextSceneNode(gui::IGUIFont* font, const wchar_t* text,
@@ -591,10 +593,11 @@ ITerrainSceneNode* CSceneManager::addTerrainSceneNode(
 	const core::vector3df& rotation,
 	const core::vector3df& scale,
 	video::SColor vertexColor,
-	s32 maxLOD, E_TERRAIN_PATCH_SIZE patchSize, s32 smoothFactor)
+	s32 maxLOD, E_TERRAIN_PATCH_SIZE patchSize, s32 smoothFactor,
+	bool addAlsoIfHeightmapEmpty)
 {
 	io::IReadFile* file = FileSystem->createAndOpenFile(heightMapFileName);
-	if (!file)
+	if (!file && !addAlsoIfHeightmapEmpty)
 	{
 		os::Printer::log("Could not load terrain, because file could not be opened.",
 			heightMapFileName, ELL_ERROR);
@@ -602,8 +605,11 @@ ITerrainSceneNode* CSceneManager::addTerrainSceneNode(
 	}
 
 	ITerrainSceneNode* terrain = addTerrainSceneNode(file, parent, id,
-		position, rotation, scale, vertexColor, maxLOD, patchSize, smoothFactor);
-	file->drop();
+		position, rotation, scale, vertexColor, maxLOD, patchSize, 
+		smoothFactor, addAlsoIfHeightmapEmpty);
+
+	if (file)
+		file->drop();
 
 	return terrain;
 }
@@ -617,19 +623,23 @@ ITerrainSceneNode* CSceneManager::addTerrainSceneNode(
 	const core::vector3df& scale,
 	video::SColor vertexColor,
 	s32 maxLOD, E_TERRAIN_PATCH_SIZE patchSize,
-	s32 smoothFactor)
+	s32 smoothFactor,
+	bool addAlsoIfHeightmapEmpty)
 {
 	if (!parent)
 		parent = this;
 
-	CTerrainSceneNode* node = new CTerrainSceneNode(parent, this, id,
+	CTerrainSceneNode* node = new CTerrainSceneNode(parent, this, FileSystem, id,
 		maxLOD, patchSize, position, rotation, scale);
 
 	if (!node->loadHeightMap(heightMapFile, vertexColor, smoothFactor))
 	{
-		node->remove();
-		node->drop();
-		return 0;
+		if (!addAlsoIfHeightmapEmpty)
+		{
+			node->remove();
+			node->drop();
+			return 0;
+		}		
 	}
 
 	node->drop();
@@ -1658,7 +1668,7 @@ void CSceneManager::readSceneNode(io::IXMLReader* reader, ISceneNode* parent, IS
 			// find node type and create it
 			core::stringc attrName = reader->getAttributeValue(IRR_XML_FORMAT_NODE_ATTR_TYPE.c_str());
 
-			for (int i=0; i<(int)SceneNodeFactoryList.size() && !node; ++i)
+			for (int i=(int)SceneNodeFactoryList.size()-1; i>=0 && !node; --i)
 				node = SceneNodeFactoryList[i]->addSceneNode(attrName.c_str(), parent);
 
 			if (!node)
@@ -1965,11 +1975,23 @@ const c8* CSceneManager::getSceneNodeTypeName(ESCENE_NODE_TYPE type)
 {
 	const char* name = 0;
 
-	for (int i=0; !name && i<(int)SceneNodeFactoryList.size(); ++i)
+	for (int i=(int)SceneNodeFactoryList.size()-1; !name && i>=0; --i)
 		name = SceneNodeFactoryList[i]->getCreateableSceneNodeTypeName(type);
 
 	return name;
 }
+
+//! Adds a scene node to the scene by name
+ISceneNode* CSceneManager::addSceneNode(const char* sceneNodeTypeName, ISceneNode* parent)
+{
+	ISceneNode* node = 0;
+
+	for (int i=(int)SceneNodeFactoryList.size()-1; i>=0 && !node; --i)
+			node = SceneNodeFactoryList[i]->addSceneNode(sceneNodeTypeName, parent);
+
+	return node;
+}
+
 
 //! Returns a typename from a scene node animator type or null if not found
 const c8* CSceneManager::getAnimatorTypeName(ESCENE_NODE_ANIMATOR_TYPE type)
@@ -1981,6 +2003,8 @@ const c8* CSceneManager::getAnimatorTypeName(ESCENE_NODE_ANIMATOR_TYPE type)
 
 	return name;
 }
+
+
 //! Writes attributes of the scene node.
 void CSceneManager::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options)
 {
