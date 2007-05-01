@@ -88,6 +88,10 @@ namespace irr
 		//! Returns poinhter to the current event receiver. Returns 0 if there is none.
 		virtual IEventReceiver* getEventReceiver();
 
+		//! Sets the input receiving scene manager. 
+		/** If set to null, the main scene manager (returned by GetSceneManager()) will receive the input */
+		virtual void setInputReceivingSceneManager(scene::ISceneManager* sceneManager);
+
 		//! \return Returns a pointer to the logger.
 		virtual ILogger* getLogger();
 
@@ -115,6 +119,7 @@ namespace irr
 		CLogger* Logger;
 		IOSOperator* Operator;
 		io::IFileSystem* FileSystem;
+		scene::ISceneManager* InputReceivingSceneManager;
 	};
 
 } // end namespace irr

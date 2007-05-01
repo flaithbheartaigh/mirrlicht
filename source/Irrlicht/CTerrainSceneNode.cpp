@@ -16,6 +16,8 @@
 #include "irrMath.h"
 #include "os.h"
 #include "IGUIFont.h"
+#include "IFileSystem.h"
+#include "IReadFile.h"
 
 namespace irr
 {
@@ -24,19 +26,25 @@ namespace scene
 
 	//! constructor
 	CTerrainSceneNode::CTerrainSceneNode(ISceneNode* parent, ISceneManager* mgr,
-			s32 id, s32 maxLOD, E_TERRAIN_PATCH_SIZE patchSize, const core::vector3df& position,
-			const core::vector3df& rotation, const core::vector3df& scale)
+			io::IFileSystem* fs, s32 id, s32 maxLOD, E_TERRAIN_PATCH_SIZE patchSize,
+			const core::vector3df& position,
+			const core::vector3df& rotation, 
+			const core::vector3df& scale)
 	: ITerrainSceneNode(parent, mgr, id, position, rotation, scale),
 	TerrainData(patchSize, maxLOD, position, rotation, scale),
 	VerticesToRender(0), IndicesToRender(0), DynamicSelectorUpdate(false),
 	OverrideDistanceThreshold(false), UseDefaultRotationPivot(true),
 	OldCameraPosition(core::vector3df(-99999.9f, -99999.9f, -99999.9f)),
 	OldCameraRotation(core::vector3df(-99999.9f, -99999.9f, -99999.9f)),
-	CameraMovementDelta(10.0f), CameraRotationDelta(1.0f)
+	CameraMovementDelta(10.0f), CameraRotationDelta(1.0f), FileSystem(fs),
+	TCoordScale1(1.0f), TCoordScale2(1.0f), ForceRecalculation(false)
 	{
 		#ifdef _DEBUG
 		setDebugName("CTerrainSceneNode");
 		#endif
+
+		if (FileSystem)
+			FileSystem->grab();
 
 		setAutomaticCulling( scene::EAC_OFF );
 	}
@@ -49,6 +57,9 @@ namespace scene
 
 		if (TerrainData.Patches)
 			delete [] TerrainData.Patches;
+
+		if (FileSystem)
+			FileSystem->drop();
 	}
 
 	//! Initializes the terrain data.  Loads the vertices from the heightMapFile
@@ -65,6 +76,8 @@ namespace scene
 			os::Printer::print( "Was not able to load heightmap." );
 			return false;
 		}
+
+		HeightmapFile = file->getFileName();
 
 		// Get the dimension of the heightmap data
 		TerrainData.Size = heightMap->getDimension().Width;
@@ -373,6 +386,7 @@ namespace scene
 	{
 		TerrainData.Scale = scale;
 		applyTransformation();
+		ForceRecalculation = true;
 	}
 
 	//! Sets the rotation of the node. This only modifies
@@ -382,6 +396,7 @@ namespace scene
 	{
 		TerrainData.Rotation = rotation;
 		applyTransformation();
+		ForceRecalculation = true;
 	}
 
 	//! Sets the pivot point for rotation of this node.  This is useful for the TiledTerrainManager to
@@ -399,6 +414,7 @@ namespace scene
 	{
 		TerrainData.Position = newpos;
 		applyTransformation();
+		ForceRecalculation = true;
 	}
 
 	//! Apply transformation changes( scale, position, rotation )
@@ -439,6 +455,7 @@ namespace scene
 		preRenderLODCalculations();
 		preRenderIndicesCalculations();
 		ISceneNode::OnRegisterSceneNode();
+		ForceRecalculation = false;
 	}
 
 	void CTerrainSceneNode::preRenderLODCalculations()
@@ -454,14 +471,17 @@ namespace scene
 		core::vector3df cameraPosition = SceneManager->getActiveCamera()->getPosition ( );
 
 		// Only check on the Camera's Y Rotation
-		if (( fabs(cameraRotation.X - OldCameraRotation.X) < CameraRotationDelta) &&
-			( fabs(cameraRotation.Y - OldCameraRotation.Y) < CameraRotationDelta))
+		if (!ForceRecalculation)
 		{
-			if ((fabs(cameraPosition.X - OldCameraPosition.X) < CameraMovementDelta) &&
-				(fabs(cameraPosition.Y - OldCameraPosition.Y) < CameraMovementDelta) &&
-				(fabs(cameraPosition.Z - OldCameraPosition.Z) < CameraMovementDelta))
+			if (( fabs(cameraRotation.X - OldCameraRotation.X) < CameraRotationDelta) &&
+				( fabs(cameraRotation.Y - OldCameraRotation.Y) < CameraRotationDelta))
 			{
-				return;
+				if ((fabs(cameraPosition.X - OldCameraPosition.X) < CameraMovementDelta) &&
+					(fabs(cameraPosition.Y - OldCameraPosition.Y) < CameraMovementDelta) &&
+					(fabs(cameraPosition.Z - OldCameraPosition.Z) < CameraMovementDelta))
+				{
+					return;
+				}
 			}
 		}
 
@@ -626,6 +646,9 @@ namespace scene
 		if (!IsVisible || !SceneManager->getActiveCamera())
 			return;
 
+		if (!Mesh.getMeshBufferCount())
+			return;
+
 		video::IVideoDriver* driver = SceneManager->getVideoDriver();
 
 		core::matrix4 identity;
@@ -640,24 +663,26 @@ namespace scene
 			video::EVT_2TCOORDS, EPT_TRIANGLES);
 
 		// for debug purposes only:
-		if (DebugDataVisible )
+		if (DebugDataVisible)
 		{
 			video::SMaterial m;
 			m.Lighting = false;
 			driver->setMaterial(m);
-			driver->draw3DBox( TerrainData.BoundingBox, video::SColor(0,255,255,255));
+			if ( DebugDataVisible & scene::EDS_BBOX )
+				driver->draw3DBox( TerrainData.BoundingBox, video::SColor(0,255,255,255));
 
-			s32 count = TerrainData.PatchCount * TerrainData.PatchCount;
+			const s32 count = TerrainData.PatchCount * TerrainData.PatchCount;
 			s32 visible = 0;
-			for( s32 j = 0; j < count; ++j )
-			{
-				driver->draw3DBox( TerrainData.Patches[j].BoundingBox, video::SColor(0,255,0,0));
-				visible += ( TerrainData.Patches[j].CurrentLOD >= 0 );
-			}
+			if ( DebugDataVisible & scene::EDS_BBOX_BUFFERS )
+				for( s32 j = 0; j < count; ++j )
+				{
+					driver->draw3DBox( TerrainData.Patches[j].BoundingBox, video::SColor(0,255,0,0));
+					visible += ( TerrainData.Patches[j].CurrentLOD >= 0 );
+				}
 
 			static u32 lastTime = 0;
 
-			u32 now = os::Timer::getRealTime ();
+			const u32 now = os::Timer::getRealTime();
 			if ( now - lastTime > 1000 )
 			{
 				char buf[64];
@@ -666,9 +691,7 @@ namespace scene
 
 				lastTime = now;
 			}
-
 		}
-
 	}
 
 	//! Return the bounding box of the entire terrain.
@@ -688,6 +711,9 @@ namespace scene
 	//! \param LOD: The Level Of Detail you want the indices from.
 	void CTerrainSceneNode::getMeshBufferForLOD(SMeshBufferLightMap& mb, s32 LOD )
 	{
+		if (!Mesh.getMeshBufferCount())
+			return;
+
 		if ( LOD < 0 )
 			LOD = 0;
 		else if ( LOD > TerrainData.MaxLOD - 1 )
@@ -870,6 +896,9 @@ namespace scene
 	//! specifying the relation between world space and texture coordinate space.
 	void CTerrainSceneNode::scaleTexture(f32 resolution, f32 resolution2)
 	{
+		TCoordScale1 = resolution;
+		TCoordScale2 = resolution2;
+
 		const f32 resBySize = resolution / (f32)(TerrainData.Size-1);
 		const f32 res2BySize = resolution2 / (f32)(TerrainData.Size-1);
 		u32 index = 0;
@@ -1217,6 +1246,9 @@ namespace scene
 	//! Gets the height
 	f32 CTerrainSceneNode::getHeight( f32 x, f32 z )
 	{
+		if (!Mesh.getMeshBufferCount())
+			return 0;
+
 		f32 height = -999999.9f;
 
 		core::matrix4 rotMatrix;
@@ -1251,6 +1283,109 @@ namespace scene
 		}
 
 		return height;
+	}
+
+
+	//! Writes attributes of the scene node.
+	void CTerrainSceneNode::serializeAttributes(io::IAttributes* out, 
+												io::SAttributeReadWriteOptions* options)
+	{
+		ISceneNode::serializeAttributes(out, options);
+
+		out->addString("Heightmap", HeightmapFile.c_str());
+		out->addFloat("TextureScale1", TCoordScale1);
+		out->addFloat("TextureScale2", TCoordScale2);
+	}
+
+
+	//! Reads attributes of the scene node.
+	void CTerrainSceneNode::deserializeAttributes(io::IAttributes* in,
+												  io::SAttributeReadWriteOptions* options)
+	{
+		core::stringc newHeightmap = in->getAttributeAsString("Heightmap");
+		f32 tcoordScale1 = in->getAttributeAsFloat("TextureScale1");
+		f32 tcoordScale2 = in->getAttributeAsFloat("TextureScale2");
+
+		// set possible new heightmap
+
+		if (newHeightmap.size() > 0 && 
+			newHeightmap != HeightmapFile)
+		{
+			io::IReadFile* file = FileSystem->createAndOpenFile(newHeightmap.c_str());
+			if (file)
+			{
+				loadHeightMap(file, video::SColor(255,255,255,255), 0);
+				file->drop();
+			}	
+			else
+				os::Printer::log("could not open heightmap", newHeightmap.c_str());
+		}
+
+		// set possible new scale
+
+		if (core::equals(tcoordScale1, 0))
+			tcoordScale1 = 1.0f;
+
+		if (core::equals(tcoordScale2, 0))
+			tcoordScale2 = 1.0f;
+
+		if (!core::equals(tcoordScale1, TCoordScale1) ||
+			!core::equals(tcoordScale2, TCoordScale2))
+		{
+			scaleTexture(tcoordScale1, tcoordScale2);
+		}
+
+		ISceneNode::deserializeAttributes(in, options);
+	}
+
+
+	//! Creates a clone of this scene node and its children.
+	ISceneNode* CTerrainSceneNode::clone(ISceneNode* newParent, ISceneManager* newManager)
+	{
+		if (!newParent) newParent = Parent;
+		if (!newManager) newManager = SceneManager;
+
+		CTerrainSceneNode* nb = new CTerrainSceneNode(
+			newParent, newManager, FileSystem, ID, 
+			4, ETPS_17,	getPosition(), getRotation(), getScale());
+
+		nb->cloneMembers(this, newManager);
+		
+		// instead of cloning the data structures, recreate the terrain.
+		// (temporary solution)
+
+		// load file
+
+		io::IReadFile* file = FileSystem->createAndOpenFile(HeightmapFile.c_str());
+		if (file)
+		{
+			nb->loadHeightMap(file, video::SColor(255,255,255,255), 0);
+			file->drop();
+		}	
+
+		// scale textures
+
+		nb->scaleTexture(TCoordScale1, TCoordScale2);
+
+		// copy materials
+
+		for (unsigned int m = 0; m<Mesh.getMeshBufferCount(); ++m)
+		{
+			if (nb->Mesh.getMeshBufferCount()>m &&
+				nb->Mesh.getMeshBuffer(m) &&
+				Mesh.getMeshBuffer(m))
+			{
+				nb->Mesh.getMeshBuffer(m)->getMaterial() = 
+					Mesh.getMeshBuffer(m)->getMaterial();
+			}
+		}
+
+		nb->RenderBuffer.Material = RenderBuffer.Material;
+
+		// finish
+
+		nb->drop();
+		return nb;
 	}
 
 } // end namespace scene

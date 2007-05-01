@@ -55,7 +55,7 @@ void CLightSceneNode::render()
 	if (!driver)
 		return;
 
-	if (DebugDataVisible)
+	if ( DebugDataVisible & scene::EDS_BBOX )
 	{
 		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
 		video::SMaterial m;
@@ -65,13 +65,13 @@ void CLightSceneNode::render()
 		switch ( LightData.Type )
 		{
 			case video::ELT_POINT:
-				driver->draw3DBox( BBox, LightData.DiffuseColor.toSColor());
+				driver->draw3DBox(BBox, LightData.DiffuseColor.toSColor());
 				break;
 
 			case video::ELT_DIRECTIONAL:
-				driver->draw3DLine (	core::vector3df ( 0.f, 0.f, 0.f ), 
-										core::vector3df ( 0.f, 0.f, 0.f ) + (LightData.Position * 10.f ),
-										LightData.DiffuseColor.toSColor()
+				driver->draw3DLine(core::vector3df ( 0.f, 0.f, 0.f ), 
+						core::vector3df ( 0.f, 0.f, 0.f ) + (LightData.Position * 10.f ),
+						LightData.DiffuseColor.toSColor()
 									);
 				break;
 		}
@@ -163,6 +163,23 @@ void CLightSceneNode::deserializeAttributes(io::IAttributes* in, io::SAttributeR
 	LightData.Type =		(video::E_LIGHT_TYPE)in->getAttributeAsEnumeration("LightType", video::LightTypeNames);
 
 	ILightSceneNode::deserializeAttributes(in, options);
+}
+
+//! Creates a clone of this scene node and its children.
+ISceneNode* CLightSceneNode::clone(ISceneNode* newParent, ISceneManager* newManager)
+{
+	if (!newParent) newParent = Parent;
+	if (!newManager) newManager = SceneManager;
+
+	CLightSceneNode* nb = new CLightSceneNode(newParent, 
+		newManager, ID, RelativeTranslation, LightData.DiffuseColor, LightData.Radius);
+
+	nb->cloneMembers(this, newManager);
+	nb->LightData = LightData;
+	nb->BBox = BBox;
+
+	nb->drop();
+	return nb;
 }
 
 } // end namespace scene

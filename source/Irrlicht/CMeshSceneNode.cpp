@@ -127,37 +127,39 @@ void CMeshSceneNode::render()
 	Box = Mesh->getBoundingBox();
 
 	// for debug purposes only:
-	if (DebugDataVisible && PassCount==1)
+	if ( DebugDataVisible && PassCount==1)
 	{
-		video::SMaterial m;
-		m.Lighting = false;
-		driver->setMaterial(m);
-		driver->draw3DBox(Box, video::SColor(0,255,255,255));
-
-#if 0 // draw normals
-		for (u32 g=0; g<Mesh->getMeshBufferCount(); ++g)
+		if ( DebugDataVisible & scene::EDS_BBOX )
 		{
-			scene::IMeshBuffer* mb = Mesh->getMeshBuffer(g);
-
-			u32 vSize;
-			u32 i;
-			vSize = mb->getVertexPitch ();
-
-			const video::S3DVertex* v = ( const video::S3DVertex*)mb->getVertices();
-			video::SColor c ( 255, 128 ,0, 0 );
-			video::SColor c1 ( 255, 255 ,0, 0 );
-			for ( i = 0; i != mb->getVertexCount(); ++i )
-			{
-				core::vector3df h = v->Normal * 5.f;
-				core::vector3df h1 = h.crossProduct ( core::vector3df ( 0.f, 1.f, 0.f ) );
-
-				driver->draw3DLine ( v->Pos, v->Pos + h, c );
-				driver->draw3DLine ( v->Pos + h, v->Pos + h + h1, c1 );
-				v = (const video::S3DVertex*) ( (u8*) v + vSize );
-			}
-
+			video::SMaterial m;
+			m.Lighting = false;
+			driver->setMaterial(m);
+			driver->draw3DBox(Box, video::SColor(0,255,255,255));
 		}
-#endif // Draw normals
+		if ( DebugDataVisible & scene::EDS_NORMALS )
+		{
+			for (u32 g=0; g<Mesh->getMeshBufferCount(); ++g)
+			{
+				scene::IMeshBuffer* mb = Mesh->getMeshBuffer(g);
+
+				u32 vSize;
+				u32 i;
+				vSize = mb->getVertexPitch ();
+
+				const video::S3DVertex* v = ( const video::S3DVertex*)mb->getVertices();
+				video::SColor c ( 255, 128 ,0, 0 );
+				video::SColor c1 ( 255, 255 ,0, 0 );
+				for ( i = 0; i != mb->getVertexCount(); ++i )
+				{
+					core::vector3df h = v->Normal * 5.f;
+					core::vector3df h1 = h.crossProduct ( core::vector3df ( 0.f, 1.f, 0.f ) );
+
+					driver->draw3DLine ( v->Pos, v->Pos + h, c );
+					driver->draw3DLine ( v->Pos + h, v->Pos + h + h1, c1 );
+					v = (const video::S3DVertex*) ( (u8*) v + vSize );
+				}
+			}
+		}
 	}
 
 	for (u32 i=0; i<Mesh->getMeshBufferCount(); ++i)
@@ -178,7 +180,7 @@ void CMeshSceneNode::render()
 				driver->drawMeshBuffer(mb);
 			}
 		}
-	}			
+	}
 }
 
 
@@ -301,6 +303,24 @@ void CMeshSceneNode::setReadOnlyMaterials(bool readonly)
 bool CMeshSceneNode::isReadOnlyMaterials()
 {
 	return ReadOnlyMaterials;
+}
+
+
+//! Creates a clone of this scene node and its children.
+ISceneNode* CMeshSceneNode::clone(ISceneNode* newParent, ISceneManager* newManager)
+{
+	if (!newParent) newParent = Parent;
+	if (!newManager) newManager = SceneManager;
+
+	CMeshSceneNode* nb = new CMeshSceneNode(Mesh, newParent, 
+		newManager, ID, RelativeTranslation, RelativeRotation, RelativeScale);
+
+	nb->cloneMembers(this, newManager);
+	nb->ReadOnlyMaterials = ReadOnlyMaterials;
+	nb->Materials = Materials;
+
+	nb->drop();
+	return nb;
 }
 
 

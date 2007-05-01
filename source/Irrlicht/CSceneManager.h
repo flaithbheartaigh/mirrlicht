@@ -212,7 +212,8 @@ namespace scene
 			const core::vector3df& rotation = core::vector3df(0.0f,0.0f,0.0f),
 			const core::vector3df& scale = core::vector3df(1.0f,1.0f,1.0f),
 			video::SColor vertexColor = video::SColor(255,255,255,255),
-			s32 maxLOD=4, E_TERRAIN_PATCH_SIZE patchSize=ETPS_17,s32 smoothFactor=0);
+			s32 maxLOD=4, E_TERRAIN_PATCH_SIZE patchSize=ETPS_17,s32 smoothFactor=0,
+			bool addAlsoIfHeightmapEmpty = false);
 
 		//! Adds a terrain scene node to the scene graph.
 		virtual ITerrainSceneNode* addTerrainSceneNode(
@@ -222,7 +223,8 @@ namespace scene
 			const core::vector3df& rotation = core::vector3df(0.0f,0.0f,0.0f),
 			const core::vector3df& scale = core::vector3df(1.0f,1.0f,1.0f),
 			video::SColor vertexColor = video::SColor(255,255,255,255),
-			s32 maxLOD=4, E_TERRAIN_PATCH_SIZE patchSize=ETPS_17,s32 smoothFactor=0);
+			s32 maxLOD=4, E_TERRAIN_PATCH_SIZE patchSize=ETPS_17,s32 smoothFactor=0,
+			bool addAlsoIfHeightmapEmpty=false);
 
 		//! Adds a dummy transformation scene node to the scene graph.
 		virtual IDummyTransformationSceneNode* addDummyTransformationSceneNode(
@@ -379,6 +381,9 @@ namespace scene
 
 		//! Returns a typename from a scene node type or null if not found
 		virtual const c8* getSceneNodeTypeName(ESCENE_NODE_TYPE type);
+
+		//! Adds a scene node to the scene by name
+		virtual ISceneNode* addSceneNode(const char* sceneNodeTypeName, ISceneNode* parent);
 
 		//! Returns the default scene node animator factory which can create all built-in scene node animators
 		virtual ISceneNodeAnimatorFactory* getDefaultSceneNodeAnimatorFactory();
