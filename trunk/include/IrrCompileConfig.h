@@ -57,13 +57,16 @@ define out. */
 #endif // ! _XBOX
 
 #if defined(__SYMBIAN32__)
-
 #define _IRR_USE_OPENGL_ES_
-
-//gcce compiler complains the remove in ISceneNode.h
-#if defined(__GCCE__) && defined(remove)
+//compiler complains the remove in ISceneNode.h, IGUIElement.h
+#if defined(remove)
 #undef remove
 #endif
+//reference unused paramters to suppress compiler warnings
+#define _IRR_REF_PARAM(x) x
+
+#else
+#define _IRR_REF_PARAM(x) 
 #endif
 
 //! Define _IRR_COMPILE_WITH_SOFTWARE_ to compile the Irrlicht engine with software driver
