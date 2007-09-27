@@ -8,6 +8,10 @@
 #include "SColor.h"
 #include "ITexture.h"
 
+#ifdef __ARMCC__
+#pragma anon_unions
+#endif
+
 namespace irr
 {
 namespace video

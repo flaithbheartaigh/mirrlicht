@@ -25,6 +25,8 @@ namespace video
 #   if defined(__WINS__)
 #     define PACK_STRUCT 
 #     pragma pack(1)
+#   elif defined(__ARMCC__)
+#     define PACK_STRUCT 
 #   else 
 #	  define PACK_STRUCT	__attribute__((packed,aligned(1)))
 #   endif
@@ -32,6 +34,9 @@ namespace video
 #	error compiler not supported
 #endif
 
+#if defined(__SYMBIAN32__) && defined(__ARMCC__)
+__packed 
+#endif  
 	 struct STGAHeader{
 	    u8 IdLength;
 	    u8 ColorMapType;

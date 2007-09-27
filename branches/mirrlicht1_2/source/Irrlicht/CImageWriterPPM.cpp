@@ -63,7 +63,7 @@ bool CImageWriterPPM::writeImage(io::IWriteFile *file, IImage *image)
 
 	const core::dimension2d<s32>& imageSize = image->getDimension();
 
-#if defined(__SYMBIAN32__) && defined(__GCCE__)	
+#if defined(__SYMBIAN32__) && (defined(__GCCE__) || defined(__ARMCC__))
 	size = sprintf(cache, "P3\n");
 #else
 	size = snprintf(cache, 70, "P3\n");
@@ -71,7 +71,7 @@ bool CImageWriterPPM::writeImage(io::IWriteFile *file, IImage *image)
 	if (file->write(cache, size) != size)
 		return false;
 
-#if defined(__SYMBIAN32__) && defined(__GCCE__)	
+#if defined(__SYMBIAN32__) && (defined(__GCCE__) || defined(__ARMCC__))
 	size = sprintf(cache, "%d %d\n", imageSize.Width, imageSize.Height);
 #else
 	size = snprintf(cache, 70, "%d %d\n", imageSize.Width, imageSize.Height);
@@ -79,7 +79,7 @@ bool CImageWriterPPM::writeImage(io::IWriteFile *file, IImage *image)
 	if (file->write(cache, size) != size)
 		return false;
 
-#if defined(__SYMBIAN32__) && defined(__GCCE__)	
+#if defined(__SYMBIAN32__) && (defined(__GCCE__) || defined(__ARMCC__))	
 	size = sprintf(cache, "255\n");
 #else
 	size = snprintf(cache, 70, "255\n");
@@ -97,7 +97,7 @@ bool CImageWriterPPM::writeImage(io::IWriteFile *file, IImage *image)
 		for (c = 0; c < imageSize.Width; ++c, ++n)
 		{
 			const video::SColor& pixel = image->getPixel(c, r);
-#if defined(__SYMBIAN32__) && defined(__GCCE__)	
+#if defined(__SYMBIAN32__) && (defined(__GCCE__) || defined(__ARMCC__))	
 			size = sprintf(cache, "%.3d %.3d %.3d%s", pixel.getRed(), pixel.getGreen(), pixel.getBlue(), n % 5 == 4 ? "\n" : "  ");	
 #else
 			size = snprintf(cache, 70, "%.3d %.3d %.3d%s", pixel.getRed(), pixel.getGreen(), pixel.getBlue(), n % 5 == 4 ? "\n" : "  ");	
