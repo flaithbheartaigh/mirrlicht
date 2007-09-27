@@ -109,7 +109,8 @@ RESOURCE MENU_PANE r_symbirrlicht_app_menu
     {
     items =
         {
-        MENU_ITEM { command = ESymbIrrlichtCmdAppTest; txt = "Hello"; },
+        MENU_ITEM { command = ESymbIrrlichtCmdHelloWorld; txt = "Hello World"; },
+        MENU_ITEM { command = ESymbIrrlichtCmdTerrain; txt = "Terrain"; },
         MENU_ITEM { command = EAknCmdExit; txt = qtn_appl_exit; }
         };
     }
