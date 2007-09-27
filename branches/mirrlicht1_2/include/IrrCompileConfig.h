@@ -60,7 +60,7 @@ define out. */
 #define _IRR_USE_OPENGL_ES_
 
 //gcce compiler complains the remove in ISceneNode.h
-#if defined(__GCCE__) && defined(remove)
+#if defined(remove)
 #undef remove
 #endif
 #endif
@@ -118,7 +118,7 @@ the engine will no longer read .jpeg images. */
 //! Define _IRR_COMPILE_WITH_LIBPNG_ to enable compiling the engine using libpng.
 /** This enables the engine to read png images. If you comment this out,
 the engine will no longer read .png images. */
-#define _IRR_COMPILE_WITH_LIBPNG_
+//#define _IRR_COMPILE_WITH_LIBPNG_
 
 //! Define _IRR_USE_NON_SYSTEM_LIBPNG_ to let irrlicht use the libpng which comes with irrlicht.
 /** If this is commented out, Irrlicht will try to compile using the libpng installed in the system.
