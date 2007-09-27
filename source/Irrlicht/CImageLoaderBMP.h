@@ -25,14 +25,19 @@ namespace video
 #   if defined(__WINS__)
 #     define PACK_STRUCT 
 #     pragma pack(1)
-#   else 
+#   elif defined(__ARMCC__)
+#     define PACK_STRUCT 
+#   else
 #	  define PACK_STRUCT	__attribute__((packed,aligned(1)))
 #   endif
 #else
 #	error compiler not supported
 #endif
 
-	struct SBMPHeader
+#if defined(__SYMBIAN32__) && defined(__ARMCC__)
+    __packed 
+#endif    
+    struct SBMPHeader
 	{
 		u16	Id;					//	BM - Windows 3.1x, 95, NT, 98, 2000, ME, XP
 											//	BA - OS/2 Bitmap Array
