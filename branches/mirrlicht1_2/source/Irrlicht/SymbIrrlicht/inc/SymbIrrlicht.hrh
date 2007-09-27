@@ -14,17 +14,8 @@
 
 enum TSymbIrrlichtCommandIds
     {
-    ESymbIrrlichtCmdAppTest = 1
+   		ESymbIrrlichtCmdHelloWorld=1,
+      ESymbIrrlichtCmdTerrain
     };
-
-enum TSymbIrrlichtTabViewId
-    {
-    ESymbIrrlichtView1Tab= 1,
-    ESymbIrrlichtView2Tab
-    };
- 
-
-
-
 
 #endif      // SYMBIRRLICHT_HRH
