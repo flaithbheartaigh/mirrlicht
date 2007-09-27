@@ -10,6 +10,7 @@
 #include <eikstart.h>
 
 #include <unistd.h> //for chdir
+#include <sys/reent.h> //for CloseSTDLIB
 #include <GLES/egl.h>
 
 class CMainS60Application;
@@ -21,9 +22,9 @@ class CMainS60Document;
 #include "irrlicht.h"
 
 //if SHOW_HELLO_WORLD is not defined, we'll show the Quake3Map example
-//#define SHOW_HELLO_WORLD
+#define SHOW_HELLO_WORLD
 //#define SHOW_QUAKE3_MAP
-#define SHOW_SPECIAL_FX
+//#define SHOW_SPECIAL_FX
 
 using namespace irr;
 using namespace core;
@@ -159,7 +160,7 @@ class CMainS60AppView : public CCoeControl
         * Called by framework when the view size is changed.
         */
         virtual void SizeChanged();
-
+        
 		/** 
 		* Handle key inputs
 		*/
@@ -308,12 +309,6 @@ void CMainS60AppUi::ConstructL()
 
 CMainS60AppUi::CMainS60AppUi()
 {
-	if ( iAppView )
-	{
-		RemoveFromStack( iAppView );
-		delete iAppView;
-	}
-
 }
 
 // Destructor.
@@ -321,6 +316,7 @@ CMainS60AppUi::~CMainS60AppUi()
 {
     if ( iAppView )
     {
+    	RemoveFromStack( iAppView );
         delete iAppView;
         iAppView = NULL;
     }
@@ -333,6 +329,7 @@ void CMainS60AppUi::HandleCommandL( TInt aCommand )
     switch( aCommand )
     {
         case EAknSoftkeyExit:
+        	CloseSTDLIB();
             Exit();
             break;
     }
@@ -379,12 +376,12 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
     // Activate the window, which makes it ready to be drawn
     ActivateL();
 	
-	//NOTE! on symbian platform, the emulator interprets "C:\" as "%SDK_ROOT%\epoc32\winscw\c"
-	//I placed the media files under "C:\\irrlicht\\media". The code in irrlicht\examples uses
+	//NOTE! on symbian platform, the emulator interprets "E:\" as "%SDK_ROOT%\epoc32\winscw\E"
+	//I placed the media files under "E:\\irrlicht\\media". The code in irrlicht\examples uses
 	//relative directory ../../media. Therefore, we create the follow dummy directory beforehand
 	//and change the working directory at run time.
-	chdir("C:\\irrlicht\\dummy\\dummy");	
-
+	chdir("E:\\irrlicht\\dummy\\dummy");	
+	
 	SIrrlichtCreationParameters parameters;
 	parameters.WindowSize = core::dimension2d<s32>(240, 320);
 	parameters.DriverType = EDT_OPENGL;
@@ -659,20 +656,9 @@ TKeyResponse CMainS60AppView::OfferKeyEventL(const TKeyEvent& aKeyEvent, TEventC
 			return EKeyWasConsumed;
 		}
 	}
-/*
-	switch(aType)
-	{
-
-	case EEventKey:		
-		if(aKeyEvent.iScanCode == EStdKeyNkp5 || aKeyEvent.iScanCode == EStdKeyDevice3)	
-		{			
-			return EKeyWasConsumed;
-		}		
-		break;
-	}
-*/
 	return EKeyWasNotConsumed;
 }
+
 
 TInt CMainS60AppView::Update( TAny* aInstance )
 {
