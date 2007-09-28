@@ -409,9 +409,6 @@
 				Name="video impl"
 				Filter="">
 				<File
-					RelativePath="..\..\CSoftwareTexture.cpp">
-				</File>
-				<File
 					RelativePath="..\..\CVideoModeList.cpp">
 				</File>
 				<Filter
