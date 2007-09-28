@@ -218,12 +218,9 @@ END
 SOURCEPATH                              ..\src 
 SOURCE                                  MainS60.cpp 
 
-/* [+] */ USERINCLUDE                   ..\..\..\..\..\..\trunk\include 
-/* [+] */ USERINCLUDE                   ..\..\..\..\..\..\trunk\source\Irrlicht\jpeglib 
-/* [+] */ USERINCLUDE                   ..\..\..\..\..\..\trunk\source\Irrlicht\SymbIrrlicht\inc 
-// [-]    USERINCLUDE                   ..\..\..\..\include 
-// [-]    USERINCLUDE                   ..\..\jpeglib 
-// [-]    USERINCLUDE                   ..\inc 
+USERINCLUDE                             ..\..\..\..\include 
+USERINCLUDE                             ..\..\jpeglib 
+USERINCLUDE                             ..\inc 
 SYSTEMINCLUDE                           \Epoc32\include 
 SYSTEMINCLUDE                           \Epoc32\include\libc 
 LIBRARY                                 ezlib.lib 
