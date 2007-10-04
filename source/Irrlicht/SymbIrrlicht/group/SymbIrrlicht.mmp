@@ -186,7 +186,6 @@ SOURCE                                  jidctint.c
 SOURCE                                  jidctred.c 
 SOURCE                                  jmemmgr.c 
 SOURCE                                  jmemnobs.c 
-SOURCE                                  jpegtran.c 
 SOURCE                                  jquant1.c 
 SOURCE                                  jquant2.c 
 SOURCE                                  jutils.c 
@@ -218,11 +217,10 @@ END
 SOURCEPATH                              ..\src 
 SOURCE                                  MainS60.cpp 
 
-USERINCLUDE                             ..\..\..\..\include 
 USERINCLUDE                             ..\..\jpeglib 
 USERINCLUDE                             ..\inc 
 SYSTEMINCLUDE                           \Epoc32\include 
-SYSTEMINCLUDE                           \Epoc32\include\libc 
+SYSTEMINCLUDE                           \Epoc32\include\libc ..\..\..\..\include 
 LIBRARY                                 ezlib.lib 
 LIBRARY                                 libgles_cm.lib 
 LIBRARY                                 estlib.lib 
@@ -238,3 +236,4 @@ LIBRARY                                 eikcoctl.lib
 LANG                                    SC 
 VENDORID                                0 
 CAPABILITY                              ReadUserData 
+EPOCHEAPSIZE 0x1000 0xC00000
