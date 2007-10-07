@@ -1,11 +1,18 @@
 #include <windows.h>
+
+#define USE_RASTEROID
+#ifdef USE_RASTEROID
+#pragma comment(lib,"libEGL.lib")
+#pragma comment(lib,"libGLES_CM_NoE.lib")
+#else
+//This is for POWERVR lib. It only works if USE_GLES is defined because the irrlicht code assume using rasteroid library
+#pragma comment(lib,"libGLES_CM.lib") 
+#endif
 //#define USE_GLES
 
 #ifdef USE_GLES
  #include "GLES/gl.h"
  #include "GLES/egl.h"
- #pragma comment(lib,"libEGL.lib")
- #pragma comment(lib,"libGLES_CM_NoE.lib")
 #else
  #include "irrlicht.h"
 
@@ -89,14 +96,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLin
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 #ifdef USE_GLES
-#ifdef POWERVR
-	hDC = GetDC(hWnd);
-
-	eglDisplay = eglGetDisplay(hDC);
-#else
+#ifdef USE_RASTEROID
 	hDC = 0;
-
 	eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+#else
+	hDC = GetDC(hWnd);
+	eglDisplay = eglGetDisplay((NativeDisplayType)hDC);	
 #endif
 	eglInitialize(eglDisplay, &majorVersion, &minorVersion);
 	eglGetConfigs(eglDisplay, NULL, 0, &numConfigs);
@@ -163,9 +168,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLin
 		}
 #ifdef USE_GLES		
 		
-		glClearColor(1.0,0.0,0.0,1.0);
-		glClear(GL_COLOR_BUFFER_BIT);
-
+		glClearColor(1.0f,0.0f,1.0f,1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);       
 		eglSwapBuffers(eglDisplay, eglWindowSurface);
 #else
 		if(device->run()){
