@@ -1,0 +1,23 @@
+; SymbIrrlicht.pkg
+;
+;Language - standard language definitions
+&EN
+
+; standard SIS file header
+#{"SymbIrrlicht"},(0xebf1104c),1,0,0
+
+;Localised Vendor name
+%{"Ming Li-EN"}
+
+;Unique Vendor name
+:"Ming Li"
+
+;Supports Series 60 v 3.0
+[0x101F7961], 0, 0, 0, {"Series60ProductID"}
+
+;Files to install
+"epoc32\release\gcce\urel\SymbIrrlicht.exe"                 -"!:\sys\bin\SymbIrrlicht.exe"
+"epoc32\data\z\resource\apps\SymbIrrlicht.rsc"               -"!:\resource\apps\SymbIrrlicht.rsc"
+;"epoc32\data\z\resource\apps\SymbIrrlicht.mif"               -"!:\resource\apps\SymbIrrlicht.mif"
+"epoc32\data\z\private\10003a3f\apps\SymbIrrlicht_reg.rsc"   -"!:\private\10003a3f\import\apps\SymbIrrlicht_reg.rsc"
+

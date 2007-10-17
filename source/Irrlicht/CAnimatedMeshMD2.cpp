@@ -23,6 +23,8 @@ namespace scene
 #   if defined(__WINS__)
 #     define PACK_STRUCT 
 #     pragma pack(1)
+#   elif defined(__ARMCC__)
+#     define PACK_STRUCT
 #   else 
 #	  define PACK_STRUCT	__attribute__((packed,aligned(1)))
 #   endif
@@ -40,6 +42,9 @@ namespace scene
 	const s32 MD2_FRAME_SHIFT	= 2;
 	const f32 MD2_FRAME_SHIFT_RECIPROCAL = 1.f / ( 1 << MD2_FRAME_SHIFT );
 
+#if defined(__SYMBIAN32__) && defined(__ARMCC__)
+	__packed 
+#endif 
 	struct SMD2Header
 	{
 		s32 magic;
@@ -61,12 +66,18 @@ namespace scene
 		s32 offsetEnd;
 	} PACK_STRUCT;
 
+#if defined(__SYMBIAN32__) && defined(__ARMCC__)
+	__packed 
+#endif 	
 	struct SMD2Vertex
 	{
 		u8 vertex[3];
 		u8 lightNormalIndex;
 	} PACK_STRUCT;
-
+	
+#if defined(__SYMBIAN32__) && defined(__ARMCC__)
+	__packed 
+#endif 
 	struct SMD2Frame
 	{
 		f32	scale[3];
@@ -75,18 +86,27 @@ namespace scene
 		SMD2Vertex vertices[1];
 	} PACK_STRUCT;
 
+#if defined(__SYMBIAN32__) && defined(__ARMCC__)
+	__packed 
+#endif 	
 	struct SMD2Triangle
 	{
 		u16 vertexIndices[3];
 		u16 textureIndices[3];
 	} PACK_STRUCT;
-
+	
+#if defined(__SYMBIAN32__) && defined(__ARMCC__)
+	__packed 
+#endif 
 	struct SMD2TextureCoordinate
 	{
 		s16 s;
 		s16 t;
 	} PACK_STRUCT;
 
+#if defined(__SYMBIAN32__) && defined(__ARMCC__)
+	__packed 
+#endif 	
 	struct SMD2GLCommand
 	{
 		f32 s, t;
@@ -542,9 +562,9 @@ bool CAnimatedMeshMD2::loadFile(io::IReadFile* file)
 
 	// create Memory for indices and frames
 
-	TriangleCount = header.numTriangles;
+	TriangleCount = header.numTriangles;	
 	if (FrameList)
-		delete [] FrameList;
+		delete [] FrameList;	
 	FrameList = new core::array<video::S3DVertex>[header.numFrames];
 	FrameCount = header.numFrames;
 
@@ -640,7 +660,7 @@ bool CAnimatedMeshMD2::loadFile(io::IReadFile* file)
 
 		// add vertices
 
-		vertices[i].reallocate(header.numVertices);
+		vertices[i].reallocate(header.numVertices);		
 		for (s32 j=0; j<header.numVertices; ++j)
 		{
 			core::vector3df v;
@@ -697,7 +717,9 @@ bool CAnimatedMeshMD2::loadFile(io::IReadFile* file)
 				vtx.TCoords.Y = (textureCoords[triangles[t].textureIndices[n]].t + 0.5f) * dmaxt;
 				FrameList[f].push_back(vtx);
 			}
-		}
+		}		
+		vert.clear();
+		normals[f].clear();
 	}
 
 	// create indices
