@@ -10,7 +10,10 @@
 #include <eikstart.h>
 
 #include <unistd.h> //for chdir
+#include <sys/reent.h> //for CloseSTDLIB
 #include <GLES/egl.h>
+
+#include "SymbIrrlicht.hrh"
 
 class CMainS60Application;
 class CMainS60AppUi;
@@ -19,11 +22,11 @@ class CMainS60Document;
 
 
 #include "irrlicht.h"
-
+#include "../source/irrlicht/CCameraSceneNode.h"
 //if SHOW_HELLO_WORLD is not defined, we'll show the Quake3Map example
-//#define SHOW_HELLO_WORLD
+#define SHOW_HELLO_WORLD
 //#define SHOW_QUAKE3_MAP
-#define SHOW_SPECIAL_FX
+//#define SHOW_SPECIAL_FX
 
 using namespace irr;
 using namespace core;
@@ -159,11 +162,16 @@ class CMainS60AppView : public CCoeControl
         * Called by framework when the view size is changed.
         */
         virtual void SizeChanged();
-
+        
 		/** 
 		* Handle key inputs
 		*/
 		virtual TKeyResponse OfferKeyEventL(const TKeyEvent& aKeyEvent,TEventCode aType);
+
+		/**
+		* Get the text GUI element. For setting FPS in the update routine
+		*/
+		IGUIStaticText *GetGUIFPSText() const { return iTextFPS; }
 
     private: // Constructors
 
@@ -183,6 +191,8 @@ class CMainS60AppView : public CCoeControl
         CMainS60AppView();
 
 		CPeriodic*	update;
+		//text to show FPS (frames per second)
+		IGUIStaticText *iTextFPS;
 };
 
 /**
@@ -249,6 +259,9 @@ class CMainS60Document : public CAknDocument
         CMainS60Document( CEikApplication& aApp );
 };
 
+//////////////////////////// The above is declaration. Frow now on implementations/////////////////
+
+
 //
 // Constants
 //
@@ -256,6 +269,84 @@ class CMainS60Document : public CAknDocument
 // UID for the application - this should correspond to the uid defined in the mmp file
 const TUid KUidMainS60App = { 0xebf1104c };
 
+// Scene Setup functions
+bool SetupHelloWorldScene()
+{
+	if(!device) return false;
+	IVideoDriver* driver = device->getVideoDriver();
+	ISceneManager* smgr = device->getSceneManager();
+	IGUIEnvironment* guienv = device->getGUIEnvironment();
+	
+	driver->removeAllTextures();
+	smgr->clear();
+
+	IAnimatedMesh* mesh = smgr->getMesh("../../media/sydney.md2");	
+	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode( mesh );
+	if (node)
+	{
+		node->setMaterialFlag(EMF_LIGHTING, false);
+		node->setMD2Animation ( scene::EMAT_STAND );				
+		node->setMaterialTexture( 0, driver->getTexture("../../media/sydney.bmp"));
+	}
+	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
+
+	smgr->addSkyBoxSceneNode(
+		driver->getTexture("../../media/irrlicht2_up_small.jpg"),
+		driver->getTexture("../../media/irrlicht2_dn_small.jpg"),
+		driver->getTexture("../../media/irrlicht2_lf_small.jpg"),
+		driver->getTexture("../../media/irrlicht2_rt_small.jpg"),
+		driver->getTexture("../../media/irrlicht2_ft_small.jpg"),
+		driver->getTexture("../../media/irrlicht2_bk_small.jpg"));
+	return true;
+}
+
+bool SetupTerrainScene()
+{
+	if(!device) return false;
+	IVideoDriver* driver = device->getVideoDriver();
+	ISceneManager* smgr = device->getSceneManager();
+	IGUIEnvironment* guienv = device->getGUIEnvironment();
+	
+	smgr->clear();
+	driver->removeAllTextures();
+
+	scene::ICameraSceneNode* camera = 
+		smgr->addCameraSceneNodeFPS(0,100.0f,1200.0f);
+
+	camera->setPosition(core::vector3df(1900*2,255*2,3700*2));
+	camera->setTarget(core::vector3df(2397*2,343*2,2700*2));
+	camera->setFarValue(12000.0f);
+
+	// add terrain scene node
+	//smaller heighmap. 45% of the original 256x256 size. 
+	scene::ITerrainSceneNode* terrain = smgr->addTerrainSceneNode( 
+		"../../media/terrain-heightmap-small.bmp"); 
+
+	terrain->setScale(core::vector3df(40, 4.4f, 40));
+	terrain->setMaterialFlag(video::EMF_LIGHTING, false);
+
+	terrain->setMaterialTexture(0, driver->getTexture("../../media/terrain-texture-small.jpg"));
+	terrain->setMaterialTexture(1, driver->getTexture("../../media/detailmap3.jpg"));
+
+	terrain->setMaterialType(video::EMT_DETAIL_MAP);
+
+	terrain->scaleTexture(1.0f, 20.0f);
+
+	// create triangle selector for the terrain	
+	scene::ITriangleSelector* selector
+		= smgr->createTerrainTriangleSelector(terrain, 0);
+	terrain->setTriangleSelector(selector);
+	selector->drop();
+
+	// create collision response animator and attach it to the camera
+	scene::ISceneNodeAnimator* anim = smgr->createCollisionResponseAnimator(
+		selector, camera, core::vector3df(60,100,60),
+		core::vector3df(0,0,0), 
+		core::vector3df(0,50,0));
+	camera->addAnimator(anim);
+	anim->drop();
+	return true;
+}
 
 //
 // Main
@@ -308,12 +399,6 @@ void CMainS60AppUi::ConstructL()
 
 CMainS60AppUi::CMainS60AppUi()
 {
-	if ( iAppView )
-	{
-		RemoveFromStack( iAppView );
-		delete iAppView;
-	}
-
 }
 
 // Destructor.
@@ -321,6 +406,7 @@ CMainS60AppUi::~CMainS60AppUi()
 {
     if ( iAppView )
     {
+    	RemoveFromStack( iAppView );
         delete iAppView;
         iAppView = NULL;
     }
@@ -332,9 +418,17 @@ void CMainS60AppUi::HandleCommandL( TInt aCommand )
 {
     switch( aCommand )
     {
+    	case EAknCmdExit:
         case EAknSoftkeyExit:
+        	CloseSTDLIB();
             Exit();
             break;
+        case ESymbIrrlichtCmdHelloWorld:
+            SetupHelloWorldScene();
+            break;
+        case ESymbIrrlichtCmdTerrain:
+            SetupTerrainScene();
+            break;            
     }
 }
 
@@ -379,12 +473,12 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
     // Activate the window, which makes it ready to be drawn
     ActivateL();
 	
-	//NOTE! on symbian platform, the emulator interprets "C:\" as "%SDK_ROOT%\epoc32\winscw\c"
-	//I placed the media files under "C:\\irrlicht\\media". The code in irrlicht\examples uses
+	//NOTE! on symbian platform, the emulator interprets "E:\" as "%SDK_ROOT%\epoc32\winscw\E"
+	//I placed the media files under "E:\\irrlicht\\media". The code in irrlicht\examples uses
 	//relative directory ../../media. Therefore, we create the follow dummy directory beforehand
 	//and change the working directory at run time.
-	chdir("C:\\irrlicht\\dummy\\dummy");	
-
+	chdir("E:\\irrlicht\\dummy\\dummy");	
+	
 	SIrrlichtCreationParameters parameters;
 	parameters.WindowSize = core::dimension2d<s32>(240, 320);
 	parameters.DriverType = EDT_OPENGL;
@@ -396,29 +490,11 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 	IVideoDriver* driver = device->getVideoDriver();
 	ISceneManager* smgr = device->getSceneManager();
 	IGUIEnvironment* guienv = device->getGUIEnvironment();
+	iTextFPS = guienv->addStaticText(L"FPS",	rect<int>(10,10,40,22), true);
 
 #if defined(SHOW_HELLO_WORLD)	
 
-	IAnimatedMesh* mesh = smgr->getMesh("../../media/sydney.md2");	
-	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode( mesh );
-	if (node)
-	{
-		node->setMaterialFlag(EMF_LIGHTING, false);
-		node->setMD2Animation ( scene::EMAT_STAND );				
-		node->setMaterialTexture( 0, driver->getTexture("../../media/sydney.bmp"));
-	}
-	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
-
-	guienv->addStaticText(L"Hello World! This is the Irrlicht OpenGL renderer!",
-		                  rect<int>(10,10,240,22), true);
-
-	smgr->addSkyBoxSceneNode(
-		driver->getTexture("../../media/irrlicht2_up_small.jpg"),
-		driver->getTexture("../../media/irrlicht2_dn_small.jpg"),
-		driver->getTexture("../../media/irrlicht2_lf_small.jpg"),
-		driver->getTexture("../../media/irrlicht2_rt_small.jpg"),
-		driver->getTexture("../../media/irrlicht2_ft_small.jpg"),
-		driver->getTexture("../../media/irrlicht2_bk_small.jpg"));
+	SetupHelloWorldScene();
 
 #elif defined(SHOW_QUAKE3_MAP)
 
@@ -597,7 +673,7 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 // C++ default constructor can NOT contain any code, that might leave.
 CMainS60AppView::CMainS60AppView()
 {
-    // No implementation required
+	iTextFPS = NULL;
 }
 
 
@@ -659,23 +735,14 @@ TKeyResponse CMainS60AppView::OfferKeyEventL(const TKeyEvent& aKeyEvent, TEventC
 			return EKeyWasConsumed;
 		}
 	}
-/*
-	switch(aType)
-	{
-
-	case EEventKey:		
-		if(aKeyEvent.iScanCode == EStdKeyNkp5 || aKeyEvent.iScanCode == EStdKeyDevice3)	
-		{			
-			return EKeyWasConsumed;
-		}		
-		break;
-	}
-*/
 	return EKeyWasNotConsumed;
 }
 
+
 TInt CMainS60AppView::Update( TAny* aInstance )
 {
+	static int lastFPS = -1;
+
 	if (aInstance)
 	{
 		IVideoDriver* driver = device->getVideoDriver();
@@ -683,11 +750,21 @@ TInt CMainS60AppView::Update( TAny* aInstance )
 		IGUIEnvironment* guienv = device->getGUIEnvironment();
 		if(device->run()){
 			driver->beginScene(true, true, SColor(255,100,101,140));
-
 			smgr->drawAll();
 			guienv->drawAll();
-
 			driver->endScene();
+			
+			// display frames per second in window title
+			int fps = driver->getFPS();
+			if (lastFPS != fps)
+			{
+				core::stringw str = L"FPS:";				
+				str += fps;
+				
+				IGUIStaticText* fpsText=((CMainS60AppView*)aInstance)->GetGUIFPSText();
+				fpsText->setText(str.c_str());
+				lastFPS = fps;
+			}
 		}
 	}
         

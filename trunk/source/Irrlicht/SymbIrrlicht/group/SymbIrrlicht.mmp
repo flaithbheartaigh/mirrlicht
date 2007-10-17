@@ -13,9 +13,9 @@ UID                                     0x0 0xebf1104c
 SECUREID                                0xebf1104c 
 EPOCSTACKSIZE                           0x5000 
 SOURCEPATH                              ..\.. 
-/* [+] */ SOURCE                        CMD3MeshFileLoader.cpp 
-/* [+] */ SOURCE                        CAnimatedMeshMD3.cpp 
-/* [+] */ SOURCE                        CGUISpriteBank.cpp 
+SOURCE                        CMD3MeshFileLoader.cpp 
+SOURCE                        CAnimatedMeshMD3.cpp 
+SOURCE                        CGUISpriteBank.cpp 
 // [-]    SOURCE                        CGUIFontMultiTexture.cpp 
 SOURCE                                  CDefaultGUIElementFactory.cpp 
 SOURCE                                  CQuake3ShaderSceneNode.cpp 
@@ -192,7 +192,6 @@ SOURCE                                  jidctint.c
 SOURCE                                  jidctred.c 
 SOURCE                                  jmemmgr.c 
 SOURCE                                  jmemnobs.c 
-SOURCE                                  jpegtran.c 
 SOURCE                                  jquant1.c 
 SOURCE                                  jquant2.c 
 SOURCE                                  jutils.c 
@@ -241,24 +240,12 @@ END
 SOURCEPATH                              ..\src 
 SOURCE                                  MainS60.cpp 
 
-USERINCLUDE                             ..\..\libpng 
-USERINCLUDE                             ..\..\..\..\include 
 USERINCLUDE                             ..\..\jpeglib 
 USERINCLUDE                             ..\inc 
 SYSTEMINCLUDE                           \Epoc32\include 
-SYSTEMINCLUDE                           \Epoc32\include\libc 
-LIBRARY                                 ezlib.lib 
-LIBRARY                                 libgles_cm.lib 
-LIBRARY                                 estlib.lib 
-LIBRARY                                 euser.lib 
-LIBRARY                                 apparc.lib 
-LIBRARY                                 cone.lib 
-LIBRARY                                 eikcore.lib 
-LIBRARY                                 avkon.lib 
-LIBRARY                                 commonengine.lib 
-LIBRARY                                 efsrv.lib 
-LIBRARY                                 estor.lib 
-LIBRARY                                 eikcoctl.lib 
+SYSTEMINCLUDE                           \Epoc32\include\libc ..\..\..\..\include ..\..\libpng ..\..\jpeglib 
+LIBRARY                                 euser.lib apparc.lib cone.lib eikcore.lib avkon.lib commonengine.lib efsrv.lib estor.lib eikcoctl.lib estlib.lib libgles_cm.lib ezlib.lib 
 LANG                                    SC 
 VENDORID                                0 
 CAPABILITY                              ReadUserData 
+EPOCHEAPSIZE 0x1000 0xC00000

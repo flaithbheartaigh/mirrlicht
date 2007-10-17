@@ -10,6 +10,10 @@
 #include "matrix4.h"
 #include "irrArray.h"
 
+#ifdef __ARMCC__
+#pragma anon_unions
+#endif
+
 namespace irr
 {
 namespace video

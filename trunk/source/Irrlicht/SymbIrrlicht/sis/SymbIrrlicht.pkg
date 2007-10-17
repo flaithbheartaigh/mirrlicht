@@ -19,4 +19,9 @@
 "E:\Dev\Symbian\9.2\S60_3rd_FP1\Epoc32\data\z\resource\apps\SymbIrrlicht_reg.mif"-"!:\resource\apps\SymbIrrlicht_reg.mif"
 "E:\Dev\Symbian\9.2\S60_3rd_FP1\Epoc32\data\z\private\10003a3f\apps\SymbIrrlicht_reg.rSC"-"!:\private\10003a3f\import\apps\SymbIrrlicht_reg.rSC"
 
+;Files to install
+"epoc32\release\armv5\urel\SymbIrrlicht.exe"                 -"!:\sys\bin\SymbIrrlicht.exe"
+"epoc32\data\z\resource\apps\SymbIrrlicht.rsc"               -"!:\resource\apps\SymbIrrlicht.rsc"
+;"epoc32\data\z\resource\apps\SymbIrrlicht.mif"               -"!:\resource\apps\SymbIrrlicht.mif"
+"epoc32\data\z\private\10003a3f\apps\SymbIrrlicht_reg.rsc"   -"!:\private\10003a3f\import\apps\SymbIrrlicht_reg.rsc"
 
