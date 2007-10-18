@@ -24,6 +24,10 @@
 #include <stdlib.h>
 #endif
 
+#ifdef __SYMBIAN32__
+#include <sys/stat.h>
+#endif
+
 namespace irr
 {
 namespace io

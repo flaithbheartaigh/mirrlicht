@@ -279,7 +279,7 @@ bool SetupHelloWorldScene()
 	
 	driver->removeAllTextures();
 	smgr->clear();
-
+	
 	IAnimatedMesh* mesh = smgr->getMesh("../../media/sydney.md2");	
 	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode( mesh );
 	if (node)
@@ -288,8 +288,8 @@ bool SetupHelloWorldScene()
 		node->setMD2Animation ( scene::EMAT_STAND );				
 		node->setMaterialTexture( 0, driver->getTexture("../../media/sydney.bmp"));
 	}
-	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
-
+	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));	
+	
 	smgr->addSkyBoxSceneNode(
 		driver->getTexture("../../media/irrlicht2_up_small.jpg"),
 		driver->getTexture("../../media/irrlicht2_dn_small.jpg"),
@@ -482,7 +482,7 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 	SIrrlichtCreationParameters parameters;
 	parameters.WindowSize = core::dimension2d<s32>(240, 320);
 	parameters.DriverType = EDT_OPENGL;
-	parameters.WindowId = (s32)(&Window());
+	parameters.WindowId = (void*)(&Window());
 #ifdef SHOW_SPECIAL_FX
 	parameters.Stencilbuffer = true;
 #endif

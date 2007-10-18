@@ -314,6 +314,12 @@ COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool full
 	genericDriverInit(screenSize);
 	eglSwapInterval(display, vsync ? 1 : 0);
 }
+
+//! Symbian destructor
+COpenGLDriver::~COpenGLDriver()
+{
+	deleteAllTextures();
+}
 #endif // opengl es
 
 // -----------------------------------------------------------------------
@@ -667,13 +673,14 @@ void COpenGLDriver::loadExtensions()
 			// #define _IRR_GETPROCADDRESS_WORKAROUND_
 
 			#ifndef _IRR_GETPROCADDRESS_WORKAROUND_
-			__GLXextFuncPtr (*IRR_OGL_LOAD_EXTENSION)(const GLubyte*)=0;
-			#ifdef GLX_VERSION_1_4
+				__GLXextFuncPtr (*IRR_OGL_LOAD_EXTENSION)(const GLubyte*)=0;
+				#ifdef GLX_VERSION_1_4
 				#define IRR_OGL_LOAD_EXTENSION glXGetProcAddress
 				#else
 				#define IRR_OGL_LOAD_EXTENSION glXGetProcAddressARB
-			#endif
-			#endif
+				#endif
+			#endif //_IRR_GETPROCADDRESS_WORKAROUND_
+			#endif //_IRR_USE_SDL_DEVICE_
 
 			pGlActiveTextureARB = (PFNGLACTIVETEXTUREARBPROC)
 				IRR_OGL_LOAD_EXTENSION(reinterpret_cast<const GLubyte*>("glActiveTextureARB"));
