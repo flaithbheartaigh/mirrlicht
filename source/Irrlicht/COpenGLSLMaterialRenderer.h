@@ -16,6 +16,9 @@
 #elif defined(MACOSX)
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
+#elif defined(__SYMBIAN32__)
+#include <GLES/gl.h>
+#include "gles_ARB_redefine.h"
 #else
 #if defined(_IRR_OPENGL_USE_EXTPOINTER_)
 #define GL_GLEXT_LEGACY 1
@@ -24,12 +27,6 @@
 #if defined(_IRR_OPENGL_USE_EXTPOINTER_)
 #include "glext.h"
 #endif
-#endif
-
-
-#ifdef __SYMBIAN32__
-#include <GLES/gl.h>
-#include "gles_ARB_redefine.h"
 #endif
 
 #include "IMaterialRenderer.h"

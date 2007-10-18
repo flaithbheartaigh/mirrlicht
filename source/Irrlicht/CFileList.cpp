@@ -110,7 +110,7 @@ CFileList::CFileList()
 			entry.Size = buf.st_size;
 			entry.isDirectory = S_ISDIR(buf.st_mode);
 		}
-		#if !defined(_IRR_SOLARIS_PLATFORM_) && !defined(__CYGWIN__)
+		#if !defined(_IRR_SOLARIS_PLATFORM_) && !defined(__CYGWIN__) && !defined(__SYMBIAN32__)
 		// only available on some systems
 		else
 		{

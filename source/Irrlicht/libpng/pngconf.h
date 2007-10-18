@@ -429,7 +429,6 @@
  * and warning message functions, so some compilers won't complain.
  * If you do not want to use const, define PNG_NO_CONST here.
  */
-
 #ifndef PNG_NO_CONST
 #  define PNG_CONST const
 #else
