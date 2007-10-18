@@ -9,6 +9,7 @@
 #include "ICameraSceneNode.h"
 #include "IMeshCache.h"
 #include "IAnimatedMesh.h"
+#include "IMaterialRenderer.h"
 
 #include "os.h"
 
@@ -378,13 +379,12 @@ void COctTreeSceneNode::deserializeAttributes(io::IAttributes* in, io::SAttribut
 
 		if (newMesh)
 		{
-/*
-			if (Mesh)
-				Mesh->drop();
+		//	if (Mesh)
+		//		Mesh->drop();
 
-			Mesh = newMesh;
-			Mesh->grab();
-*/
+		//	Mesh = newMesh;
+		//	Mesh->grab();
+
 			loadedNewMesh = true;
 		}
 	}
@@ -394,7 +394,7 @@ void COctTreeSceneNode::deserializeAttributes(io::IAttributes* in, io::SAttribut
 		// recalculate tree
 		//createTree(Mesh);
 		createTree ( newMesh );
-		newMesh->drop ();
+		// newMesh->drop ();
 	}
 
 	ISceneNode::deserializeAttributes(in, options);

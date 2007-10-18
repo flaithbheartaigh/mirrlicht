@@ -19,6 +19,7 @@ namespace io
 namespace scene
 {
 	class ISceneNode;
+	class ISceneManager;
 
 	//! Animates a scene node. Can animate position, rotation, material, and so on.
 	/** A scene node animator is able to animate a scene node in a very simple way. It may
@@ -32,11 +33,9 @@ namespace scene
 		//! destructor
 		virtual ~ISceneNodeAnimator() {}
 
-		/// <summary>
-		/// Animates a scene node.
-		/// </summary>
-		/// \param node: Node to animate.
-		/// \param timeMs: Current time in milli seconds.
+		//! Animates a scene node.
+		//! \param node: Node to animate.
+		//! \param timeMs: Current time in milli seconds.
 		virtual void animateNode(ISceneNode* node, u32 timeMs) = 0;
 
 		//! Creates a clone of this animator. 

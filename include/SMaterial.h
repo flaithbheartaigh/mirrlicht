@@ -6,7 +6,6 @@
 #define __S_MATERIAL_H_INCLUDED__
 
 #include "SColor.h"
-#include "ITexture.h"
 #include "matrix4.h"
 #include "irrArray.h"
 
@@ -18,6 +17,8 @@ namespace irr
 {
 namespace video
 {
+	class ITexture;
+
 	//! Abstracted and easy to use fixed function/programmable pipeline material modes.
 	enum E_MATERIAL_TYPE
 	{
@@ -210,13 +211,18 @@ namespace video
 		EBF_SRC_ALPHA_SATURATE		// src		(min(srcA, 1-destA), idem, ...)
 	};
 
-	//! Texture coord clamp mode
+	//! Texture coord clamp mode outside [0.0, 1.0]
 	enum E_TEXTURE_CLAMP
 	{
+		//! Texture repeats
 		ETC_REPEAT = 0,
+		//! Texture is clamped to the last pixel
 		ETC_CLAMP,
+		//! Texture is clamped to the edge pixel
 		ETC_CLAMP_TO_EDGE,
+		//! Texture is clamped to the border pixel (if exists)
 		ETC_CLAMP_TO_BORDER,
+		//! Texture is alternatingly mirrored (0..1..0..1..0..)
 		ETC_MIRROR
 	};
 	static const char* const aTextureClampNames[] = {
@@ -331,6 +337,7 @@ namespace video
 			}
 		}
 
+		//! copy constructor
 		SMaterial(const SMaterial& other)
 		{
 			// These pointers are checked during assignment
@@ -341,6 +348,7 @@ namespace video
 			*this = other;
 		}
 
+		//! destructor
 		~SMaterial()
 		{
 			for (u32 i=0; i<MATERIAL_MAX_TEXTURES; ++i)
@@ -348,6 +356,7 @@ namespace video
 					delete TextureMatrix[i];
 		}
 
+		//! Assignment operator
 		SMaterial& operator=(const SMaterial& other)
 		{
 			MaterialType = other.MaterialType;
@@ -470,7 +479,7 @@ namespace video
 		//! ressource management has to cope with Null pointers etc.
 		core::matrix4* TextureMatrix[MATERIAL_MAX_TEXTURES];
 
-		//! Texture Address Mode
+		//! Texture Clamp Mode
 		E_TEXTURE_CLAMP TextureWrap[MATERIAL_MAX_TEXTURES];
 
 		//! material flags
@@ -522,6 +531,7 @@ namespace video
 		//! Should normals be normalized? Default: false
 		bool NormalizeNormals;
 
+		//! Gets the texture transformation matrix for level i
 		core::matrix4& getTextureMatrix(u32 i)
 		{
 			if (i<MATERIAL_MAX_TEXTURES && !TextureMatrix[i])
@@ -529,6 +539,7 @@ namespace video
 			return *TextureMatrix[i];
 		}
 
+		//! Gets the immutable texture transformation matrix for level i
 		const core::matrix4& getTextureMatrix(u32 i) const
 		{
 			if (i<MATERIAL_MAX_TEXTURES && TextureMatrix[i])
@@ -537,6 +548,7 @@ namespace video
 				return core::IdentityMatrix;
 		}
 
+		//! Sets the i-th texture transformation matrix to mat
 		void setTextureMatrix(u32 i, const core::matrix4& mat)
 		{
 			if (i>=MATERIAL_MAX_TEXTURES)
@@ -547,6 +559,7 @@ namespace video
 				*TextureMatrix[i] = mat;
 		}
 
+		//! Sets the Material flag to the given value
 		void setFlag(E_MATERIAL_FLAG flag, bool value)
 		{
 			switch (flag)
@@ -583,6 +596,7 @@ namespace video
 			}
 		}
 
+		//! Gets the Material flag
 		bool getFlag(E_MATERIAL_FLAG flag) const
 		{
 			switch (flag)
@@ -620,7 +634,7 @@ namespace video
 			return false;
 		}
 
-		//! Compare operator
+		//! Inequality operator
 		inline bool operator!=(const SMaterial& b) const
 		{
 			return 
@@ -659,6 +673,7 @@ namespace video
 				TextureMatrix[3] != b.TextureMatrix[3];
 		}
 
+		//! Equality operator
 		inline bool operator==(const SMaterial& b) const
 		{ return !(b!=*this); }
 	};

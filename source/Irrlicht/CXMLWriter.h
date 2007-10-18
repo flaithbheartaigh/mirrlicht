@@ -67,6 +67,8 @@ namespace io
 
 		IWriteFile* File;
 		s32 Tabs;
+
+		bool TextWrittenLast;
 	};
 
 } // end namespace irr

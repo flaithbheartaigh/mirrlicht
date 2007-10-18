@@ -2,15 +2,13 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#ifndef __I_GUI_ENVIRNMENT_H_INCLUDED__
-#define __I_GUI_ENVIRNMENT_H_INCLUDED__
+#ifndef __I_GUI_ENVIRONMENT_H_INCLUDED__
+#define __I_GUI_ENVIRONMENT_H_INCLUDED__
 
-#include "rect.h"
 #include "IUnknown.h"
-#include "irrTypes.h"
 #include "IGUIWindow.h"
 #include "IGUISkin.h"
-#include "IFileSystem.h"
+#include "rect.h"
 
 namespace irr
 {
@@ -22,6 +20,7 @@ namespace irr
 		class IXMLWriter;
 		class IReadFile;
 		class IWriteFile;
+		class IFileSystem;
 	} // end namespace io
 	namespace video
 	{
@@ -366,16 +365,22 @@ public:
 
 	//! Saves the current gui into a file.
 	//! \param filename: Name of the file.
+	//! \param start: The GUIElement to start with. Root if 0.
 	virtual bool saveGUI(const c8* filename, IGUIElement* start=0) = 0;
 
 	//! Saves the current gui into a file.
+	//! \param file: The file to write to.
+	//! \param start: The GUIElement to start with. Root if 0.
 	virtual bool saveGUI(io::IWriteFile* file, IGUIElement* start=0) = 0;
 
 	//! Loads the gui. Note that the current gui is not cleared before.
 	//! \param filename: Name of the file .
+	//! \param parent: Parent for the loaded GUI, root if 0.
 	virtual bool loadGUI(const c8* filename, IGUIElement* parent=0) = 0;
 
 	//! Loads the gui. Note that the current gui is not cleared before.
+	//! \param file: The file to load from.
+	//! \param parent: Parent for the loaded GUI, root if 0.
 	virtual bool loadGUI(io::IReadFile* file, IGUIElement* parent=0) = 0;	
 
 	//! Writes attributes of the gui environment

@@ -11,7 +11,7 @@
 
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
-#ifdef _IRR_WINDOWS_
+#if defined(_IRR_WINDOWS_API_)
 	// include windows headers for HWND
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
@@ -32,6 +32,17 @@
 	#include <GLES/egl.h>   	
 	//#include "glext.h"
     #include "gles_ARB_redefine.h"
+#elif defined(_IRR_USE_SDL_DEVICE_)
+	#if defined(_IRR_OPENGL_USE_EXTPOINTER_)
+		#define GL_GLEXT_LEGACY 1
+		#define GLX_GLXEXT_LEGACY 1
+	#else
+		#define GL_GLEXT_PROTOTYPES 1
+		#define GLX_GLXEXT_PROTOTYPES 1
+	#endif
+	#include <SDL/SDL_opengl.h>
+	#define NO_SDL_GLEXT
+	#include "glext.h"
 #else
 	#if defined(_IRR_OPENGL_USE_EXTPOINTER_)
 		#define GL_GLEXT_LEGACY 1
@@ -60,7 +71,7 @@ namespace video
 	{
 	public:
 
-		#ifdef _IRR_WINDOWS_
+		#ifdef _IRR_WINDOWS_API_
 		//! win32 constructor
 		COpenGLDriver(const core::dimension2d<s32>& screenSize, HWND window, bool fullscreen,
 			bool stencilBuffer, io::IFileSystem* io, bool antiAlias);
@@ -70,7 +81,7 @@ namespace video
 			u32 bits, bool fullscreen, bool vsync);
 		#endif
 
-		#ifdef LINUX
+		#ifdef _IRR_USE_LINUX_DEVICE_
 		COpenGLDriver(const core::dimension2d<s32>& screenSize, bool fullscreen,
 			bool stencilBuffer, io::IFileSystem* io, bool vsync, bool antiAlias);
 		#endif
@@ -83,6 +94,11 @@ namespace video
 		#ifdef __SYMBIAN32__
 		COpenGLDriver(const core::dimension2d<s32>& screenSize, bool fullscreen, 
 			bool stencilBuffer, EGLSurface window, EGLDisplay display, io::IFileSystem* io, bool vsync, bool antiAlias);
+		#endif
+
+		#ifdef _IRR_USE_SDL_DEVICE_
+		COpenGLDriver(const core::dimension2d<s32>& screenSize, bool fullscreen,
+			bool stencilBuffer, io::IFileSystem* io, bool vsync, bool antiAlias);
 		#endif
 
 		//! destructor
@@ -417,17 +433,19 @@ namespace video
 			PFNGLGETACTIVEUNIFORMARBPROC pGlGetActiveUniformARB;
 			PFNGLPOINTPARAMETERFARBPROC  pGlPointParameterfARB;
 			PFNGLPOINTPARAMETERFVARBPROC pGlPointParameterfvARB;
+			#ifdef GL_ATI_separate_stencil
 			PFNGLSTENCILFUNCSEPARATEPROC pGlStencilFuncSeparate;
 			PFNGLSTENCILOPSEPARATEPROC pGlStencilOpSeparate;
 			PFNGLSTENCILFUNCSEPARATEATIPROC pGlStencilFuncSeparateATI;
 			PFNGLSTENCILOPSEPARATEATIPROC pGlStencilOpSeparateATI;
-				#ifdef PFNGLCOMPRESSEDTEXIMAGE2DPROC
-					PFNGLCOMPRESSEDTEXIMAGE2DPROC pGlCompressedTexImage2D;
-				#endif // PFNGLCOMPRESSEDTEXIMAGE2DPROC
-			#ifdef _IRR_WINDOWS_
+			#endif
+			#ifdef PFNGLCOMPRESSEDTEXIMAGE2DPROC
+			PFNGLCOMPRESSEDTEXIMAGE2DPROC pGlCompressedTexImage2D;
+			#endif // PFNGLCOMPRESSEDTEXIMAGE2DPROC
+			#ifdef _IRR_WINDOWS_API_
 			typedef BOOL (APIENTRY *PFNWGLSWAPINTERVALFARPROC)(int);
 			PFNWGLSWAPINTERVALFARPROC wglSwapIntervalEXT;
-			#elif defined(LINUX) && defined(GLX_SGI_swap_control)
+			#elif defined(_IRR_LINUX_PLATFORM_) && defined(GLX_SGI_swap_control)
 			PFNGLXSWAPINTERVALSGIPROC glxSwapIntervalSGI;
 			#endif
 			PFNGLBINDFRAMEBUFFEREXTPROC pGlBindFramebufferEXT;
@@ -442,11 +460,11 @@ namespace video
 			PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC pGlFramebufferRenderbufferEXT;
 		#endif
 
-		#ifdef _IRR_WINDOWS_
+		#ifdef _IRR_WINDOWS_API_
 			HDC HDc; // Private GDI Device Context
 			HWND Window;
 			HGLRC HRc; // Permanent Rendering Context
-		#elif defined(LINUX)
+		#elif defined(_IRR_USE_LINUX_DEVICE_)
 			GLXDrawable XWindow;
 			Display* XDisplay;
 		#elif defined(MACOSX)

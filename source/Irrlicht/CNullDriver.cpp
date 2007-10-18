@@ -7,7 +7,11 @@
 #include "os.h"
 #include "CImage.h"
 #include "CAttributes.h"
+#include "IReadFile.h"
 #include "IWriteFile.h"
+#include "IImageLoader.h"
+#include "IImageWriter.h"
+#include "IMaterialRenderer.h"
 
 
 namespace irr
@@ -32,7 +36,6 @@ IImageLoader* createImageLoaderPCX();
 
 //! creates a loader which is able to load png images
 IImageLoader* createImageLoaderPNG();
-
 
 //! creates a loader which is able to load bmp images
 IImageWriter* createImageWriterBMP();
@@ -420,8 +423,11 @@ ITexture* CNullDriver::addTexture(const c8* name, IImage* image)
 		return 0;
 
 	ITexture* t = createDeviceDependentTexture(image, name);
-	addTexture(t);
-	t->drop();
+	if (t)
+	{
+		addTexture(t);
+		t->drop();
+	}
 	return t;
 }
 
