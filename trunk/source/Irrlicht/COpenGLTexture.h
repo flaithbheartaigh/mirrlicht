@@ -11,7 +11,7 @@
 #include "IrrCompileConfig.h"
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
-#ifdef _IRR_WINDOWS_
+#ifdef _IRR_WINDOWS_API_
 	// include windows headers for HWND
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
@@ -46,15 +46,14 @@ namespace video
 {
 
 class COpenGLDriver;
-class CImage;
 //! OpenGL texture.
 class COpenGLTexture : public ITexture
 {
 public:
 
 	//! constructor
-	COpenGLTexture(IImage* surface, bool generateMipLevels, const char* name, COpenGLDriver* driver=0);
-    //! FrameBufferObject constructor
+	COpenGLTexture(IImage* surface, const char* name, COpenGLDriver* driver=0);
+	//! FrameBufferObject constructor
 	COpenGLTexture(const core::dimension2d<s32>& size, bool extPackedDepthStencilSupported, const char* name, COpenGLDriver* driver=0);
 
 	//! destructor
@@ -113,7 +112,7 @@ private:
 
 	core::dimension2d<s32> ImageSize;
 	COpenGLDriver* Driver;
-	CImage* Image;
+	IImage* Image;
 
 	GLuint TextureName;
 	GLint InternalFormat;
@@ -125,6 +124,8 @@ private:
 	GLuint ColorFrameBuffer; // for FBO path
 	GLuint DepthRenderBuffer; // for FBO path
 	GLuint StencilRenderBuffer; // for FBO path
+
+	u32 Locks;
 };
 
 

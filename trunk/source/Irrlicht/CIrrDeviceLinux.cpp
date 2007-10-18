@@ -4,14 +4,13 @@
 
 #include "CIrrDeviceLinux.h"
 
-#ifdef LINUX
+#ifdef _IRR_USE_LINUX_DEVICE_
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/utsname.h>
 #include <time.h>
 #include "IEventReceiver.h"
-#include "irrList.h"
 #include "os.h"
 #include "CTimer.h"
 #include "irrString.h"
@@ -87,7 +86,7 @@ CIrrDeviceLinux::CIrrDeviceLinux(video::E_DRIVER_TYPE driverType,
 	CursorControl = new CCursorControl(this, driverType == video::EDT_NULL);
 
 	// create driver
-	createDriver(windowSize, bits, vsync);
+	createDriver(windowSize, vsync);
 
 	if (!VideoDriver)
 		return;
@@ -240,7 +239,9 @@ bool CIrrDeviceLinux::createWindow(const core::dimension2d<s32>& windowSize,
 				modes[oldRandrMode].width, modes[oldRandrMode].height));
 			for (s32 i = 0; i<modeCount; ++i)
 			{
-				if (bestMode==-1 && modes[i].width >= Width && modes[i].height >= Height)
+				if (bestMode==-1 && modes[i]->hdisplay >= Width && modes[i]->vdisplay >= Height)
+					bestMode = i;
+				else if (bestMode!=-1 && modes[i]->hdisplay >= Width && modes[i]->vdisplay >= Height && modes[i]->hdisplay < modes[bestMode]->hdisplay && modes[i]->vdisplay < modes[bestMode]->vdisplay)
 					bestMode = i;
 				VideoModeList.addMode(core::dimension2d<s32>(
 					modes[i].width, modes[i].height), defaultDepth);
@@ -255,7 +256,7 @@ bool CIrrDeviceLinux::createWindow(const core::dimension2d<s32>& windowSize,
 		else
 		#endif
 		{
-			os::Printer::log("VidMode extension must be installed to allow Irrlicht "
+			os::Printer::log("VidMode or RandR extension must be installed to allow Irrlicht "
 			"to switch to fullscreen mode. Running in windowed mode instead.", ELL_WARNING);
 			Fullscreen = false;
 		}
@@ -601,7 +602,7 @@ bool CIrrDeviceLinux::createWindow(const core::dimension2d<s32>& windowSize,
 
 //! create the driver
 void CIrrDeviceLinux::createDriver(const core::dimension2d<s32>& windowSize,
-				   u32 bits, bool vsync)
+				   bool vsync)
 {
 	switch(DriverType)
 	{
@@ -1219,5 +1220,5 @@ IRRLICHT_API IrrlichtDevice* IRRCALLCONV createDeviceEx(const SIrrlichtCreationP
 
 } // end namespace
 
-#endif // LINUX
+#endif // _IRR_USE_LINUX_DEVICE_
 

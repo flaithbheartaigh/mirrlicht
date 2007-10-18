@@ -8,14 +8,15 @@
 #include "IrrCompileConfig.h"
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
-#ifdef _IRR_WINDOWS_
+#ifdef _IRR_WINDOWS_API_
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <GL/gl.h>
 #include "glext.h"
-#endif
-
-#ifdef LINUX
+#elif defined(MACOSX)
+#include <OpenGL/gl.h>
+#include <OpenGL/glext.h>
+#else
 #if defined(_IRR_OPENGL_USE_EXTPOINTER_)
 #define GL_GLEXT_LEGACY 1
 #endif
@@ -25,10 +26,6 @@
 #endif
 #endif
 
-#ifdef MACOSX
-#include <OpenGL/gl.h>
-#include <OpenGL/glext.h>
-#endif
 
 #ifdef __SYMBIAN32__
 #include <GLES/gl.h>

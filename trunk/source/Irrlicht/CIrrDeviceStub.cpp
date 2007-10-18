@@ -3,8 +3,10 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CIrrDeviceStub.h"
+#include "ISceneManager.h"
 #include "IEventReceiver.h"
-#include "irrList.h"
+#include "IFileSystem.h"
+#include "IGUIEnvironment.h"
 #include "os.h"
 #include "IrrCompileConfig.h"
 #include "CTimer.h"
@@ -17,15 +19,16 @@ namespace irr
 //! constructor
 CIrrDeviceStub::CIrrDeviceStub(const char* version, irr::IEventReceiver* recv)
 : IrrlichtDevice(), VideoDriver(0), GUIEnvironment(0), SceneManager(0), 
-	Timer(new irr::CTimer()), CursorControl(0), UserReceiver(recv),
-	Logger(new CLogger(UserReceiver)), Operator(0), FileSystem(io::createFileSystem()),
-	InputReceivingSceneManager(0)
+	Timer(0), CursorControl(0), UserReceiver(recv), Logger(0), Operator(0),
+	FileSystem(io::createFileSystem()), InputReceivingSceneManager(0)
 {
+	Timer = new irr::CTimer();
+	Logger = new CLogger(UserReceiver);
 	os::Printer::Logger = Logger;
 
 	core::stringc s = "Irrlicht Engine version ";
 	s.append(getVersion());
-	os::Printer::log(s.c_str(), ELL_NONE);
+	os::Printer::log(s.c_str(), ELL_INFORMATION);
 
 	checkVersion(version);
 }

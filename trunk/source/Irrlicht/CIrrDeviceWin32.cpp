@@ -4,7 +4,7 @@
 
 #include "IrrCompileConfig.h"
 
-#ifdef _IRR_WINDOWS_
+#ifdef _IRR_USE_WINDOWS_DEVICE_
 
 #include "CIrrDeviceWin32.h"
 #include "IEventReceiver.h"
@@ -457,7 +457,7 @@ void CIrrDeviceWin32::createDriver(video::E_DRIVER_TYPE driverType,
 		}
 		#else
 		os::Printer::log("DIRECT3D8 Driver was not compiled into this dll. Try another one.", ELL_ERROR);
-		#endif
+		#endif // _IRR_COMPILE_WITH_DIRECT3D_8_
 
 		break;
 
@@ -471,7 +471,7 @@ void CIrrDeviceWin32::createDriver(video::E_DRIVER_TYPE driverType,
 		}
 		#else
 		os::Printer::log("DIRECT3D9 Driver was not compiled into this dll. Try another one.", ELL_ERROR);
-		#endif
+		#endif // _IRR_COMPILE_WITH_DIRECT3D_9_
 
 		break;
 
@@ -951,5 +951,5 @@ IRRLICHT_API IrrlichtDevice* IRRCALLCONV createDeviceEx(
 
 } // end namespace
 
-#endif // _IRR_WINDOWS_
+#endif // _IRR_USE_WINDOWS_DEVICE_
 

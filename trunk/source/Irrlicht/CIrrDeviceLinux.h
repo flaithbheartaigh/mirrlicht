@@ -7,12 +7,11 @@
 
 #include "IrrCompileConfig.h"
 
-#ifdef LINUX
+#ifdef _IRR_USE_LINUX_DEVICE_
 
 #include "CIrrDeviceStub.h"
 #include "IrrlichtDevice.h"
 #include "IImagePresenter.h"
-#include "IGUIEnvironment.h"
 #include "ICursorControl.h"
 
 #ifdef _IRR_COMPILE_WITH_X11_
@@ -21,7 +20,7 @@
 #include <GL/gl.h>
 #define GLX_GLXEXT_LEGACY 1
 #include <GL/glx.h>
-#ifndef __sun__
+#ifdef _IRR_OPENGL_USE_EXTPOINTER_
 #include "glxext.h"
 #endif
 #endif
@@ -82,7 +81,7 @@ namespace irr
 
 		//! create the driver
 		void createDriver(const core::dimension2d<s32>& windowSize,
-					u32 bits, bool vsync);
+					bool vsync);
 
 		bool createWindow(const core::dimension2d<s32>& windowSize, u32 bits);
 
@@ -134,7 +133,9 @@ namespace irr
 
 			~CCursorControl()
 			{
+#ifdef _IRR_COMPILE_WITH_X11_
 				XFreeGC(Device->display, gc);
+#endif
 				Device->drop();
 			}
 
@@ -309,6 +310,6 @@ namespace irr
 
 } // end namespace irr
 
-#endif // LINUX
+#endif // _IRR_USE_LINUX_DEVICE_
 #endif // __C_IRR_DEVICE_LINUX_H_INCLUDED__
 
