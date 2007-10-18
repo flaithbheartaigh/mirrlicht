@@ -12,6 +12,26 @@
 #include <string.h>
 #include <stdlib.h>
 
+#if defined(__SYMBIAN32__) 
+	#include <stdarg.h>
+	class snprintf_work_around
+	{
+	public:
+		snprintf_work_around() { }
+
+		int operator()( char* buf, size_t max_num_of_byte, const char* format, ... )
+		{
+			va_list va;
+			va_start(va, format);			  
+			//  format the message as requested:
+			int nRet = sprintf(buf, format, va);			  
+			va_end(va);
+			return nRet;
+		}
+	};
+	#define snprintf (snprintf_work_around())
+#endif
+	
 namespace irr
 {
 namespace core

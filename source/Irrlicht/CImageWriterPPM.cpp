@@ -5,26 +5,6 @@
 #include "dimension2d.h"
 #include "irrString.h"
 
-#if defined(__SYMBIAN32__) && defined(__WINS__)	
-	#include <stdarg.h>
-	class snprintf_work_around
-	{
-	public:
-		snprintf_work_around() { }
-
-		int operator()( char* buf, size_t max_num_of_byte, const char* format, ... )
-		{
-			va_list va;
-			va_start(va, format);			  
-			//  format the message as requested:
-			int nRet = sprintf(buf, format, va);			  
-			va_end(va);
-			return nRet;
-		}
-	};
-	#define snprintf (snprintf_work_around())
-#endif
-
 namespace irr
 {
 namespace video
@@ -54,27 +34,16 @@ bool CImageWriterPPM::writeImage(io::IWriteFile *file, IImage *image,u32 param)
 
 	const core::dimension2d<s32>& imageSize = image->getDimension();
 
-#if defined(__SYMBIAN32__) && (defined(__GCCE__) || defined(__ARMCC__))
-	size = sprintf(cache, "P3\n");
-#else
 	size = snprintf(cache, 70, "P3\n");
-#endif
+
 	if (file->write(cache, size) != size)
 		return false;
 
-#if defined(__SYMBIAN32__) && (defined(__GCCE__) || defined(__ARMCC__))
-	size = sprintf(cache, "%d %d\n", imageSize.Width, imageSize.Height);
-#else
 	size = snprintf(cache, 70, "%d %d\n", imageSize.Width, imageSize.Height);
-#endif
 	if (file->write(cache, size) != size)
 		return false;
 
-#if defined(__SYMBIAN32__) && (defined(__GCCE__) || defined(__ARMCC__))	
-	size = sprintf(cache, "255\n");
-#else
 	size = snprintf(cache, 70, "255\n");
-#endif
 
 	if (file->write(cache, size) != size)
 		return false;
@@ -88,11 +57,7 @@ bool CImageWriterPPM::writeImage(io::IWriteFile *file, IImage *image,u32 param)
 		for (c = 0; c < imageSize.Width; ++c, ++n)
 		{
 			const video::SColor& pixel = image->getPixel(c, r);
-#if defined(__SYMBIAN32__) && (defined(__GCCE__) || defined(__ARMCC__))	
-			size = sprintf(cache, "%.3d %.3d %.3d%s", pixel.getRed(), pixel.getGreen(), pixel.getBlue(), n % 5 == 4 ? "\n" : "  ");	
-#else
 			size = snprintf(cache, 70, "%.3d %.3d %.3d%s", pixel.getRed(), pixel.getGreen(), pixel.getBlue(), n % 5 == 4 ? "\n" : "  ");	
-#endif
 			if (file->write(cache, size) != size)
 				return false;
 		}
