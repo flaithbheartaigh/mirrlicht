@@ -11,7 +11,8 @@ TARGET                                  mHelloWorld.exe
 TARGETTYPE                              exe 
 UID                                     0x0 0xe516d258 
 SECUREID                                0xe516d258 
-EPOCSTACKSIZE                           0x5000 
+EPOCSTACKSIZE                           0x10000 0x40000
+EPOCHEAPSIZE                            0x10000 0x1800000
 SOURCEPATH                              ..\data 
 START RESOURCE mHelloWorld.rss 
   TARGETPATH                              \resource\apps 
@@ -28,9 +29,10 @@ SOURCE                                  MainS60.cpp
 
 SYSTEMINCLUDE                           \epoc32\include\libc 
 USERINCLUDE                             ..\..\..\..\..\include 
-// [-]    USERINCLUDE                   ..\..\mirrlicht\inc 
+
 USERINCLUDE                             ..\inc 
 SYSTEMINCLUDE                           \epoc32\include 
+
 LIBRARY                                 estlib.lib 
 LIBRARY                                 mirrlicht.lib 
 LIBRARY                                 euser.lib 
@@ -41,6 +43,9 @@ LIBRARY                                 avkon.lib
 LIBRARY                                 commonengine.lib 
 LIBRARY                                 efsrv.lib 
 LIBRARY                                 estor.lib 
+LIBRARY                                 ezlib.lib 
+LIBRARY                                 libgles_cm.lib 
+
 LANG                                    SC 
 VENDORID                                0 
 CAPABILITY                              NONE 
