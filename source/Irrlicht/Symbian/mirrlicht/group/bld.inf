@@ -1,0 +1,17 @@
+/*
+============================================================================
+ Name        : bld.inf
+ Author      : 
+ Version     :
+ Copyright   : GPL v2
+ Description : Component definition file
+============================================================================
+*/
+
+PRJ_PLATFORMS
+WINSCW ARMV5 GCCE
+
+PRJ_EXPORTS
+PRJ_MMPFILES
+
+mirrlicht.mmp
