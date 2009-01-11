@@ -20,7 +20,11 @@ USERINCLUDE                             ..\..\..\..\..\include
 SYSTEMINCLUDE                           \epoc32\include\libc 
 SYSTEMINCLUDE                           \epoc32\include 
 SOURCEPATH                              ..\..\.. 
-/* [+] */ SOURCE                        CQuake3ShaderSceneNode.cpp 
+
+SOURCE                                  CMD3MeshFileLoader.cpp 
+SOURCE                                  CAnimatedMeshMD3.cpp 
+SOURCE                                  CGUISpriteBank.cpp 
+SOURCE                                  CQuake3ShaderSceneNode.cpp 
 SOURCE                                  CDefaultGUIElementFactory.cpp 
 SOURCE                                  CSoftwareTexture.cpp 
 SOURCE                                  CAnimatedMeshB3d.cpp 

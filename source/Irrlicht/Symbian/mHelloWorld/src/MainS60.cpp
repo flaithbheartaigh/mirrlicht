@@ -439,7 +439,7 @@ void CMainS60AppView::ConstructL( const TRect& aRect )
 	SIrrlichtCreationParameters parameters;
 	parameters.WindowSize = core::dimension2d<s32>(240, 320);
 	parameters.DriverType = EDT_OPENGL;
-	parameters.WindowId = (s32)(&Window());
+	parameters.WindowId = &Window();
 	device = createDeviceEx(parameters);
 	IVideoDriver* driver = device->getVideoDriver();
 	ISceneManager* smgr = device->getSceneManager();
