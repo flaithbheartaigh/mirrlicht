@@ -7,14 +7,9 @@
  Description : This is the project specification file for mirrlicht.
 ============================================================================
 */
-TARGET                                  mirrlicht.dll 
-#ifdef WINS  
-  TARGETTYPE                              cdll 
-#endif  
+TARGET                                  mirrlicht.lib
 
-#ifndef WINS  
-  TARGETTYPE                              dll 
-#endif  
+TARGETTYPE                              lib
 
 UID                                     0x1000008d 0xea3a6c3d 
 SECUREID                                0xe516d258 
@@ -26,7 +21,6 @@ SYSTEMINCLUDE                           \epoc32\include\libc
 SYSTEMINCLUDE                           \epoc32\include 
 SOURCEPATH                              ..\..\.. 
 /* [+] */ SOURCE                        CQuake3ShaderSceneNode.cpp 
-SOURCE                                  CGUIFontMultiTexture.cpp 
 SOURCE                                  CDefaultGUIElementFactory.cpp 
 SOURCE                                  CSoftwareTexture.cpp 
 SOURCE                                  CAnimatedMeshB3d.cpp 
@@ -234,11 +228,12 @@ SOURCE                                  pngget.c
 SOURCE                                  pngerror.c 
 SOURCE                                  png.c 
 
-LIBRARY                                 ezlib.lib 
-LIBRARY                                 libgles_cm.lib 
-LIBRARY                                 estlib.lib 
-LIBRARY                                 euser.lib 
-LIBRARY                                 estor.lib 
+//LIBRARY                                 ezlib.lib 
+//LIBRARY                                 libgles_cm.lib 
+//LIBRARY                                 estlib.lib 
+//LIBRARY                                 euser.lib 
+//LIBRARY                                 estor.lib 
+
 VENDORID                                0 
 CAPABILITY                              NONE 
-EXPORTUNFROZEN                           
+                        
