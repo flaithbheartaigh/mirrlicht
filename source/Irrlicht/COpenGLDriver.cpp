@@ -871,13 +871,11 @@ bool COpenGLDriver::endScene( s32 windowId, core::rect<s32>* sourceRect )
 #elif defined(_IRR_USE_SDL_DEVICE_)
 	SDL_GL_SwapBuffers();
 	return true;
+#elif defined(_IRR_USE_OPENGL_ES_)
+	eglSwapBuffers( eglDisplay, eglWindowSurface );
+	return true;	
 #else
 	return false;
-#endif
-
-#ifdef _IRR_USE_OPENGL_ES_
-	eglSwapBuffers( eglDisplay, eglWindowSurface );
-	return true;
 #endif
 
 }
